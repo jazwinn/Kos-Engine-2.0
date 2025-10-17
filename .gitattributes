@@ -1,3 +1,9 @@
+Compiler[[:space:]]Solutions/**,kOS/Resource/**,kOS/Kos[[:space:]]Editor/Assets/**,kOS/Engine/Dependencies/**
+git[[:space:]]lfs[[:space:]]track[[:space:]]Compiler filter=lfs diff=lfs merge=lfs -text
+Solutions/**,kOS/Resource/**,kOS/Kos filter=lfs diff=lfs merge=lfs -text
+Editor/Assets/**,kOS/Engine/Dependencies/**
+Solutions/**,k filter=lfs diff=lfs merge=lfs -text
+Compiler[[:space:]]Solutions filter=lfs diff=lfs merge=lfs -text
 Compiler[[:space:]]Solutions/** filter=lfs diff=lfs merge=lfs -text
 kOS/Resource/** filter=lfs diff=lfs merge=lfs -text
 kOS/Kos[[:space:]]Editor/Assets/** filter=lfs diff=lfs merge=lfs -text
