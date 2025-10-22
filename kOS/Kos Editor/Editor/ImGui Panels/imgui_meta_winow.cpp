@@ -20,6 +20,10 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Editor.h"
 #include "Config/pch.h"
 #include "AssetManager/AssetDatabase.h"
+#include "Resources/ResourceHeader.h"
+#include "Compilers/CompilerDataHeader.h"
+
+TextureCompilerData textureCompilerData{};
 
 void gui::ImGuiHandler::DrawAssetInspector() {
 
@@ -31,7 +35,18 @@ void gui::ImGuiHandler::DrawAssetInspector() {
 
         ImGui::TextDisabled("Selected File %s", AssetPath.filename().string().c_str());
         selectedAsset.ApplyFunction(DrawComponents{ selectedAsset.Names() });
-       
+        
+        //TODO automate this function for other asset types
+        if (selectedAsset.Type == R_Texture::classname()) {
+			textureCompilerData.ApplyFunction(DrawComponents{ textureCompilerData.Names() });
+        }
+
+
+
+
+
+
+
 
         float windowWidth = ImGui::GetContentRegionAvail().x; // Available width inside window
         float buttonWidth = 100.0f; // Width of your button
@@ -40,6 +55,11 @@ void gui::ImGuiHandler::DrawAssetInspector() {
         if (ImGui::Button("Save", ImVec2(buttonWidth, 0))) {
             // Button clicked
             Serialization::WriteJsonFile(AssetPath.string(), &selectedAsset);
+
+            //TODO automate this function for other asset types
+            if (selectedAsset.Type == R_Texture::classname()) {
+                Serialization::WriteJsonFile(AssetPath.string(), &textureCompilerData, true);
+            }
         }
 
 	}

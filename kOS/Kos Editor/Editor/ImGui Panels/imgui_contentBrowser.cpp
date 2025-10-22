@@ -333,7 +333,7 @@ namespace gui {
 
 						if(compilerMap.find(directoryPath.path().filename().extension().string()) != compilerMap.end())
 						{
-							if (ImGui::BeginMenu("Compile As"))
+							if (ImGui::BeginMenu("Reload As"))
 							{
 								for(const auto& comp : compilerMap.at(directoryPath.path().filename().extension().string()))
 								{

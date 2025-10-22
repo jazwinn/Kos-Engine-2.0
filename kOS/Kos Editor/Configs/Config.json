@@ -36,7 +36,7 @@
           "outputExtension": ".fntc",
           "inputExtensions": [
             {
-                "inputExtensions": ".ttf"
+              "inputExtensions": ".ttf"
             }
           ]
         },
@@ -55,6 +55,15 @@
           "inputExtensions": [
             {
               "inputExtensions": ".wav"
+            }
+          ]
+        },
+        "materialCompiler": {
+          "path": "null",
+          "outputExtension": ".mat",
+          "inputExtensions": [
+            {
+              "inputExtensions": ".mat"
             }
           ]
         }
