@@ -149,6 +149,11 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath, const std:
 	if (!std::filesystem::exists(metaPath)) {
         //Import asset and create meta file
         RegisterAsset(filePath);
+
+        if (!std::filesystem::exists(metaPath)) {
+			LOGGING_WARN("Compile File: Meta file does not exist after registering asset");
+			return;
+        }
 	}
     //get file type from meta
     AssetData data = Serialization::ReadJsonFile<AssetData>(metaPath.string());
