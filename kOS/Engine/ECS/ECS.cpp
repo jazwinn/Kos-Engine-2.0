@@ -48,8 +48,9 @@ namespace ecs{
 		RegisterSystem<ScriptingSystem>(RUNNING);
 		RegisterSystem<TransformSystem, TransformComponent>();
 		RegisterSystem<CharacterControllerSystem, TransformComponent, CharacterControllerComponent>(RUNNING);
-		RegisterSystem<RigidbodySystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<ColliderSystem, TransformComponent>(RUNNING);
+		RegisterSystem<RigidbodySystem, TransformComponent, RigidbodyComponent>(RUNNING);
+		RegisterSystem<PhysicsSystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<CameraSystem, TransformComponent, CameraComponent>();
 		RegisterSystem<RenderSystem, TransformComponent, SpriteComponent>();
 		RegisterSystem<MeshRenderSystem, TransformComponent, MeshRendererComponent, MeshFilterComponent>();

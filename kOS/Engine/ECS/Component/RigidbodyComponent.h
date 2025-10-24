@@ -62,13 +62,8 @@ namespace ecs {
 		InterpolationMode interpolation = InterpolationMode::None;
 		CollisionDetectionMode collisionDetection = CollisionDetectionMode::Discrete;
 		Constraints constraints = Constraints::None;
-
 		void* actor = nullptr;
 
-		glm::vec3 prevPos{ 0.0f };
-		glm::vec3 prevRot{ 0.0f };
-		bool isChanged = false;
-		
 		REFLECTABLE(RigidbodyComponent, mass, drag, angularDrag, useGravity, isKinematic, interpolation, collisionDetection, constraints)
 	};
 }

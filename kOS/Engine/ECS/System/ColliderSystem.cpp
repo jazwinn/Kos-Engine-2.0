@@ -1,11 +1,11 @@
 /********************************************************************/
 /*!
 \file       ColliderSystem.cpp
-\author		Toh Yu Heng 2301294, Rayner Tan Wei Chen 2301449
-\par		t.yuheng@digipen.edu, raynerweichen.tan@digipen.edu
-\date		Oct 01 2025
-\brief		Implements the ColliderSystem, responsible for creating and 
-            synchronizing static collision shapes (Box, Sphere, Capsule) 
+\author     Toh Yu Heng 2301294, Rayner Tan Wei Chen 2301449
+\par        t.yuheng@digipen.edu, raynerweichen.tan@digipen.edu
+\date       Oct 01 2025
+\brief      Implements the ColliderSystem, responsible for creating and
+            synchronizing static collision shapes (Box, Sphere, Capsule)
             within the ECS world using NVIDIA PhysX.
 
             This system:
@@ -15,7 +15,7 @@
             - Creates and attaches PxRigidStatic actors for static colliders
             - Updates existing actor poses each frame
 
-            Rigidbodies and CharacterControllers are skipped to avoid 
+            Rigidbodies and CharacterControllers are skipped to avoid
             conflicts with dynamic or controlled physics objects.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -34,33 +34,55 @@ namespace ecs {
 	void ColliderSystem::Init() {
         onDeregister.Add([](EntityID id) {
             ECS* ecs = ECS::GetInstance();
-            if (BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id)) {
-                if (PxShape* shape = static_cast<PxShape*>(box->shape)) {
-                    if (PxRigidActor* actor = shape->getActor()) {
-                        PhysicsManager::GetInstance()->GetScene()->removeActor(*actor);
-                        actor->release();
-                    }
+            auto* box = ecs->GetComponent<BoxColliderComponent>(id);
+            auto* sphere = ecs->GetComponent<SphereColliderComponent>(id);
+            auto* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
+            auto* rb = ecs->GetComponent<RigidbodyComponent>(id);
+            if (rb) {
+                if (box) { box->shape = nullptr; }
+                if (sphere) { sphere->shape = nullptr; }
+                if (capsule) { capsule->shape = nullptr; }
+                return;
+            }
+            PxRigidStatic* actor = nullptr;
+            if (box && box->actor) { actor = static_cast<PxRigidStatic*>(box->actor); }
+            else if (sphere && sphere->actor) { actor = static_cast<PxRigidStatic*>(sphere->actor); }
+            else if (capsule && capsule->actor) { actor = static_cast<PxRigidStatic*>(capsule->actor); }
+            if (actor) {
+                if (box && box->shape) {
+                    PxShape* shape = static_cast<PxShape*>(box->shape);
+                    actor->detachShape(*shape);
                     shape->release();
                     box->shape = nullptr;
                 }
-            }
-            if (SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id)) {
-                if (PxShape* shape = static_cast<PxShape*>(sphere->shape)) {
-                    if (PxRigidActor* actor = shape->getActor()) {
-                        PhysicsManager::GetInstance()->GetScene()->removeActor(*actor);
-                        actor->release();
-                    }
+                if (sphere && sphere->shape) {
+                    PxShape* shape = static_cast<PxShape*>(sphere->shape);
+                    actor->detachShape(*shape);
                     shape->release();
                     sphere->shape = nullptr;
                 }
-            }
-            if (CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id)) {
-                if (PxShape* shape = static_cast<PxShape*>(capsule->shape)) {
-                    if (PxRigidActor* actor = shape->getActor()) {
-                        PhysicsManager::GetInstance()->GetScene()->removeActor(*actor);
-                        actor->release();
-                    }
-                    shape->release();
+                if (capsule && capsule->shape) {
+                    PxShape* shape = static_cast<PxShape*>(capsule->shape);
+                    actor->detachShape(*shape);
+                    capsule->shape = nullptr;
+                }
+                PxScene* scene = actor->getScene();
+                if (scene) { scene->removeActor(*actor); }
+                actor->release();
+                if (box) { box->actor = nullptr; }
+                if (sphere) { sphere->actor = nullptr; }
+                if (capsule) { capsule->actor = nullptr; }
+            } else {
+                if (box && box->shape) {
+                    static_cast<PxShape*>(box->shape)->release();
+                    box->shape = nullptr;
+                }
+                if (sphere && sphere->shape) {
+                    static_cast<PxShape*>(sphere->shape)->release();
+                    sphere->shape = nullptr;
+                }
+                if (capsule && capsule->shape) {
+                    static_cast<PxShape*>(capsule->shape)->release();
                     capsule->shape = nullptr;
                 }
             }
@@ -70,131 +92,135 @@ namespace ecs {
 	void ColliderSystem::Update(const std::string& scene) {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
+
+        auto pm = PhysicsManager::GetInstance();
+
         for (EntityID id : entities) {
             TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
             NameComponent* name = ecs->GetComponent<NameComponent>(id);
 
             if (!trans || trans->scene != scene || name->hide) { continue; }
-            if (ecs->HasComponent<RigidbodyComponent>(id)) { continue; }
-            if (ecs->HasComponent<CharacterControllerComponent>(id)) { continue; }
+            
+            RigidbodyComponent* rb = ecs->GetComponent<RigidbodyComponent>(id);
+            BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
+            CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
+            SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id);
+
+            PxFilterData filter;
+            filter.word0 = name->Layer;
 
             glm::vec3 scale = trans->LocalTransformation.scale;
-            const float minScale = 0.001f;
-            scale.x = glm::max(glm::abs(scale.x), minScale);
-            scale.y = glm::max(glm::abs(scale.y), minScale);
-            scale.z = glm::max(glm::abs(scale.z), minScale);
 
-            PxRigidStatic* staticActor = nullptr;
-
-            PxFilterData filterData;
-            filterData.word0 = name->Layer;
-
-            if (BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id)) {
-                glm::vec3 sz = glm::max(glm::abs(box->box.size * scale), glm::vec3(minScale));
+            if (box) {
+                glm::vec3 halfExtents = box->box.size * scale * 0.5f;
                 PxShape* shape = static_cast<PxShape*>(box->shape);
-
+                PxBoxGeometry geometry{ halfExtents.x, halfExtents.y, halfExtents.z };
                 if (!shape) {
-                    shape = PhysicsManager::GetInstance()->GetPhysics()->createShape(
-                        PxBoxGeometry(sz.x * 0.5f, sz.y * 0.5f, sz.z * 0.5f),
-                        *PhysicsManager::GetInstance()->GetDefaultMaterial(),
-                        true
-                    );
+                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
                     box->shape = shape;
+                } else {
+                    shape->setGeometry(geometry);
                 }
-
-                glm::vec3 c = box->box.center * scale;
-                shape->setLocalPose(PxTransform{ PxVec3{ c.x, c.y, c.z } });
+                shape->setLocalPose(PxTransform{ PxVec3{ box->box.center.x, box->box.center.y, box->box.center.z } });
                 ToPhysxIsTrigger(shape, box->isTrigger);
-
-                shape->setSimulationFilterData(filterData);
-                shape->setQueryFilterData(filterData);
-
-                glm::vec3 worldCenter = trans->LocalTransformation.position + box->box.center * scale;
-                glm::vec3 worldSize = box->box.size * scale;
-                box->box.bounds.center = worldCenter;
-                box->box.bounds.size = worldSize;
-                box->box.bounds.extents = worldSize * 0.5f;
-                box->box.bounds.min = worldCenter - box->box.bounds.extents;
-                box->box.bounds.max = worldCenter + box->box.bounds.extents;
-
-                if (shape->getActor()) { staticActor = shape->getActor()->is<PxRigidStatic>(); }
+                shape->setSimulationFilterData(filter);
+                shape->setQueryFilterData(filter);
+                box->box.bounds.center = trans->LocalTransformation.position + box->box.center * scale;
+                box->box.bounds.extents = halfExtents;
+                box->box.bounds.size = box->box.size * scale;
+                box->box.bounds.min = box->box.bounds.center - box->box.bounds.extents;
+                box->box.bounds.max = box->box.bounds.center + box->box.bounds.extents;
             }
-            else if (SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id)) {
+
+            if (sphere) {
                 float radius = sphere->sphere.radius * glm::max(scale.x, glm::max(scale.y, scale.z));
                 PxShape* shape = static_cast<PxShape*>(sphere->shape);
-
+                PxSphereGeometry geometry{ radius };
                 if (!shape) {
-                    shape = PhysicsManager::GetInstance()->GetPhysics()->createShape(
-                        PxSphereGeometry(radius),
-                        *PhysicsManager::GetInstance()->GetDefaultMaterial(),
-                        true
-                    );
+                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
                     sphere->shape = shape;
+                } else {
+                    shape->setGeometry(geometry);
                 }
-
-                glm::vec3 c = sphere->sphere.center * scale;
-                shape->setLocalPose(PxTransform{ PxVec3{ c.x, c.y, c.z } });
+                shape->setLocalPose(PxTransform{ PxVec3{ sphere->sphere.center.x, sphere->sphere.center.y, sphere->sphere.center.z } });
                 ToPhysxIsTrigger(shape, sphere->isTrigger);
-
-                shape->setSimulationFilterData(filterData);
-                shape->setQueryFilterData(filterData);
-
-                if (shape->getActor()) { staticActor = shape->getActor()->is<PxRigidStatic>(); }
+                shape->setSimulationFilterData(filter);
+                shape->setQueryFilterData(filter);
             }
-            else if (CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id)) {
+
+            if (capsule) {
                 float radius = capsule->capsule.radius * glm::max(scale.x, scale.z);
-                float halfHeight = (capsule->capsule.height * scale.y) * 0.5f;
+                float halfHeight = capsule->capsule.height * scale.y * 0.5f;
                 PxShape* shape = static_cast<PxShape*>(capsule->shape);
-
+                PxCapsuleGeometry geometry{ radius, halfHeight };
                 if (!shape) {
-                    shape = PhysicsManager::GetInstance()->GetPhysics()->createShape(
-                        PxCapsuleGeometry(radius, halfHeight),
-                        *PhysicsManager::GetInstance()->GetDefaultMaterial(),
-                        true
-                    );
+                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
                     capsule->shape = shape;
+                } else {
+                    shape->setGeometry(geometry);
                 }
-
-                PxTransform localPose(PxVec3{ capsule->capsule.center.x * scale.x, capsule->capsule.center.y * scale.y, capsule->capsule.center.z * scale.z });
-                
+                PxQuat rot{ PxIdentity };
                 switch (capsule->capsule.capsuleDirection) {
-                    case CapsuleDirection::Y:
-                        localPose.q = PxQuat{ PxHalfPi, PxVec3{ 0.0f, 0.0f, 1.0f } };
+                    case CapsuleDirection::X:
+                        rot = PxQuat{ PxHalfPi, PxVec3{ 0.0f, 0.0f, 1.0f } };
                         break;
                     case CapsuleDirection::Z:
-                        localPose.q = PxQuat{ -PxHalfPi, PxVec3{ 0.0f, 1.0f, 0.0f } };
+                        rot = PxQuat{ PxHalfPi, PxVec3{ 1.0f, 0.0f, 0.0f } };
                         break;
-                    default: 
+                    default:
                         break;
                 }
-
-                shape->setLocalPose(localPose);
+                shape->setLocalPose(PxTransform{ PxVec3{ capsule->capsule.center.x, capsule->capsule.center.y, capsule->capsule.center.z }, rot });
                 ToPhysxIsTrigger(shape, capsule->isTrigger);
-
-                shape->setSimulationFilterData(filterData);
-                shape->setQueryFilterData(filterData);
-
-                if (shape->getActor()) { staticActor = shape->getActor()->is<PxRigidStatic>(); }
+                shape->setSimulationFilterData(filter);
+                shape->setQueryFilterData(filter);
             }
 
-            if (!staticActor) {
-                PxTransform pos{ PxVec3{ trans->LocalTransformation.position.x, trans->LocalTransformation.position.y, trans->LocalTransformation.position.z } };
-                staticActor = PhysicsManager::GetInstance()->GetPhysics()->createRigidStatic(pos);
-                staticActor->userData = reinterpret_cast<void*>(static_cast<std::uintptr_t>(id));
-                PhysicsManager::GetInstance()->GetScene()->addActor(*staticActor);
-                if (BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id)) {
-                    staticActor->attachShape(*static_cast<PxShape*>(box->shape));
+            if (!rb) {
+                PxRigidStatic* actor = nullptr;
+                if (box && box->actor) { actor = static_cast<PxRigidStatic*>(box->actor); }
+                else if (sphere && sphere->actor) { actor = static_cast<PxRigidStatic*>(sphere->actor); }
+                else if (capsule && capsule->actor) { actor = static_cast<PxRigidStatic*>(capsule->actor); }
+
+                glm::vec3 pos = trans->LocalTransformation.position;
+                glm::quat rot{ glm::radians(trans->LocalTransformation.rotation) };
+                PxTransform pxTrans{ PxVec3{ pos.x, pos.y, pos.z }, PxQuat{ rot.x, rot.y, rot.z, rot.w } };
+
+                if (!actor) {
+                    actor = pm->GetPhysics()->createRigidStatic(pxTrans);
+                    pm->GetScene()->addActor(*actor);
+
+                    if (box) { box->actor = actor; }
+                    if (sphere) { sphere->actor = actor; }
+                    if (capsule) { capsule->actor = actor; }
+                } else {
+                    actor->setGlobalPose(pxTrans);
                 }
-                else if (SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id)) {
-                    staticActor->attachShape(*static_cast<PxShape*>(sphere->shape));
+
+                auto HasShape = [](PxRigidActor* actor, PxShape* shape) -> bool {
+                    PxU32 nbShapes = actor->getNbShapes();
+                    std::vector<PxShape*> shapes(nbShapes);
+                    actor->getShapes(shapes.data(), nbShapes);
+                    for (PxU32 i = 0; i < nbShapes; ++i) {
+                        if (shapes[i] == shape) { return true; }
+                    }
+                    return false;
+                };
+
+                if (box && box->shape) {
+                    PxShape* shape = static_cast<PxShape*>(box->shape);
+                    if (!HasShape(actor, shape)) { actor->attachShape(*shape); }
                 }
-                else if (CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id)) {
-                    staticActor->attachShape(*static_cast<PxShape*>(capsule->shape));
+
+                if (sphere && sphere->shape) {
+                    PxShape* shape = static_cast<PxShape*>(sphere->shape);
+                    if (!HasShape(actor, shape)) { actor->attachShape(*shape); }
                 }
-            }
-            else {
-                PxTransform currentPos{ PxVec3{ trans->LocalTransformation.position.x, trans->LocalTransformation.position.y, trans->LocalTransformation.position.z } };
-                staticActor->setGlobalPose(currentPos);
+
+                if (capsule && capsule->shape) {
+                    PxShape* shape = static_cast<PxShape*>(capsule->shape);
+                    if (!HasShape(actor, shape)) { actor->attachShape(*shape); }
+                }
             }
         }
 	}
