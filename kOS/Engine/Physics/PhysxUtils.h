@@ -47,7 +47,7 @@ inline bool HasConstraint(Constraints mask, Constraints flag) {
 	return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(flag)) != 0;
 }
 
-inline PxRigidDynamicLockFlags ToPhysXContraints(Constraints constraints) {
+inline void ToPhysXContraints(PxRigidDynamic* actor, Constraints constraints) {
 	PxRigidDynamicLockFlags flags;
 
 	if (HasConstraint(constraints, Constraints::FreezePositionX)) { flags |= PxRigidDynamicLockFlag::eLOCK_LINEAR_X; }
@@ -58,7 +58,7 @@ inline PxRigidDynamicLockFlags ToPhysXContraints(Constraints constraints) {
 	if (HasConstraint(constraints, Constraints::FreezeRotationY)) { flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y; }
 	if (HasConstraint(constraints, Constraints::FreezeRotationZ)) { flags |= PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z; }
 
-	return flags;
+	actor->setRigidDynamicLockFlags(flags);
 }
 
 inline void ToPhysxCollisionDetectionMode(PxRigidDynamic* actor, CollisionDetectionMode mode) {
@@ -78,6 +78,18 @@ inline void ToPhysxCollisionDetectionMode(PxRigidDynamic* actor, CollisionDetect
 	case CollisionDetectionMode::ContinuousSpeculative:
 		actor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, false);
 		actor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, true);
+		break;
+	}
+}
+
+inline void ToPhysxInterpolation(PxRigidDynamic* actor, InterpolationMode mode) {
+	switch (mode) {
+	case InterpolationMode::Interpolate:
+	case InterpolationMode::Extrapolate:
+		actor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_POSE_INTEGRATION_PREVIEW, true);
+		break;
+	default:
+		actor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_POSE_INTEGRATION_PREVIEW, false);
 		break;
 	}
 }

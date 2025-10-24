@@ -29,7 +29,7 @@ namespace ecs {
 	public:
 		bool isTrigger = false;
 		shapes::Capsule capsule;
-
+		void* actor = nullptr;
 		void* shape = nullptr;
 
 		REFLECTABLE(CapsuleColliderComponent, isTrigger, capsule)

@@ -33,6 +33,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define PHYSICSMANAGER_H
 
 #include "ECS/ECS.h"
+#include "Physics/PhysicsEventCallback.h"
 #include "Physics/PhysxUtils.h"
 #include "PHYSX/PxPhysicsAPI.h"
 
@@ -64,6 +65,10 @@ namespace physics {
 
 		void AddForce(EntityID, const glm::vec3&, ForceMode mode = ForceMode::Force);
 		void AddTorque(EntityID, const glm::vec3&, ForceMode mode = ForceMode::Force);
+
+		CollisionCallbacks* GetCollisionCallbacks(EntityID entity) { return m_eventCallback->RegisterCollisionCallbacks(entity); }
+		TriggerCallbacks* GetTriggerCallbacks(EntityID entity) { return m_eventCallback->RegisterTriggerCallbacks(entity); }
+		void UnregisterCallbacks(EntityID entity) { m_eventCallback->UnregisterCallbacks(entity); }
 	private:
 		PhysicsManager(const PhysicsManager&) = delete;
 		PhysicsManager& operator=(const PhysicsManager&) = delete;
@@ -76,6 +81,7 @@ namespace physics {
 		PxDefaultCpuDispatcher* m_cpuDispatcher = nullptr;
 		PxMaterial* m_defaultMaterial = nullptr;
 		PxControllerManager* m_controllerManager = nullptr;
+		PhysicsEventCallback* m_eventCallback = nullptr;
 
 		float m_fixedDeltaTime = 1.0f / 60.0f;
 		float m_accumulator = 0.0f;

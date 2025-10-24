@@ -107,19 +107,11 @@ namespace Application {
         //resourceManager->GetResource<R_Scene>(windowData.startScene);
         LOGGING_INFO("Load Asset Successful");
 
-
         /*--------------------------------------------------------------
            INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
         GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.windowWidth), static_cast<float>(windowData.windowHeight));
         LOGGING_INFO("Load Graphic Pipeline Successful");
-
-        /*--------------------------------------------------------------
-           INITIALIZE Physics Pipeline
-        --------------------------------------------------------------*/
-        auto physicsManager = physics::PhysicsManager::GetInstance();
-        physicsManager->Init();
-        LOGGING_INFO("Load Physics Pipeline Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE Input
@@ -156,7 +148,6 @@ namespace Application {
         auto scenemanager = scenes::SceneManager::m_GetInstance();
         auto peformance = Peformance::GetInstance();
         auto resourceManager = ResourceManager::GetInstance();
-        auto physicsManager = physics::PhysicsManager::GetInstance();
 
         //float FPSCapTime = 1.f / help->m_fpsCap;
         double lastFrameTime = glfwGetTime();
@@ -206,23 +197,13 @@ namespace Application {
                 ecs->Update(static_cast<float>(fixedDeltaTime));
 
                 /*--------------------------------------------------------------
-                    UPDATE Physics Pipeline
-                --------------------------------------------------------------*/
-                physicsManager->Update(static_cast<float>(fixedDeltaTime));
-
-                /*--------------------------------------------------------------
                     Update IMGUI FRAME
                 --------------------------------------------------------------*/
                 Editor.Update();
                 
                 /*--------------------------------------------------------------
-                    UPDATE Physics Pipeline
+                    UPDATE Render Pipeline
                 --------------------------------------------------------------*/
-                physicsManager->Update(static_cast<float>(fixedDeltaTime));
-
-                 /*--------------------------------------------------------------
-                   UPDATE Render Pipeline
-               --------------------------------------------------------------*/
                 graphicsManager->gm_Update();
 
                 /*--------------------------------------------------------------
@@ -265,8 +246,8 @@ namespace Application {
 	int Application::m_Cleanup() {
 
         ecs::ECS::GetInstance()->Unload();
-        Editor.Shutdown();
         physics::PhysicsManager::GetInstance()->Shutdown();
+        Editor.Shutdown();
         lvWindow.CleanUp();
         glfwTerminate();
 

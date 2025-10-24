@@ -32,7 +32,7 @@ namespace ecs {
 	public:
 		bool isTrigger = false;
 		shapes::Box box;
-
+		void* actor = nullptr;
 		void* shape = nullptr;
 
 		REFLECTABLE(BoxColliderComponent, isTrigger, box)

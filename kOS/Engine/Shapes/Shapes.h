@@ -49,7 +49,6 @@ namespace shapes {
 		glm::vec3 center{ 0.0f };
 		glm::vec3 size{ 1.0f };
 		AABB bounds;
-
 		REFLECTABLE(Box, center, size)
 	};
 
