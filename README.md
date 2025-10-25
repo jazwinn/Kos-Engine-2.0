@@ -6,7 +6,7 @@
 ![Pipeline](https://img.shields.io/badge/CI-Bitbucket%20Pipelines-blue.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
-KosEngine 2.0 is a ongoing **modular, high-performance 3D game engine** built with **modern C++**, featuring **compile-time reflection**, a **powerful asset system**, and **robust 3D rendering architecture**.  
+KosEngine 2.0 is an ongoing **modular, high-performance 3D game engine** built with **modern C++**, featuring **compile-time reflection**, a **powerful asset system**, **PhysX integration**, and a **robust 3D rendering architecture**. 
 
 This release focuses on **performance, scalability**, and **automated testing** through **Bitbucket Pipelines**.  
 
