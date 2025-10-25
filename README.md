@@ -1,4 +1,4 @@
-# 🧩 KosEngine 2.0  
+# 👾 KosEngine 2.0  
 
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue.svg)
 ![CMake](https://img.shields.io/badge/Build-CMake-green.svg)
@@ -11,6 +11,9 @@ KosEngine 2.0 is an ongoing **modular, high-performance 3D game engine** built w
 This release focuses on **performance, scalability**, and **automated testing** through **Bitbucket Pipelines**.  
 
 ---
+## Preview
+<img width="1898" height="1000" alt="Screenshot 2025-10-26 010148" src="https://github.com/user-attachments/assets/cb1a4833-d7f2-41c8-9c9c-f4f5ea328fe2" />
+
 
 ## 🚀 Features  
 
@@ -37,3 +40,15 @@ This release focuses on **performance, scalability**, and **automated testing** 
 ### 🧪 Testing  
 - Integrated **GoogleTest** framework  
 - Automated **Bitbucket Pipeline** build & test validation  
+
+## Usage
+1. In the Root Folder, run either **Build&Run-Debug.bat** or **Build&Run-Release.bat**
+2. Change Direction to the bin
+```bash
+cd ./kOs/bin
+```
+3. Launch Kos_Editor.exe
+```bash
+./Kos_Editor.exe
+```
+
