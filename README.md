@@ -37,8 +37,3 @@ This release focuses on **performance, scalability**, and **automated testing** 
 ### 🧪 Testing  
 - Integrated **GoogleTest** framework  
 - Automated **Bitbucket Pipeline** build & test validation  
-
----
-
-## 🧩 Project Structure  
-
