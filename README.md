@@ -41,6 +41,11 @@ This release focuses on **performance, scalability**, and **automated testing** 
 - Integrated **GoogleTest** framework  
 - Automated **Bitbucket Pipeline** build & test validation  
 
+## Prerequisites
+Before you begin, make sure you have the following installed:
+- **Windows 10/11**
+- **Cmake**
+
 ## Usage
 1. In the Root Folder, run either **Build&Run-Debug.bat** or **Build&Run-Release.bat**
 2. Change Direction to the bin
