@@ -1,3 +1,50 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6b8dbacca92fb828b2320832141f6de0e9de0efceec7f3915e2ab7d611ac0afb
-size 1017
+/****************************************************************************
+ *
+ * svwinfnt.h
+ *
+ *   The FreeType Windows FNT/FONT service (specification).
+ *
+ * Copyright (C) 2003-2024 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
+
+
+#ifndef SVWINFNT_H_
+#define SVWINFNT_H_
+
+#include <freetype/internal/ftserv.h>
+#include <freetype/ftwinfnt.h>
+
+
+FT_BEGIN_HEADER
+
+
+#define FT_SERVICE_ID_WINFNT  "winfonts"
+
+  typedef FT_Error
+  (*FT_WinFnt_GetHeaderFunc)( FT_Face               face,
+                              FT_WinFNT_HeaderRec  *aheader );
+
+
+  FT_DEFINE_SERVICE( WinFnt )
+  {
+    FT_WinFnt_GetHeaderFunc  get_header;
+  };
+
+  /* */
+
+
+FT_END_HEADER
+
+
+#endif /* SVWINFNT_H_ */
+
+
+/* END */

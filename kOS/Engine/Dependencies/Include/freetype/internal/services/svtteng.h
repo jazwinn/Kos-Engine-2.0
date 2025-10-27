@@ -1,3 +1,53 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a8ae2727dd9d05a08ddc18d72e294607ddbc9f95e92b5be8b6480fbcba3d908a
-size 1007
+/****************************************************************************
+ *
+ * svtteng.h
+ *
+ *   The FreeType TrueType engine query service (specification).
+ *
+ * Copyright (C) 2006-2024 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
+
+
+#ifndef SVTTENG_H_
+#define SVTTENG_H_
+
+#include <freetype/internal/ftserv.h>
+#include <freetype/ftmodapi.h>
+
+
+FT_BEGIN_HEADER
+
+
+  /*
+   * SFNT table loading service.
+   */
+
+#define FT_SERVICE_ID_TRUETYPE_ENGINE  "truetype-engine"
+
+  /*
+   * Used to implement FT_Get_TrueType_Engine_Type
+   */
+
+  FT_DEFINE_SERVICE( TrueTypeEngine )
+  {
+    FT_TrueTypeEngineType  engine_type;
+  };
+
+  /* */
+
+
+FT_END_HEADER
+
+
+#endif /* SVTTENG_H_ */
+
+
+/* END */

@@ -41,9 +41,7 @@ void gui::ImGuiHandler::DrawMainMenuBar() {
             }
            
             if (ImGui::MenuItem("Save Scene")) {
-
-                scenemanager->SaveAllActiveScenes();
-
+                scenemanager->SaveAllActiveScenes(true);
             }
 
 

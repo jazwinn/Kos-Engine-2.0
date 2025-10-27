@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b2b9899a0b3e5a01ab80269cbb6e543f2aa786c4656ad40a649064f743e198c6
-size 1009
+/// @brief Include to load KMG textures from files or memory.
+/// @file gli/load_kmg.hpp
+
+#pragma once
+
+#include "texture.hpp"
+
+namespace gli
+{
+	/// Loads a texture storage_linear from KMG (Khronos Image) file. Returns an empty storage_linear in case of failure.
+	///
+	/// @param Path Path of the file to open including filaname and filename extension
+	texture load_kmg(char const* Path);
+
+	/// Loads a texture storage_linear from KMG (Khronos Image) file. Returns an empty storage_linear in case of failure.
+	///
+	/// @param Path Path of the file to open including filaname and filename extension
+	texture load_kmg(std::string const& Path);
+
+	/// Loads a texture storage_linear from KMG (Khronos Image) memory. Returns an empty storage_linear in case of failure.
+	///
+	/// @param Data Pointer to the beginning of the texture container data to read
+	/// @param Size Size of texture container Data to read
+	texture load_kmg(char const* Data, std::size_t Size);
+}//namespace gli
+
+#include "./core/load_kmg.inl"

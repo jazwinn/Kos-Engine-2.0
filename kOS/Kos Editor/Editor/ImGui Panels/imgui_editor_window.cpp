@@ -43,7 +43,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Editor/EditorCamera.h"
 #include "Resources/ResourceManager.h"
-#include "Resources/Prefab.h"
+#include "AssetManager/Prefab.h"
 
 #include "ECS/Hierachy.h"
 

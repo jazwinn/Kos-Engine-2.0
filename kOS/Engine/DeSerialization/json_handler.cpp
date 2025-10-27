@@ -102,6 +102,7 @@ namespace Serialization {
 				//load scene data
 				SceneData sceneData;
 				LoadComponentreflect(&sceneData, entityData);
+				std::cout << scenename << " has been loaded" << std::endl;
 				ecs::ECS::GetInstance()->AddScene(scenename, sceneData);
 				//load physics layer
 				physicslayer::PhysicsLayer::m_GetInstance()->LoadCollisionLayer(sceneData.collisionData);
@@ -125,16 +126,11 @@ namespace Serialization {
 		// Create JSON object to hold the updated values
 		rapidjson::Document doc;
 
-
-
-
 		if (!doc.IsArray()) {
 			doc.SetArray();  // Initialize as an empty array
 		}
 
-
 		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-
 
 		//save scene data
 		auto sceneName = scene.filename().string();

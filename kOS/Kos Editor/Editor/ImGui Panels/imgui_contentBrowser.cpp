@@ -25,6 +25,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Application/ApplicationData.h"
 #include "Inputs/Input.h"
 #include "Configs/ConfigPath.h"
+#include "AssetManager/Prefab.h"
 
 namespace gui {
 
@@ -46,7 +47,7 @@ namespace gui {
 
 				if (newDirectory == *filename) return;
 				std::filesystem::path destinationFile = newDirectory / filename->filename();
-				
+
 				std::filesystem::rename(*filename, destinationFile);
 
 			}
@@ -74,7 +75,7 @@ namespace gui {
 
 		ImGui::Button(directoryString.c_str(), { thumbnail ,thumbnail });
 
-		};
+	};
 
 	void ImGuiHandler::DrawContentBrowser() {
 
@@ -85,251 +86,227 @@ namespace gui {
 		static std::filesystem::path assetDirectory = assetmanager->GetAssetManagerDirectory(); // TO change
 		static std::filesystem::path currentDirectory = assetDirectory;
 
-		ImGui::Begin("Content Browser");
+		if (ImGui::Begin("Content Browser")) {
+			if (ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, ImGui::GetContentRegionAvail().y), ImGuiChildFlags_Border)) {
+				static bool isSelected{ false };
+				for (auto& directoryPath : std::filesystem::directory_iterator(assetDirectory)) {
+					std::string directoryString = directoryPath.path().filename().string();
+					isSelected = ImGui::Selectable(directoryString.c_str());
+					MoveFolder(assetDirectory / directoryPath.path().filename());
 
-		{
-			ImGui::BeginChild("ChildL", ImVec2(ImGui::GetContentRegionAvail().x * 0.2f, ImGui::GetContentRegionAvail().y), ImGuiChildFlags_Border);
-			static bool isSelected{ false };
-			for (auto& directoryPath : std::filesystem::directory_iterator(assetDirectory)) {
-				std::string directoryString = directoryPath.path().filename().string();
-				isSelected = ImGui::Selectable(directoryString.c_str());
-				MoveFolder(assetDirectory/directoryPath.path().filename());
-
-				if (isSelected) {
-
-					if (std::filesystem::is_directory(directoryPath)) {
+					if (std::filesystem::is_directory(directoryPath) && isSelected) {
 						currentDirectory = assetDirectory / directoryPath.path().filename();
 						//reset search string
 						searchString.clear();
 					}
 				}
+				ImGui::EndChild();
 			}
-			ImGui::EndChild();
-		}
-		ImGui::SameLine();
 
-		{
-			ImGui::BeginChild("ChildLa", ImVec2(0, ImGui::GetContentRegionAvail().y) , 0 , ImGuiWindowFlags_MenuBar);
+			ImGui::SameLine();
 
-			if (ImGui::BeginPopupContextWindow()) {
-				if (ImGui::MenuItem("Add Folder")) {
+			if (ImGui::BeginChild("ChildLa", ImVec2(0, ImGui::GetContentRegionAvail().y), 0, ImGuiWindowFlags_MenuBar)) {
+				if (ImGui::BeginPopupContextWindow()) {
+					if (ImGui::MenuItem("Add Folder")) {
+						std::string path = "/New Folder";
 
-					std::string path = "/New Folder";
+						int count{ 1 };
+						while (std::filesystem::exists(currentDirectory.string() + path)) {
+							path = "/New Folder_" + std::to_string(count++);
+						}
 
-					int count{1};
-					while (std::filesystem::exists(currentDirectory.string() + path)) {
-						path = "/New Folder_" + std::to_string(count++);
+						if (std::filesystem::create_directories(currentDirectory.string() + path)) {
+
+							LOGGING_INFO("Directory created successfully!");
+						}
+						else {
+							LOGGING_ERROR("Directory already exists or failed to create!");
+						}
+
 					}
-
-					if (std::filesystem::create_directories(currentDirectory.string() + path)) {
-
-						LOGGING_INFO("Directory created successfully!");
+					if (ImGui::MenuItem("Reload Browser")) {
+						//TODO: reload browser
 					}
-					else {
-						LOGGING_ERROR("Directory already exists or failed to create!");
-					}
-
+					ImGui::EndPopup();
 				}
-				if (ImGui::MenuItem("Reload Browser")) {
-					//TODO: reload browser
+
+				//search bar
+				if (m_prefabSceneMode)searchString.clear();
+
+				//menu bar for search
+				if (ImGui::BeginMenuBar()) {
+					ImGui::Text("Search:");
+					ImGui::SameLine(); // Keep the next widget on the same line
+					ImGui::SetNextItemWidth(300);
+					if (ImGui::InputText("##4312Search", &searchString)) {}
+					ImGui::EndMenuBar(); // End menu bar
 				}
-				ImGui::EndPopup();
-			}
 
-			//search bar
-			if (m_prefabSceneMode)searchString.clear();
-
-			//menu bar for search
-
-			if (ImGui::BeginMenuBar()) {
-				ImGui::Text("Search:");
-				ImGui::SameLine(); // Keep the next widget on the same line
-				ImGui::SetNextItemWidth(300);
-				if (ImGui::InputText("##4312Search", &searchString)) {
-
-				}
-				ImGui::EndMenuBar(); // End menu bar
-			}
-
-			//back button
-			
-			if (currentDirectory != assetDirectory) {
-				bool open = ImGui::Button("Back");
-				MoveFolder(currentDirectory.parent_path());
-				if (open) {
-					currentDirectory = currentDirectory.parent_path();
-					searchString.clear();
-				}
-				
-			}
-			else {
-				ImGui::NewLine();
-			}
-
-
-			float cellsize = padding + thumbnail;
-
-			float panelwidth = ImGui::GetContentRegionAvail().x;
-			int columns = (int)(panelwidth / cellsize);
-			if (columns <= 0) {
-				columns = 1;
-			}
-			ImGui::Columns(columns, 0, false);
-
-
-
-
-			for (auto& directoryPath : std::filesystem::directory_iterator(currentDirectory)) {
-				std::string directoryString = directoryPath.path().filename().string();
-
-				//skip if file is not same as search and skip .meta files
-				if (!searchString.empty() && !containsSubstring(directoryString, searchString) || 
-					directoryPath.path().filename().extension().string() == ".meta") {
-
-
-					continue;
-				}
-				
-
-				if (directoryPath.is_directory()) {
-					// if a folder
-					textorimage(directoryString, fileIcon);
-					
-					MoveFolder(currentDirectory / directoryPath.path().filename());
-
-
-					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-						currentDirectory /= directoryPath.path().filename();
-
-						//reset search
+				//back button		
+				if (currentDirectory != assetDirectory) {
+					bool open = ImGui::Button("Back");
+					MoveFolder(currentDirectory.parent_path());
+					if (open) {
+						currentDirectory = currentDirectory.parent_path();
 						searchString.clear();
 					}
+
 				}
 				else {
-					//case for prefabs and scene
-					if (directoryPath.path().filename().extension().string() == ".prefab") {
-						std::string prefab = "";
-						textorimage(std::string(directoryPath.path().filename().extension().string() + "##" + directoryPath.path().filename().string()).c_str(), prefab);
-
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-							//skip if active scene is filename
-							if (m_activeScene == directoryPath.path().filename())continue;
-
-							const auto& prefabscene = ecs->sceneMap.find(directoryPath.path().filename().string());
-							if (prefabscene == ecs->sceneMap.end()) {
-								LOGGING_ERROR("Prefab not loaded");
-								continue;
-							}
-
-							//skip if prefab mode alraedy true
-							if (!m_prefabSceneMode) {
-								m_savedSceneState.clear();
-								for (auto& scene : ecs->sceneMap) {
-									if (scene.second.isPrefab == false) {
-										//save all scenes active state
-										m_savedSceneState[scene.first] = scene.second.isActive;
-									}
-								}
-
-							}
-
-							// clear save scene state
-
-							// unload all regular scenes
-							for (auto& scene : ecs->sceneMap) {
-								scene.second.isActive = false;
-							}
-
-							// set prefab to active
-							prefabscene->second.isActive = true;
-
-							//set prefab as active scene
-							m_activeScene = directoryPath.path().filename().string();
-
-							m_prefabSceneMode = true;
-
-							m_clickedEntityId = -1;
-						}
-					}
-					else if (directoryPath.path().filename().extension().string() == ".json") {
-						std::string script;
-						textorimage(directoryString, script);
-
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-
-							scenemanager->ClearAllScene();
-							scenemanager->LoadScene(directoryPath.path());
-							if (!m_prefabSceneMode) {
-								m_activeScene = directoryPath.path().filename().string();
-							}
-							else {
-								ecs::ECS::GetInstance()->sceneMap.find(directoryPath.path().filename().string())->second.isActive = false;
-								m_savedSceneState[directoryPath.path().filename().string()] = true;
-							}
-
-							m_clickedEntityId = -1;
-
-						}
-					}
-					else  {
-
-						textorimage(directoryString, std::string());
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-							std::filesystem::path metaPath = directoryPath.path().string() + ".meta";
-							if (std::filesystem::exists(metaPath)) {
-								selectedAsset = Serialization::ReadJsonFile<AssetData>(metaPath.string());
-								AssetPath = metaPath;
-							}
-							
-
-						}
-						
-					}
-
-
+					ImGui::NewLine();
 				}
-				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+
+				float cellsize = padding + thumbnail;
+				float panelwidth = ImGui::GetContentRegionAvail().x;
+				int columns = (int)(panelwidth / cellsize);
+				if (columns <= 0) {
+					columns = 1;
+				}
+				ImGui::Columns(columns, 0, false);
+
+				// Render Icons (Folder or Files)
+				for (auto& directoryPath : std::filesystem::directory_iterator(currentDirectory)) {
+					std::string directoryString = directoryPath.path().filename().string();
+
+					//skip if file is not same as search and skip .meta files
+					if (!searchString.empty() && !containsSubstring(directoryString, searchString) ||
+						directoryPath.path().filename().extension().string() == ".meta") {
+						continue;
+					}
+
+					if (directoryPath.is_directory()) {
+						// if a folder
+						textorimage(directoryString, fileIcon);
+						MoveFolder(currentDirectory / directoryPath.path().filename());
 
 
-					std::string GUID = assetmanager->GetGUIDfromFilePath(directoryPath.path());
-
-					if (!GUID.empty()) {
-						ImGui::SetDragDropPayload("file", GUID.c_str(), GUID.size() + 1);
-						ImGui::Text(GUID.c_str());
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+							currentDirectory /= directoryPath.path().filename();
+							//reset search
+							searchString.clear();
+						}
 					}
 					else {
-						std::string filepath = directoryPath.path().string();
-						ImGui::SetDragDropPayload("file", filepath.c_str(), filepath.size() + 1);
-						ImGui::Text(filepath.c_str());
-					}
-					
+						//case for prefabs and scene
+						if (directoryPath.path().filename().extension().string() == ".prefab") {
+							std::string prefab = "";
+							textorimage(std::string(directoryPath.path().filename().extension().string() + "##" + directoryPath.path().filename().string()).c_str(), prefab);
 
-					
-					ImGui::EndDragDropSource();
-				}
+							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+								//skip if active scene is filename
+								if (m_activeScene == directoryPath.path().filename())continue;
 
-				//create context window
-				static bool rename = false;
-				static std::filesystem::path selectedfile{};
-				if (ImGui::BeginPopupContextItem()) {
-					if (ImGui::MenuItem("Rename")) {
-						rename = true;
-						selectedfile = directoryString;
-					}
-					if (ImGui::MenuItem("Delete")) {
-						std::filesystem::remove_all(directoryPath.path());
-					}
-					if (!directoryPath.is_directory()) {
+								const auto& prefabscene = ecs->sceneMap.find(directoryPath.path().filename().string());
+								if (prefabscene == ecs->sceneMap.end()) {
+									LOGGING_ERROR("Prefab not loaded");
+									continue;
+								}
 
-						//if (ImGui::BeginMenu("Compile"))
-						//{
-						//	if (ImGui::MenuItem("Compile"))
-						//	{
-						//		assetmanager->Compilefile(directoryPath);
-						//	}
-						//	ImGui::EndMenu();
-						//}
-						const auto& compilerMap = assetmanager->GetCompilerMap();
+								//skip if prefab mode alraedy true
+								if (!m_prefabSceneMode) {
+									m_savedSceneState.clear();
+									for (auto& scene : ecs->sceneMap) {
+										if (scene.second.isPrefab == false) {
+											//save all scenes active state
+											m_savedSceneState[scene.first] = scene.second.isActive;
+										}
+									}
+
+								}
+
+								// clear save scene state
+
+								// unload all regular scenes
+								for (auto& scene : ecs->sceneMap) {
+									scene.second.isActive = false;
+								}
+
+								// set prefab to active
+								prefabscene->second.isActive = true;
+
+								// Duplicate Entity and add it into original scene. Will be removed when m_prefabSceneMode is set back to false. 
+								// (Duped Entity used to check if any edits has been made to prefab)
+								duppedID = ecs::ECS::GetInstance()->DuplicateEntity(prefabscene->second.prefabID, m_activeScene);
+								ecs::ECS::GetInstance()->GetComponent<ecs::NameComponent>(duppedID)->prefabName = prefabscene->first;
+
+								//set prefab as active scene
+								m_activeScene = directoryPath.path().filename().string();
+
+								m_prefabSceneMode = true;
+
+								m_clickedEntityId = -1;
+							}
+						}
+						else if (directoryPath.path().filename().extension().string() == ".json") {
+							std::string script;
+							textorimage(directoryString, script);
+
+							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+
+								scenemanager->ClearAllScene();
+								scenemanager->LoadScene(directoryPath.path());
+								if (!m_prefabSceneMode) {
+									m_activeScene = directoryPath.path().filename().string();
+								}
+								else {
+									ecs::ECS::GetInstance()->sceneMap.find(directoryPath.path().filename().string())->second.isActive = false;
+									m_savedSceneState[directoryPath.path().filename().string()] = true;
+								}
+
+								m_clickedEntityId = -1;
+
+							}
+						}
+						else {
+
+							textorimage(directoryString, std::string());
+							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+								std::filesystem::path metaPath = directoryPath.path().string() + ".meta";
+								if (std::filesystem::exists(metaPath)) {
+									selectedAsset = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+									AssetPath = metaPath;
+								}
+							}
+						}
+					}
+
+					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+						std::string GUID = assetmanager->GetGUIDfromFilePath(directoryPath.path());
+
+						if (!GUID.empty()) {
+							ImGui::SetDragDropPayload("file", GUID.c_str(), GUID.size() + 1);
+							ImGui::Text(GUID.c_str());
+						}	
+						else {
+							std::string filepath = directoryPath.path().string();
+							ImGui::SetDragDropPayload("file", filepath.c_str(), filepath.size() + 1);
+							ImGui::Text(filepath.c_str());
+						}
+						ImGui::EndDragDropSource();
+					}
+
+					//create context window
+					static bool rename = false;
+					static std::filesystem::path selectedfile{};
+					if (ImGui::BeginPopupContextItem()) {
+						if (ImGui::MenuItem("Rename")) {
+							rename = true;
+							selectedfile = directoryString;
+						}
+						if (ImGui::MenuItem("Delete")) {
+							std::filesystem::remove_all(directoryPath.path());
+						}
+						if (!directoryPath.is_directory()) {
+
+							//if (ImGui::BeginMenu("Compile"))
+							//{
+							//	if (ImGui::MenuItem("Compile"))
+							//	{
+							//		assetmanager->Compilefile(directoryPath);
+							//	}
+							//	ImGui::EndMenu();
+							//}
+							const auto& compilerMap = assetmanager->GetCompilerMap();
 
 						if(compilerMap.find(directoryPath.path().filename().extension().string()) != compilerMap.end())
 						{
@@ -351,102 +328,110 @@ namespace gui {
 					if (directoryPath.path().filename().extension().string() == ".json" && ImGui::MenuItem("Set as Startup Scene")) {
 
 
-						std::filesystem::path metaPath = directoryPath.path().string() + ".meta";
+							std::filesystem::path metaPath = directoryPath.path().string() + ".meta";
 
-						if (!std::filesystem::exists(metaPath)) {
-							LOGGING_POPUP("Meta file does not exist, Compile First");
+							if (!std::filesystem::exists(metaPath)) {
+								LOGGING_POPUP("Meta file does not exist, Compile First");
+							}
+
+							WindowSettings data = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
+							AssetData assetData = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+
+							data.startScene = assetData.GUID;
+
+							Serialization::WriteJsonFile<WindowSettings>(configpath::configFilePath, &data, true);
 						}
 
-						WindowSettings data = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
-						AssetData assetData = Serialization::ReadJsonFile<AssetData>(metaPath.string());
 
-						data.startScene = assetData.GUID;
-						
-						Serialization::WriteJsonFile<WindowSettings>(configpath::configFilePath, &data, true);
+						ImGui::EndPopup();
 					}
 
 
-					ImGui::EndPopup();
-				}
+					if (rename && (selectedfile.string() == directoryString)) {
+						if (ImGui::InputText("##rename", m_charBuffer, IM_ARRAYSIZE(m_charBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+							//TODO check if file has extension, keep the extension
+							std::string extension{};
+							if (!directoryPath.is_directory()) {
+								extension = directoryPath.path().filename().extension().string();
+								ImGui::SameLine();
+								ImGui::Text(extension.c_str());
+							}
+
+							std::filesystem::path path = std::filesystem::current_path();
+							std::string newpath = path.string() + "\\" + currentDirectory.string() + "\\" + m_charBuffer + extension;
+							std::string oldpath = path.string() + "\\" + currentDirectory.string() + "\\" + directoryString;
 
 
-				if (rename && (selectedfile.string() == directoryString)) {
-					if (ImGui::InputText("##rename", m_charBuffer, IM_ARRAYSIZE(m_charBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-						//TODO check if file has extension, keep the extension
-						std::string extension{};
-						if (!directoryPath.is_directory()) {
-							extension = directoryPath.path().filename().extension().string();
-							ImGui::SameLine();
-							ImGui::Text(extension.c_str());
+							LOGGING_INFO("RENAME WIP");
+							//assetmanager->m_RenameAsset(oldpath, newpath);
+
+							rename = false;
+							selectedfile.clear();
+
+							//TODO edge cases,
+							//Update assets if any of them are renamed
 						}
-
-						std::filesystem::path path = std::filesystem::current_path();
-						std::string newpath = path.string() + "\\" + currentDirectory.string() + "\\" + m_charBuffer + extension;
-						std::string oldpath = path.string() + "\\" + currentDirectory.string() + "\\" + directoryString;
-
-
-						LOGGING_INFO("RENAME WIP");
-						//assetmanager->m_RenameAsset(oldpath, newpath);
-
-						rename = false;
-						selectedfile.clear();
-
-						//TODO edge cases,
-						//Update assets if any of them are renamed
 					}
+					else {
+						ImGui::SetWindowFontScale(0.8f);
+						ImGui::Text(directoryPath.path().filename().stem().string().c_str());
+						ImGui::SetWindowFontScale(1.f);
+					}
+					ImGui::NextColumn();
 				}
-				else {
-					ImGui::SetWindowFontScale(0.8f);
-					ImGui::Text(directoryPath.path().filename().stem().string().c_str());
-					ImGui::SetWindowFontScale(1.f);
-				}
-				ImGui::NextColumn();
-			}
 
-			//allow drag and drop on child directory
-			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows)) {
-				if (!Input::InputSystem::inputSystem->droppedFiles.empty()) {
-					for (const auto& file : Input::InputSystem::inputSystem->droppedFiles) {
-						std::filesystem::path source = file;
-						std::filesystem::path destination = currentDirectory;
+				//allow drag and drop on child directory
+				if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows)) {
+					if (!Input::InputSystem::inputSystem->droppedFiles.empty()) {
+						for (const auto& file : Input::InputSystem::inputSystem->droppedFiles) {
+							std::filesystem::path source = file;
+							std::filesystem::path destination = currentDirectory;
 
-						if (!std::filesystem::exists(source)) {
-							LOGGING_WARN("Source directory does not exist ");
-						}
-						else {
-							if (std::filesystem::is_directory(source)) {
-								destination /= source.filename();
-								if (std::filesystem::exists(destination)) {
-									LOGGING_WARN("Directory already exists");
+							if (!std::filesystem::exists(source)) {
+								LOGGING_WARN("Source directory does not exist ");
+							}
+							else {
+								if (std::filesystem::is_directory(source)) {
+									destination /= source.filename();
+									if (std::filesystem::exists(destination)) {
+										LOGGING_WARN("Directory already exists");
+										continue;
+									}
+								}
+
+								if (std::filesystem::exists(destination / source.filename())) {
+									LOGGING_WARN("Directory already in folder");
 									continue;
 								}
+
+								// Copy directory and all contents recursively
+								std::filesystem::copy(source, destination, std::filesystem::copy_options::recursive);
+
+								//load new asset
+								assetmanager->RegisterAsset(destination / source.filename());
 							}
 
-							if (std::filesystem::exists(destination/source.filename())) {
-								LOGGING_WARN("Directory already in folder");
-								continue;
-							}
-
-							// Copy directory and all contents recursively
-							std::filesystem::copy(source, destination, std::filesystem::copy_options::recursive);
-
-							//load new asset
-							assetmanager->RegisterAsset(destination/source.filename());
 						}
-
+						// Clear the vector if you want to reset after displaying
+						Input::InputSystem::inputSystem->droppedFiles.clear();
 					}
-					// Clear the vector if you want to reset after displaying
-					Input::InputSystem::inputSystem->droppedFiles.clear();
 				}
+				ImGui::EndChild();
 			}
 
-
-
-			ImGui::EndChild();
+			// Drag and Drop Interaction for Creating New Prefabs
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity"))
+				{
+					IM_ASSERT(payload->DataSize == sizeof(ecs::EntityID));
+					LOGGING_DEBUG("Dropping To Save Prefab");
+					ecs::EntityID id = *static_cast<ecs::EntityID*>(payload->Data);
+					prefab::Prefab::m_SaveEntitytoPrefab(id);
+				}
+				ImGui::EndDragDropTarget();
+			}
 		}
-
-
 		ImGui::End();
 	}
-
 }

@@ -21,7 +21,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Editor.h"
 #include "ECS/ECS.h"
 #include "Resources/ResourceManager.h"
-#include "Resources/Prefab.h"
+#include "AssetManager/Prefab.h"
 #include "ECS/Layers.h"
 #include "Editor/WindowFile.h"
 
@@ -30,7 +30,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 
 void DrawFieldComponent(ecs::Component* component, const std::string& ComponentName, ecs::EntityID entityID);
-
 
 void gui::ImGuiHandler::DrawComponentWindow()
 {
@@ -100,7 +99,6 @@ void gui::ImGuiHandler::DrawComponentWindow()
                                   m_ecs->layersStack.m_layerMap[layer::LAYER3].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER4].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER5].first.c_str(),
                                   m_ecs->layersStack.m_layerMap[layer::LAYER6].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER7].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER8].first.c_str() };
 
-
             std::vector<const char*> layers_vec;
             for (const auto& _layer : m_ecs->layersStack.m_layerMap) {
                 layers_vec.push_back(_layer.second.first.c_str());
@@ -108,15 +106,12 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
             int layer_current = nc->Layer;
             if (ImGui::Combo("Layers", &layer_current, layers_vec.data(), static_cast<int>(layers_vec.size()))) {
-                m_ecs->layersStack.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);
-               
+                m_ecs->layersStack.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);  
             }
 
             // Convert vector to array of char* for ImGui
             std::vector<const char*> tag_Names(m_tags.size());
-            std::transform(m_tags.begin(), m_tags.end(), tag_Names.begin(), [](const std::string& tag) {
-                return tag.c_str();
-                });
+            std::transform(m_tags.begin(), m_tags.end(), tag_Names.begin(), [](const std::string& tag) {  return tag.c_str(); });
 
             int item{};
             const auto& it = std::find(tag_Names.begin(), tag_Names.end(), nc->entityTag);
@@ -138,23 +133,51 @@ void gui::ImGuiHandler::DrawComponentWindow()
             if (nc->isPrefab && !m_prefabSceneMode) {
                 auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(entityID);
                 if (!tc->m_haveParent || !m_ecs->GetComponent<ecs::NameComponent>(tc->m_parentID)->isPrefab) {
-                    if (ImGui::Button("Overwrite")) {
-
-                        prefab::Prefab::m_OverWriteScenePrafab(entityID);
-
+                    static bool isHeaderOpen = false;
+                    static std::vector<std::string> diffComp;
+                    bool open = false;
+                    std::string headerName = nc->prefabName + " [Changed]";
+                    int IMGUI_ID = 0;
+                    if (open = ImGui::CollapsingHeader(headerName.c_str())) {
+                        for (const auto& compName : diffComp) {
+                            if (compName == ecs::NameComponent::classname()) continue;
+                            ImGui::TextDisabled(compName.c_str());
+                            ImGui::SameLine();
+                            ImGui::PushID(IMGUI_ID++);
+                            if(ImGui::Button("Revert")){
+                                // Look for component of prefab and set data into me
+                                prefab::Prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
+                                prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Overwrite")) {
+                                // Look for component of prefab and set data from me
+                                prefab::Prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
+                                prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                            }
+                            ImGui::PopID();
+                        }
+                        //if (ImGui::Button("Overwrite All")) {
+                        //    prefab::Prefab::m_OverWriteScenePrefab(entityID);
+                        //}
+                        //ImGui::SameLine();
+                        //if (ImGui::Checkbox("Sync", &nc->syncPrefab)) {
+                        //    prefab::Prefab::m_UpdateAllPrefabEntity(nc->prefabName);
+                        //}
                     }
-                    ImGui::SameLine();
-
-                    if (ImGui::Checkbox("Sync", &nc->syncPrefab)) {
-
-                        prefab::Prefab::m_UpdateAllPrefabEntity(nc->prefabName);
+                    
+                    if (isHeaderOpen != open) { // Needed to show change in state
+                        if (open) {
+                            prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                        }
+                        else {
+                            diffComp.clear();
+                        }
+                        isHeaderOpen = open;
                     }
                 }
                 
-                const char* buf = nc->prefabName.c_str();
-                ImGui::InputText("##readonlytext", (char*)buf, strlen(buf), ImGuiInputTextFlags_ReadOnly);
             }
-
         }
 
         const auto& componentKey = m_ecs->GetComponentKeyData();
@@ -190,14 +213,10 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
             if (ImGui::BeginDragDropTarget())
             {
-
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file"))
                 {
                     IM_ASSERT(payload->DataSize == sizeof(std::filesystem::path));
                     std::filesystem::path* filename = static_cast<std::filesystem::path*>(payload->Data);
-
- 
-
                 }
                 ImGui::EndDragDropTarget();
             }

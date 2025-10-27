@@ -38,9 +38,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Config/ComponentRegistry.h"
 
 namespace scenes {
-
     std::shared_ptr<SceneManager> SceneManager::m_InstancePtr = nullptr;
-
 
     bool SceneManager::CreateNewScene(std::filesystem::path scene)
     {
@@ -116,8 +114,6 @@ namespace scenes {
         for (auto& scenes : sce) {
             ClearScene(scenes);
         }
-
-
     }
 
     std::vector<std::filesystem::path> SceneManager::GetAllScenesPath() {
@@ -148,8 +144,6 @@ namespace scenes {
         for (auto& scenes : sce) {
             ImmediateClearScene(scenes);
         }
-
-
     }
 
     void SceneManager::ClearScene(std::string scene)
@@ -163,12 +157,10 @@ namespace scenes {
         if (scenepath != loadScenePath.end()) {
             Serialization::SaveScene(scenepath->second.string());
         }
-       
-
     }
+
     void SceneManager::SaveAllActiveScenes(bool includeprefab)
     {
-
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->GetState() != ecs::STOP) {
             LOGGING_WARN("Cannot save scene while in play mode");
@@ -180,11 +172,7 @@ namespace scenes {
             if (includeprefab && scenes.second.isPrefab) continue;
             SaveScene(scenes.first);
         }
-       
-
     }
-
-
 
 	void SceneManager::Update()
 	{

@@ -21,7 +21,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "ECS/ECSList.h"
 
-
 namespace prefab {
 
 	class Prefab {
@@ -73,15 +72,26 @@ namespace prefab {
 
 		/******************************************************************/
 		/*!
-			\fn        void m_OverWriteScenePrafab(ecs::EntityID id)
+			\fn        void m_OverWriteScenePrefab(ecs::EntityID id)
 			\brief     Overwrites an existing prefab scene with a new prefab entity.
 			\param[in] id The ID of the new entity to use for the prefab.
 			\details   Deletes the existing prefab instance, duplicates the new entity to the scene, and saves the scene.
 		*/
 		/******************************************************************/
-		static void m_OverWriteScenePrafab(ecs::EntityID id);
+		static void m_OverWriteScenePrefab(ecs::EntityID id);
 
 		//static void m_AssignEntitytoPrefab(std::string prefab, ecs::EntityID id);
+		/******************************************************************/
+		/*!
+			\fn        void LoadAllPrefabs()
+			\brief     Loads All Prefab files stored in Editor Prefab Folders into memory
+		*/
+		/******************************************************************/
+		static void OverwritePrefab_Component(ecs::EntityID id, std::string componentName, std::string prefabSceneName);
+		static void RevertToPrefab_Component(ecs::EntityID id, std::string componentName, std::string prefabSceneName);
+		static void LoadAllPrefabs();
+		static ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
+		static void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);
 
 	private:
 

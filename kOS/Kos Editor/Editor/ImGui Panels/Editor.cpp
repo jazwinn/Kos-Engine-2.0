@@ -36,7 +36,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Editor.h"
 #include "Editor/EditorCamera.h"
 #include "Inputs/Input.h"
-#include "Resources/Prefab.h"
+#include "AssetManager/Prefab.h"
 #include "AssetManager/AssetManager.h"
 #include "Editor/WindowFile.h"
 #include "Graphics/GraphicsManager.h"
@@ -116,7 +116,7 @@ namespace gui {
 		LoadLayout();
 
 		// Load Prefabs into scenes
-		//prefab::Prefab::LoadPrefabs();
+		prefab::Prefab::LoadAllPrefabs();
 
 		//load scene
 		openAndLoadSceneDialog();
@@ -258,8 +258,8 @@ namespace gui {
 			{
 				colorChanged = true;
 			}
-
-			prefab::Prefab::m_UpdateAllPrefabEntity(m_activeScene);
+			//std::cout << "Gui Call for Updating Prefabs" << std::endl;
+			//prefab::Prefab::m_UpdateAllPrefabEntity(m_activeScene); //?
 		}
 		else
 		{

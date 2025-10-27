@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ff9dd8cc056a1be5e34c946a0d637b75772ef20635bd1788c16f25af5d664c3b
-size 1015
+/// @brief Include to use operators to compare whether two textures or images are equal
+/// @file gli/comparison.hpp
+
+#pragma once
+
+#include "image.hpp"
+#include "texture1d.hpp"
+#include "texture1d_array.hpp"
+#include "texture2d.hpp"
+#include "texture2d_array.hpp"
+#include "texture3d.hpp"
+#include "texture_cube.hpp"
+#include "texture_cube_array.hpp"
+
+namespace gli
+{
+	/// Compare two images. Two images are equal when the date is the same.
+	bool operator==(image const& ImageA, image const& ImageB);
+
+	/// Compare two images. Two images are equal when the date is the same.
+	bool operator!=(image const& ImageA, image const& ImageB);
+
+	/// Compare two textures. Two textures are the same when the data, the format and the targets are the same.
+	bool operator==(texture const& A, texture const& B);
+
+	/// Compare two textures. Two textures are the same when the data, the format and the targets are the same.
+	bool operator!=(texture const& A, texture const& B);
+}//namespace gli
+
+#include "./core/comparison.inl"

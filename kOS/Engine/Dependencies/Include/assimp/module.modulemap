@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:178aebe4a837c335b0f7b9bedf063ca93affff146703e1c22890c39a813785ed
-size 764
+// Export headers for Swift (iOS)
+module libassimp {
+    header "ColladaMetaData.h"
+    header "GltfMaterial.h"
+    header "ObjMaterial.h"
+    header "anim.h"
+    header "camera.h"
+    header "cexport.h"
+    header "cfileio.h"
+    header "cimport.h"
+    header "color4.h"
+    header "commonMetaData.h"
+    header "config.h"
+    header "defs.h"
+    header "importerdesc.h"
+    header "light.h"
+    header "material.h"
+    header "matrix3x3.h"
+    header "matrix4x4.h"
+    header "mesh.h"
+    header "metadata.h"
+    header "pbrmaterial.h"
+    header "postprocess.h"
+    header "quaternion.h"
+    header "revision.h"
+    header "scene.h"
+    header "texture.h"
+    header "types.h"
+    header "vector2.h"
+    header "vector3.h"
+    header "version.h"
+    export *
+}

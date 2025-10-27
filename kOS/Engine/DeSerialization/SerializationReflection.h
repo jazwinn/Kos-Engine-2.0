@@ -336,6 +336,111 @@ struct LoadComponent {
 
 };
 
+template <typename T>
+struct CompareComponent {
+	T m_Array;
+	void* comp1{};
+	void* comp2{};
+	bool result{ true };  // Added missing semicolon
+
+	template <typename U>
+	void SetComponents(U* c1, U* c2) {
+		comp1 = static_cast<void*>(c1);
+		comp2 = static_cast<void*>(c2);
+		result = true;
+	}
+
+	void operator()(float& _args1, float& _args2) {
+		result = result && (_args1 == _args2);  // Accumulate with AND
+	}
+
+	void operator()(int& _args1, int& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	void operator()(glm::vec2& _args1, glm::vec2& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	void operator()(glm::vec3& _args1, glm::vec3& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	void operator()(glm::vec4& _args1, glm::vec4& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	void operator()(bool& _args1, bool& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	void operator()(std::string& _args1, std::string& _args2) {
+		result = result && (_args1 == _args2);
+	}
+
+	template <typename EnumType>
+		requires std::is_enum_v<EnumType>
+	void operator()(EnumType& _args1, EnumType& _args2) {
+		result = result && (static_cast<int>(_args1) == static_cast<int>(_args2));
+	}
+
+	template <typename U>
+	void operator()(std::vector<U>& _args1, std::vector<U>& _args2) {
+		if (_args1.size() != _args2.size()) {
+			result = false;
+			return;
+		}
+
+		if constexpr (std::is_class_v<U> && requires { U::Names(); }) {
+			// Compare reflectable objects
+			for (size_t i = 0; i < _args1.size(); ++i) {
+				CompareComponent<decltype(U::Names())> compare{ U::Names() };
+				compare.SetComponents(&_args1[i], &_args2[i]);
+
+				auto m1 = _args1[i].member();
+				auto m2 = _args2[i].member();
+
+				[&] <std::size_t... Is>(std::index_sequence<Is...>) {
+					((compare(std::get<Is>(m1), std::get<Is>(m2))), ...);
+				}(std::make_index_sequence<std::tuple_size_v<decltype(m1)>>{});
+
+				result = result && compare.result;
+				if (!result) break;  // Early exit if any comparison fails
+			}
+		}
+		else {
+			// Compare simple types
+			result = result && (_args1 == _args2);
+		}
+	}
+
+	template <typename K>
+	void operator()(K& _args1, K& _args2) {
+		if constexpr (std::is_class_v<K> && requires { K::Names(); }) {
+			// Compare reflectable nested objects
+			CompareComponent<decltype(K::Names())> compare{ K::Names() };
+			compare.SetComponents(&_args1, &_args2);
+
+			auto m1 = _args1.member();
+			auto m2 = _args2.member();
+
+			[&] <std::size_t... Is>(std::index_sequence<Is...>) {
+				((compare(std::get<Is>(m1), std::get<Is>(m2))), ...);
+			}(std::make_index_sequence<std::tuple_size_v<decltype(m1)>>{});
+
+			result = result && compare.result;
+		}
+		else if constexpr (requires { _args1 == _args2; }) {
+			// Has equality operator
+			result = result && (_args1 == _args2);
+		}
+		else {
+			// Cannot compare, assume different
+			result = false;
+		}
+	}
+};
+
 template<typename T>
 inline void saveComponentreflect(T* component, rapidjson::Value& entityData, rapidjson::Document::AllocatorType& allocator)
 {
@@ -353,6 +458,7 @@ inline void saveComponentreflect(T* component, rapidjson::Value& entityData, rap
 
 	entityData.AddMember(key, name, allocator);
 }
+
 template<typename T>
 inline void LoadComponentreflect(T* component, const rapidjson::Value& entityData)
 {
@@ -365,4 +471,22 @@ inline void LoadComponentreflect(T* component, const rapidjson::Value& entityDat
 		loader(member, name);
 		});
 
+}
+
+template<typename T>
+inline bool CompareComponentReflect(T* component1, T* component2)
+{
+	if (component1 == nullptr || component2 == nullptr) return false;
+
+	CompareComponent<decltype(T::Names())> compare{ T::Names() };
+	compare.SetComponents(component1, component2);
+
+	std::tuple m1 = component1->member();
+	std::tuple m2 = component2->member();
+
+	[&] <std::size_t... Is>(std::index_sequence<Is...>) {
+		((compare(std::get<Is>(m1), std::get<Is>(m2))), ...);
+	}(std::make_index_sequence<std::tuple_size_v<decltype(m1)>>{});
+
+	return compare.result;
 }

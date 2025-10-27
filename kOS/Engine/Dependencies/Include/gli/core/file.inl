@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6506a739e9063be881f8f20b7fbb38cf5a6b62c84708096975ebfc646da60e90
-size 355
+#pragma once
+
+#include <glm/simd/platform.h>
+
+namespace gli{
+namespace detail
+{
+	inline FILE* open_file(const char *Filename, const char *Mode)
+	{
+#		if GLM_COMPILER & GLM_COMPILER_VC
+			FILE *File = nullptr;
+			fopen_s(&File, Filename, Mode);
+			return File;
+#		else
+			return std::fopen(Filename, Mode);
+#		endif
+	}
+}//namespace detail
+}//namespace gli

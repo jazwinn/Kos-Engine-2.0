@@ -165,6 +165,7 @@ namespace gui {
 
         /***********PREFAB*************/
         bool m_prefabSceneMode{ false };
+        ecs::EntityID duppedID = -1;    //Used to check if prefab has been changed.
         bool m_collisionSetterMode{ false };
         std::unordered_map<std::string, bool> m_savedSceneState;
         /******************************/

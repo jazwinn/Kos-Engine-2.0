@@ -26,6 +26,8 @@ public:
 
     virtual void Load(ecs::EntityID ID, const rapidjson::Value& entityData) = 0;
 
+    virtual bool Compare(void* componentData1, void* componentData2) = 0;
+
     virtual void* AddComponent(ecs::EntityID ID) = 0;
 
 	virtual bool HasComponent(ecs::EntityID ID) = 0;

@@ -1,3 +1,66 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:39aeba0d9d2a7cac13fd64ecfa74b9869a55fa0f80e053f98f85b9addcdf2147
-size 1731
+/****************************************************************************
+ *
+ * svbdf.h
+ *
+ *   The FreeType BDF services (specification).
+ *
+ * Copyright (C) 2003-2024 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
+
+
+#ifndef SVBDF_H_
+#define SVBDF_H_
+
+#include <freetype/ftbdf.h>
+#include <freetype/internal/ftserv.h>
+
+
+FT_BEGIN_HEADER
+
+
+#define FT_SERVICE_ID_BDF  "bdf"
+
+  typedef FT_Error
+  (*FT_BDF_GetCharsetIdFunc)( FT_Face       face,
+                              const char*  *acharset_encoding,
+                              const char*  *acharset_registry );
+
+  typedef FT_Error
+  (*FT_BDF_GetPropertyFunc)( FT_Face           face,
+                             const char*       prop_name,
+                             BDF_PropertyRec  *aproperty );
+
+
+  FT_DEFINE_SERVICE( BDF )
+  {
+    FT_BDF_GetCharsetIdFunc  get_charset_id;
+    FT_BDF_GetPropertyFunc   get_property;
+  };
+
+
+#define FT_DEFINE_SERVICE_BDFRec( class_,                                \
+                                  get_charset_id_,                       \
+                                  get_property_ )                        \
+  static const FT_Service_BDFRec  class_ =                               \
+  {                                                                      \
+    get_charset_id_, get_property_                                       \
+  };
+
+  /* */
+
+
+FT_END_HEADER
+
+
+#endif /* SVBDF_H_ */
+
+
+/* END */

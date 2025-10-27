@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:974a5a630a9fe173b5e40e1bfaf9b467c1d28cb16fd437bd074febcb46b949ed
-size 287
+#pragma once
+
+#include <array>
+
+#include "../texture2d.hpp"
+#include "../texture2d_array.hpp"
+#include "../texture_cube.hpp"
+#include "../texture_cube_array.hpp"
+
+namespace gli
+{
+	template <typename texture>
+	texture flip(texture const & Texture);
+
+}//namespace gli
+
+#include "flip.inl"

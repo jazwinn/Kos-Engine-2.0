@@ -28,9 +28,7 @@ public:
     ActionInvoker(ecs::ECS* ecs):m_ecs(ecs){}
 
     void Save(void* componentData, rapidjson::Value& entityData, rapidjson::Document::AllocatorType& allocator) override {
-
         saveComponentreflect(static_cast<T*>(componentData), entityData, allocator);
-
     }
 
     void Load(ecs::EntityID ID, const rapidjson::Value& entityData) override {
@@ -39,7 +37,10 @@ public:
         if (component) {
             LoadComponentreflect(component, entityData);
         }
+    }
 
+    bool Compare(void* componentData1, void* componentData2) {
+        return CompareComponentReflect(static_cast<T*>(componentData1), static_cast<T*>(componentData2));
     }
 
     void ResetComponent(ecs::EntityID ID) override {
