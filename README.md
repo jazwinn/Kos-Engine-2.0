@@ -23,7 +23,7 @@ This release focuses on **performance, scalability**, and **automated testing** 
 - **Field Metadata System** enabling safe introspection and manipulation of class fields  
 
 ### 🖥️ Graphics  
-- Modern **3D rendering pipeline** (OpenGL/Vulkan-ready)  
+- Modern **3D rendering pipeline**   
 - Support for **materials, meshes, lighting, and cameras**  
 - Optimized GPU resource and draw call management  
 
