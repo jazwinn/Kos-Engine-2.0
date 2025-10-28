@@ -169,7 +169,11 @@ public:
 	NIL
 	*/
 	/************************************************************************/
-	void SetBool(const std::string& name, bool value) const;
+	void SetBool(const std::string& name, bool value) const
+	{
+		GLint location = glGetUniformLocation(ID, name.c_str());
+		glUniform1i(location, static_cast<int>(value));
+	};
 	/************************************************************************/
 	/*!
 	\brief
@@ -184,15 +188,15 @@ public:
 	NIL
 	*/
 	/************************************************************************/
-	void SetTrans(const std::string& name, const glm::mat4& trans)  {
+	void SetTrans(const std::string& name, const glm::mat4& trans) {
 		glUniformMatrix4fv(GetLocation(name), 1, GL_FALSE, glm::value_ptr(trans));
 	}
 
-	void SetVec2(const std::string& name, const glm::vec2& vec2)  {
+	void SetVec2(const std::string& name, const glm::vec2& vec2) {
 		glUniform2f(GetLocation(name), vec2.x, vec2.y);
 	}
 
-	void SetVec3(const std::string& name, const glm::vec3& vec3)  {
+	void SetVec3(const std::string& name, const glm::vec3& vec3) {
 		glUniform3f(GetLocation(name), vec3.x, vec3.y, vec3.z);
 	}
 
@@ -210,7 +214,7 @@ public:
 	NIL
 	*/
 	/************************************************************************/
-	void SetVec4(const std::string& name, const glm::vec4& vec4)  {
+	void SetVec4(const std::string& name, const glm::vec4& vec4) {
 		glUniform4f(GetLocation(name), vec4.r, vec4.g, vec4.b, vec4.a);
 	}
 	/************************************************************************/
@@ -244,12 +248,16 @@ public:
 	NIL
 	*/
 	/************************************************************************/
-	void SetFloat(const std::string& name, float value)  {
+	void SetFloat(const std::string& name, float value) {
 		glUniform1f(GetLocation(name), value);
 	}
 
 	void SetMat4(const std::string& name, const glm::mat4& value) {
 		glUniformMatrix4fv(GetLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+	}
+
+	void SetMat4Array(const std::string& name, const glm::mat4& value, size_t arraySize) {
+		glUniformMatrix4fv(GetLocation(name), arraySize, GL_FALSE, glm::value_ptr(value));
 	}
 
 	void SetMat3(const std::string& name, const glm::mat3& value) {

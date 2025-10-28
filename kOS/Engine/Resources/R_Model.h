@@ -12,6 +12,11 @@
 #include <assimp/postprocess.h>
 #define MAX_BONE_INFLUENCE 4
 
+struct BoneInfo
+{
+	glm::mat4 offsetMatrix;      // From ASSIMP during loading
+	glm::mat4 finalTransformation{ 1.f }; // Calculated each frame
+};
 
 class R_Model : public Resource {
 
@@ -35,11 +40,7 @@ class R_Model : public Resource {
 		float m_Weights[MAX_BONE_INFLUENCE];
 	};
 
-	struct BoneInfo
-	{
-		glm::mat4 offsetMatrix;      // From ASSIMP during loading
-		glm::mat4 finalTransformation{ 1.f }; // Calculated each frame
-	};
+
 
 	struct NodeData
 	{
@@ -49,13 +50,13 @@ class R_Model : public Resource {
 	};
 
 	struct ModelData
-{
-    std::string modelFileName{};
-    std::string skeletonFileName{};
-    glm::mat4 transformation{ 1.f };
-    glm::vec4 colour{ 1.f };
-    float animationTimer{};
-};
+	{
+		std::string modelFileName{};
+		std::string skeletonFileName{};
+		glm::mat4 transformation{ 1.f };
+		glm::vec4 colour{ 1.f };
+		float animationTimer{};
+	};
 
 	class Mesh
 	{
@@ -150,7 +151,7 @@ class R_Model : public Resource {
 		glm::mat4 InterpolateRotation(float time) const;
 		glm::mat4 InterpolateScale(float time) const;
 	};
-	
+
 public:
 
 	using Resource::Resource;
@@ -159,7 +160,7 @@ public:
 
 	void Unload() override;
 	//Do get resource R_Model
-	
+
 	~R_Model() override {
 		Unload(); // safe here because we're still in the derived destructor
 	}
@@ -171,6 +172,7 @@ public:
 	const std::vector<Animation>& GetAnimations() const { return animations; }
 	const std::vector<BoneInfo>& GetBoneInfo() const { return bone_info; }
 	const std::unordered_map<std::string, int>& GetBoneMap() const { return bones_loaded; }
+	std::unordered_map<std::string, int>& GetBoneMap() { return bones_loaded; }
 	glm::mat4 GetGlobalInverse() const { return globalInverseTransform; }
 	void LoadMesh(std::string meshFile);
 

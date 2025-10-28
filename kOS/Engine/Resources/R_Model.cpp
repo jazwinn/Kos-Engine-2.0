@@ -1,6 +1,15 @@
 #include "Config/pch.h"
 #include "R_Model.h"
 
+void PrintMat4(const glm::mat4& mat) {
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            std::cout << mat[col][row] << ' ';
+        }
+        std::cout << '\n';
+    }
+}
+
 void R_Model::Load()
 {
     LoadMesh(this->m_filePath.string());
@@ -59,7 +68,21 @@ void R_Model::Mesh::SetupMesh()
     // vertex bitangent
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
-    // ids
+
+    /* for (int i = 0; i < vertices.size(); i++)
+     {
+         std::cout << "BONE IDSSSSSSSSSSSSSSSSSSSSSSSSSSSS " << vertices[i].m_BoneIDs[0] << std::endl;
+         std::cout << "BONE IDSSSSSSSSSSSSSSSSSSSSSSSSSSSS " << vertices[i].m_BoneIDs[1] << std::endl;
+         std::cout << "BONE IDSSSSSSSSSSSSSSSSSSSSSSSSSSSS " << vertices[i].m_BoneIDs[2] << std::endl;
+         std::cout << "BONE IDSSSSSSSSSSSSSSSSSSSSSSSSSSSS " << vertices[i].m_BoneIDs[3] << std::endl;
+
+         std::cout << "weights " << vertices[i].m_Weights[0] << std::endl;
+         std::cout << "weights " << vertices[i].m_Weights[1] << std::endl;
+         std::cout << "weights " << vertices[i].m_Weights[2] << std::endl;
+         std::cout << "weights " << vertices[i].m_Weights[3] << std::endl;
+     }*/
+
+     // ids
     glEnableVertexAttribArray(5);
     glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
 
@@ -195,27 +218,38 @@ void R_Model::LoadMesh(std::string meshFile) {
             newIndices.push_back(DecodeBinary<unsigned int>(serialized, offset));
         }
 
-       // //This sets up and pushes a new mesh into the family
+        // //This sets up and pushes a new mesh into the family
         this->meshes.push_back(Mesh{ newVert,newIndices,std::vector<Textures>{} });
     }
-    int indicesCount = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
-    //std::cout << "Indicies count is " << indicesCount << '\n';
-    for ( int i{ 0 }; i < indicesCount; i++) {
-        size_t stringSize=DecodeBinary<unsigned int>(serialized, offset);
+    unsigned int indicesCount = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
+    std::cout << " FIRST Indicies count is " << indicesCount << '\n';
+    for (int i{ 0 }; i < indicesCount; i++) {
+        unsigned int stringSize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
+        //std::cout << "STRING SIZE IS " << stringSize << '\n';
         std::string key;
         for (int j{ 0 }; j < stringSize; j++) {
-            key+= DecodeBinary<char>(serialized, offset);
+            key += DecodeBinary<char>(serialized, offset);
+            //std::cout<<"KEY CHAR: " << key << '\n';
         }
-        bones_loaded[key]= DecodeBinary<int>(serialized, offset);
+        //std::cout << "KEY " << key << '\n';
+        //return;;
+        bones_loaded[key] = DecodeBinary<int>(serialized, offset);
     }
 
     indicesCount = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
+
+    std::cout << " SECOND Indicies count is " << indicesCount << '\n';
     for (int i{ 0 }; i < indicesCount; i++) {
         glm::mat4 offsetMatrix = DecodeBinary<glm::mat4>(serialized, offset);
         glm::mat4 transformationMatrix = DecodeBinary<glm::mat4>(serialized, offset);
+
+        std::cout << "Bone Matrix Offset " << i << ' ' << std::endl;
+        PrintMat4(offsetMatrix);
         bone_info.push_back(BoneInfo{ offsetMatrix,transformationMatrix });
     }
 }
+
+
 
 void R_Model::ProcessNode(aiNode* node, const aiScene* scene, const aiMatrix4x4& transform)
 {
@@ -234,10 +268,10 @@ void R_Model::ProcessNode(aiNode* node, const aiScene* scene, const aiMatrix4x4&
     //Include the animations for the .fbx model if any
     if (scene->HasAnimations())
     {
-        for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
-        {
-            animations.emplace_back(scene->mAnimations[i], scene, bones_loaded);
-        }
+        //for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
+       // {
+           // animations.emplace_back(scene->mAnimations[i], scene, bones_loaded);
+       // }
     }
 }
 
@@ -352,6 +386,7 @@ void R_Model::ExtractBoneWeights(aiMesh* mesh, std::vector<Vertex>& vertices)
 
             BoneInfo boneInfo;
             boneInfo.offsetMatrix = ConvertToGLMMat4(mesh->mBones[i]->mOffsetMatrix);
+            //bone_info[boneID] = boneInfo;
             bone_info.push_back(boneInfo);
         }
         else
@@ -401,7 +436,7 @@ inline T R_Model::DecodeBinary(std::string& bin, int& offset)
     if (offset + sizeof(T) > bin.size()) {
         LOGGING_DEBUG("File overflow");;
         return T{};;
-       // return ;
+        // return ;
     }
     T value;
     // Copy the raw bytes directly from the string
@@ -412,6 +447,22 @@ inline T R_Model::DecodeBinary(std::string& bin, int& offset)
 }
 
 void R_Model::PBRDraw(Shader& shader, PBRMaterial const& pbrMat) {
+    shader.SetBool("isNotRigged", false);
+    for (unsigned int i = 0; i < meshes.size(); i++)
+        meshes[i].PBRDraw(shader, pbrMat);
+}
+
+void R_Model::DrawAnimation(Shader& shader, PBRMaterial const& pbrMat, const std::vector<glm::mat4>& boneMatrices)
+{
+    shader.SetBool("isNotRigged", true);
+    if (!boneMatrices.empty())
+    {
+        for (int i = 0; i < boneMatrices.size(); i++)
+        {
+            shader.SetMat4("bones[" + std::to_string(i) + "]", boneMatrices[i]);
+        }
+    }
+    // shader.SetMat4Array("bones", boneMatrices[0], boneMatrices.size());
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].PBRDraw(shader, pbrMat);
 }
