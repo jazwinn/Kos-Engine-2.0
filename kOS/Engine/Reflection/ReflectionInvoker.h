@@ -43,6 +43,20 @@ public:
         return CompareComponentReflect(static_cast<T*>(componentData1), static_cast<T*>(componentData2));
     }
 
+    bool Compare(ecs::EntityID ID, ecs::EntityID ID2) {
+
+        T* componentData1 = m_ecs->GetComponent<T>(ID);
+        T* componentData2 = m_ecs->GetComponent<T>(ID2);
+
+        if (!componentData1 || !componentData2) {
+            return false;
+        }
+
+
+        return CompareComponentReflect(componentData1, componentData2);
+    }
+
+
     void ResetComponent(ecs::EntityID ID) override {
         m_ecs->ResetComponent<T>(ID);
     }
@@ -72,9 +86,6 @@ public:
 
     }
 
-    void SetSceneToComponent(void* componentData, const std::string& scene) override {
-		static_cast<T*>(componentData)->scene = scene;
-    }
 
 public:
 

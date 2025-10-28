@@ -1,15 +1,33 @@
 #include "Config/pch.h"
 #include "DeSerialization/json_handler.h"
-#include"PhysicsLayer.h"
+#include "PhysicsLayer.h"
 
 
 namespace physicslayer {
     std::unique_ptr<PhysicsLayer> PhysicsLayer::instance = nullptr;
 
+	constexpr const char* configpath = "Engine/Physics/Layer.json";
+
     PhysicsLayer::PhysicsLayer() {
-        for (int i = 0; i < size; ++i) {
-            layerCollisions[i].reset(); // Initialize all bits to 0 (no collisions)
+        //read collision layer file
+        if (!std::filesystem::exists(configpath)) {
+
+            // Create the directory structure if it doesn't exist
+            std::filesystem::path path(configpath);
+            std::filesystem::create_directories(path.parent_path());
+
+            // add the "[]"
+            Serialization::JsonFileValidation(configpath);
         }
+        else {
+            for (int i = 0; i < size; ++i) {
+                layerCollisions[i].reset(); // Initialize all bits to 0 (no collisions)
+            }
+
+        }
+
+
+
     }
 
     void PhysicsLayer::m_PrintCollisionMatrix() const {
@@ -59,13 +77,13 @@ namespace physicslayer {
         return concatenated;
     }
 
-    void PhysicsLayer::LoadCollisionLayer(const std::string& collisionlayer) {
+    void PhysicsLayer::LoadCollisionLayer() {
         try {
             // Use the template function to read JSON
-         
+			auto collisionlayer = Serialization::ReadJsonFile<LayerData>(configpath);
 
             // Split the concatenated string back into individual bitsets
-            std::string remaining = collisionlayer;
+            std::string remaining = collisionlayer.collisionData;
 
             for (int i = 0; i < size && !remaining.empty(); ++i) {
                 size_t separatorPos = remaining.find('|');
@@ -99,5 +117,14 @@ namespace physicslayer {
                 }
             }
         }
+    }
+
+
+    void PhysicsLayer::SaveCollisionLayer() {
+		physicslayer::LayerData collisionlayer;
+		collisionlayer.collisionData = ConvertLayerToString();
+		Serialization::WriteJsonFile<LayerData>(configpath, &collisionlayer);
+		LOGGING_INFO("Successfully saved collision matrix");
+
     }
 }

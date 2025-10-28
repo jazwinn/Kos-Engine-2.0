@@ -32,12 +32,16 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <RAPIDJSON/writer.h>
 #include <RAPIDJSON/filewritestream.h>
 #include <RAPIDJSON/stringbuffer.h>
-#include "ECS/ECS.h"
 #include "ECS/Hierachy.h"
 #include "Resources/ResourceManager.h"
 
 namespace scenes {
     std::shared_ptr<SceneManager> SceneManager::m_InstancePtr = nullptr;
+
+    SceneManager::SceneManager()
+    {
+        m_ecs = ecs::ECS::GetInstance();
+	}
 
     bool SceneManager::CreateNewScene(const std::filesystem::path& scene)
     {
@@ -79,9 +83,9 @@ namespace scenes {
     void SceneManager::ReloadScene()
     {
 		//retrieve open scenes
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
+
 		std::vector<std::string> sce;
-		for (auto& scenes : ecs->sceneMap) {
+		for (auto& scenes : m_ecs->sceneMap) {
 			sce.push_back(scenes.first);
 		}
 
@@ -101,25 +105,25 @@ namespace scenes {
 		}
     }
 
-    void SceneManager::ClearAllScene() //EXCEPT PREFABS
+    void SceneManager::ClearAllScene(bool includePrefabs) //EXCEPT PREFABS
     {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        for (auto& [scene, data] : m_ecs->sceneMap) {
 
-        std::vector<std::string> sce;
-        for (auto& scenes : ecs->sceneMap) {
-            sce.push_back(scenes.first);
+            if(includePrefabs){
+                ClearScene(scene);
+            }
+            else{
+                if(!data.isPrefab){
+                    ClearScene(scene);
+                }
+			}
             
-        }
-
-        for (auto& scenes : sce) {
-            ClearScene(scenes);
         }
     }
 
     std::vector<std::filesystem::path> SceneManager::GetAllScenesPath() {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
         std::vector<std::string> sce;
-        for (auto& scenes : ecs->sceneMap) {
+        for (auto& scenes : m_ecs->sceneMap) {
             sce.push_back(scenes.first);
         }
 
@@ -133,10 +137,9 @@ namespace scenes {
     }
 
     void SceneManager::ClearAllSceneImmediate(){
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
 
         std::vector<std::string> sce;
-        for (auto& scenes : ecs->sceneMap) {
+        for (auto& scenes : m_ecs->sceneMap) {
             sce.push_back(scenes.first);
 
         }
@@ -161,13 +164,12 @@ namespace scenes {
 
     void SceneManager::SaveAllActiveScenes(bool includeprefab)
     {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
-        if (ecs->GetState() != ecs::STOP) {
+        if (m_ecs->GetState() != ecs::STOP) {
             LOGGING_WARN("Cannot save scene while in play mode");
             return;
         }
 
-        for (auto& scenes : ecs->sceneMap) {
+        for (auto& scenes : m_ecs->sceneMap) {
             //skip prefabs
             if (includeprefab && scenes.second.isPrefab) continue;
             SaveScene(scenes.first);
@@ -199,9 +201,7 @@ namespace scenes {
 	bool SceneManager::ImmediateLoadScene(const std::filesystem::path& scene)
 	{
 
-
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
-		if (ecs->sceneMap.find(scene.filename().string()) != ecs->sceneMap.end()) {
+		if (m_ecs->sceneMap.find(scene.filename().string()) != m_ecs->sceneMap.end()) {
 
 			LOGGING_WARN("Scene already loaded");
 
@@ -222,24 +222,11 @@ namespace scenes {
 		//contain scene path
 		loadScenePath[scene.filename().string()] = scene;
 
-		// store path to be use as recent
-		if (scene.filename().extension().string() != ".prefab") {
-
-			if (std::find_if(m_recentFiles.begin(), m_recentFiles.end(),
-				[&scene](const std::filesystem::path& path) {
-					return path.filename().string() == scene.filename().string();
-				}) == m_recentFiles.end()) {
-
-				// Add the scene to recent files if it's not already present
-				m_recentFiles.push_back(scene);
-			}
-		}
-
 
 		std::string scenename = scene.filename().string();
 
 		//create new scene
-		ecs->sceneMap[scenename];
+		m_ecs->sceneMap[scenename];
 		//check if file is prefab or scene
 
 
@@ -247,21 +234,10 @@ namespace scenes {
 		LOGGING_INFO("Loading entities from: {}", scene.string().c_str());
 		Serialization::LoadScene(scene.string());  // Load into ECS
 
-		if (scene.filename().extension().string() == ".prefab") {
-			ecs->sceneMap.find(scenename)->second.isPrefab = true;
-			ecs->sceneMap.find(scenename)->second.isActive = false;
-
-			for (auto& id : ecs->sceneMap.find(scenename)->second.sceneIDs) {
-				ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
-				if (!tc->m_haveParent) {
-					ecs->sceneMap.find(scenename)->second.prefabID = id;
-					break;
-				}
-			}
-		}
 
 
-        onSceneLoaded.Invoke(ecs->sceneMap.at(scenename));
+
+        onSceneLoaded.Invoke(m_ecs->sceneMap.at(scenename));
 
 
 		LOGGING_INFO("Entities successfully loaded!");
@@ -270,27 +246,27 @@ namespace scenes {
 
 	void SceneManager::ImmediateClearScene(const std::string& scene)
 	{
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
+		ecs::ECS* m_ecs = ecs::ECS::GetInstance();
 
-		size_t numberOfEntityInScene = ecs->sceneMap.find(scene)->second.sceneIDs.size();
+		size_t numberOfEntityInScene = m_ecs->sceneMap.find(scene)->second.sceneIDs.size();
 		for (int n{}; n < numberOfEntityInScene; n++) {
-			if (ecs->sceneMap.find(scene)->second.sceneIDs.size() <= 0) break;
-			auto entityid = ecs->sceneMap.find(scene)->second.sceneIDs.begin();
+			if (m_ecs->sceneMap.find(scene)->second.sceneIDs.size() <= 0) break;
+			auto entityid = m_ecs->sceneMap.find(scene)->second.sceneIDs.begin();
 			if (!ecs::Hierachy::GetParent(*entityid)) {
-				ecs->DeleteEntity(*entityid);
+				m_ecs->DeleteEntity(*entityid);
 			}
 		}
 
 
 		//remove scene from activescenes
-		ecs->sceneMap.erase(scene);
+		m_ecs->sceneMap.erase(scene);
 	}
 
 
 	void SceneManager::SwapScenes(const std::string& oldscene, const std::string& newscene, ecs::EntityID id)
     {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
-        std::vector<ecs::EntityID>& vectorenityid = ecs->sceneMap.find(oldscene)->second.sceneIDs;
+        ecs::ECS* m_ecs = ecs::ECS::GetInstance();
+        std::vector<ecs::EntityID>& vectorenityid = m_ecs->sceneMap.find(oldscene)->second.sceneIDs;
         std::vector<ecs::EntityID>::iterator it = std::find(vectorenityid.begin(), vectorenityid.end(), id);
         if (it == vectorenityid.end()) {
             LOGGING_ERROR("Entity not in old scene");
@@ -299,44 +275,57 @@ namespace scenes {
         
         vectorenityid.erase(it);
 
-        ecs->sceneMap.find(newscene)->second.sceneIDs.push_back(id);
-       
-        const auto& componentKey = ecs->GetComponentKeyData();
-        for (const auto& [componentName, key] : componentKey) {
-            if (ecs->GetEntitySignature(id).test(key)) {
-                ecs::Component* comp = ecs->GetIComponent<ecs::Component*>(componentName, id);
-                if (comp) {
-                    comp->scene = newscene;
-                }
-
-            }
-        }
+        m_ecs->sceneMap.find(newscene)->second.sceneIDs.push_back(id);
 
     }
-    void SceneManager::AssignEntityNewScene(const std::string& scene, ecs::EntityID id)
-    {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
-        //assign all of entity's scene component into new scene
-        const auto& componentKey = ecs->GetComponentKeyData();
-        for (const auto& [componentName, key] : componentKey) {
-            if (ecs->GetEntitySignature(id).test(key)) {
-                ecs::Component* comp = ecs->GetIComponent<ecs::Component*>(componentName, id);
-                if (comp) {
-                    comp->scene = scene;
-                }
 
-            }
-        }
 
-        //if id has children, call recurse
-        const auto& child = ecs::Hierachy::m_GetChild(id);
-        if (child.has_value()) {
-            for (auto id2 : child.value()) {
-                AssignEntityNewScene(scene , id2);
-            }
+    void SceneManager::SetSceneActive(const std::string& scene, bool active) {
+        if(active){
+
+            auto& sceneData = m_ecs->sceneMap.at(scene);
+            sceneData.isActive = true;
             
-        }
+            for (const auto id : sceneData.sceneIDs) {
+                m_ecs->RegisterEntity(id);
+            }
 
+        }
+        else {
+            auto& sceneData = m_ecs->sceneMap.at(scene);
+            sceneData.isActive = false;
+
+            for (const auto id : sceneData.sceneIDs) {
+                m_ecs->DeregisterEntity(id);
+            }
+
+		}
     }
+
+    //void SceneManager::AssignEntityNewScene(const std::string& scene, m_ecs::EntityID id)
+    //{
+    //    m_ecs::ECS* m_ecs = m_ecs::ECS::GetInstance();
+    //    //assign all of entity's scene component into new scene
+    //    const auto& componentKey = m_ecs->GetComponentKeyData();
+    //    for (const auto& [componentName, key] : componentKey) {
+    //        if (m_ecs->GetEntitySignature(id).test(key)) {
+    //            m_ecs::Component* comp = m_ecs->GetIComponent<m_ecs::Component*>(componentName, id);
+    //            if (comp) {
+    //                comp->scene = scene;
+    //            }
+
+    //        }
+    //    }
+
+    //    //if id has children, call recurse
+    //    const auto& child = m_ecs::Hierachy::m_GetChild(id);
+    //    if (child.has_value()) {
+    //        for (auto id2 : child.value()) {
+    //            AssignEntityNewScene(scene , id2);
+    //        }
+    //        
+    //    }
+
+    //}
 }
 

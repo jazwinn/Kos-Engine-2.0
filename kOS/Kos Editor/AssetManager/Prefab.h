@@ -48,37 +48,12 @@ namespace prefab {
 		/******************************************************************/
 		static void m_SaveEntitytoPrefab(ecs::EntityID);
 
-		/******************************************************************/
-		/*!
-			\fn        void m_UpdateAllPrefabEntity(std::string prefab)
-			\brief     Updates all entities in the current scene that match a specified prefab.
-			\param[in] prefab The name of the prefab to update entities for.
-			\details   Synchronizes all instances of the prefab with the latest data from the prefab source.
-		*/
-		/******************************************************************/
-		static void m_UpdateAllPrefabEntity(std::string prefab);
 
-		/******************************************************************/
-		/*!
-			\fn        void m_UpdatePrefab(ecs::EntityID sceneprefabID, ecs::EntityID prefabid, bool isPrefabChild = false)
-			\brief     Updates a specific prefab instance to match the source prefab entity data.
-			\param[in] sceneprefabID  The ID of the source prefab entity.
-			\param[in] prefabid       The ID of the prefab instance to update.
-			\param[in] isPrefabChild  Flag indicating if the prefab instance is a child entity.
-			\details   Updates the components of the instance to match the source prefab, creating or removing components as needed.
-		*/
-		/******************************************************************/
-		static void m_UpdatePrefab(ecs::EntityID sceneprefabID, ecs::EntityID prefabid, bool isPrefabChild = false);
+		//A being the true prefab
+		static void UpdateAllPrefab(const std::string& prefabSceneName);
+		static void DeepUpdatePrefab(ecs::EntityID idA , ecs::EntityID idB);
 
-		/******************************************************************/
-		/*!
-			\fn        void m_OverWriteScenePrefab(ecs::EntityID id)
-			\brief     Overwrites an existing prefab scene with a new prefab entity.
-			\param[in] id The ID of the new entity to use for the prefab.
-			\details   Deletes the existing prefab instance, duplicates the new entity to the scene, and saves the scene.
-		*/
-		/******************************************************************/
-		static void m_OverWriteScenePrefab(ecs::EntityID id);
+
 
 		//static void m_AssignEntitytoPrefab(std::string prefab, ecs::EntityID id);
 		/******************************************************************/
@@ -87,8 +62,8 @@ namespace prefab {
 			\brief     Loads All Prefab files stored in Editor Prefab Folders into memory
 		*/
 		/******************************************************************/
-		static void OverwritePrefab_Component(ecs::EntityID id, std::string componentName, std::string prefabSceneName);
-		static void RevertToPrefab_Component(ecs::EntityID id, std::string componentName, std::string prefabSceneName);
+		static void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+		static void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
 		static void LoadAllPrefabs();
 		static ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
 		static void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);

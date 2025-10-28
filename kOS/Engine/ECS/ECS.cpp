@@ -218,7 +218,6 @@ namespace ecs{
 				auto& action = componentAction.at(ComponentName);
 
 				auto* comp = action->DuplicateComponent(DuplicatesID, NewEntity);
-				action->SetSceneToComponent(comp, scene);
 			}
 		}
 

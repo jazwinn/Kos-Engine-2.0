@@ -1,7 +1,6 @@
 [
     {
         "SceneData": {
-            "collisionData": "111111111|100000000|100000000|100000000|100000000|100000000|100000000|100000000|100000000|",
             "skyBoxGUID": [],
             "ambientIntensity": 1.0
         }
@@ -450,6 +449,174 @@
                     "x": -5.534801959991455,
                     "y": -3.6088719367980957,
                     "z": -99.9999771118164
+                },
+                "rotation": {
+                    "x": -0.000017580594430910423,
+                    "y": 19.071998596191406,
+                    "z": 0.0006158283213153481
+                },
+                "scale": {
+                    "x": 0.9999999403953552,
+                    "y": 1.0,
+                    "z": 0.9999999403953552
+                }
+            }
+        }
+    },
+    {
+        "BoxColliderComponent": {
+            "isTrigger": false,
+            "box": {
+                "center": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            }
+        },
+        "CubeRendererComponent": {},
+        "MeshRendererComponent": {
+            "diffuseMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+            "specularMaterialGUID": "",
+            "normalMaterialGUID": "dc87b22b-a90f-e566-c503-d27ea05bc74a",
+            "ambientOcclusionMaterialGUID": "",
+            "roughnessMaterialGUID": ""
+        },
+        "NameComponent": {
+            "entityName": "Test Box",
+            "Layer": 0,
+            "entityTag": "Default",
+            "isPrefab": true,
+            "prefabName": "Test Box.prefab"
+        },
+        "PlayerScript": {
+            "health": 10,
+            "shield": 20,
+            "healthbool": false,
+            "shield2": ""
+        },
+        "RigidbodyComponent": {
+            "mass": 1.0,
+            "drag": 0.0,
+            "angularDrag": 0.05000000074505806,
+            "useGravity": true,
+            "isKinematic": false,
+            "interpolation": 0,
+            "collisionDetection": 0,
+            "constraints": 0
+        },
+        "TransformComponent": {
+            "WorldTransformation": {
+                "position": {
+                    "x": -11.02829360961914,
+                    "y": 15.327198028564453,
+                    "z": -47.850711822509766
+                },
+                "rotation": {
+                    "x": -0.000017580590792931616,
+                    "y": 19.071998596191406,
+                    "z": 0.0006158283795230091
+                },
+                "scale": {
+                    "x": 0.9999999403953552,
+                    "y": 1.0,
+                    "z": 0.9999999403953552
+                }
+            },
+            "LocalTransformation": {
+                "position": {
+                    "x": -11.02829360961914,
+                    "y": 15.327198028564453,
+                    "z": -47.850711822509766
+                },
+                "rotation": {
+                    "x": -0.000017580594430910423,
+                    "y": 19.071998596191406,
+                    "z": 0.0006158283213153481
+                },
+                "scale": {
+                    "x": 0.9999999403953552,
+                    "y": 1.0,
+                    "z": 0.9999999403953552
+                }
+            }
+        }
+    },
+    {
+        "BoxColliderComponent": {
+            "isTrigger": false,
+            "box": {
+                "center": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            }
+        },
+        "CubeRendererComponent": {},
+        "MeshRendererComponent": {
+            "diffuseMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+            "specularMaterialGUID": "",
+            "normalMaterialGUID": "dc87b22b-a90f-e566-c503-d27ea05bc74a",
+            "ambientOcclusionMaterialGUID": "",
+            "roughnessMaterialGUID": ""
+        },
+        "NameComponent": {
+            "entityName": "Test Box",
+            "Layer": 0,
+            "entityTag": "Default",
+            "isPrefab": true,
+            "prefabName": "Test Box.prefab"
+        },
+        "PlayerScript": {
+            "health": 10,
+            "shield": 20,
+            "healthbool": false,
+            "shield2": ""
+        },
+        "RigidbodyComponent": {
+            "mass": 1.0,
+            "drag": 0.0,
+            "angularDrag": 0.05000000074505806,
+            "useGravity": true,
+            "isKinematic": false,
+            "interpolation": 0,
+            "collisionDetection": 0,
+            "constraints": 0
+        },
+        "TransformComponent": {
+            "WorldTransformation": {
+                "position": {
+                    "x": -17.451446533203125,
+                    "y": 15.53066635131836,
+                    "z": -48.94223403930664
+                },
+                "rotation": {
+                    "x": -0.000017580590792931616,
+                    "y": 19.071998596191406,
+                    "z": 0.0006158283795230091
+                },
+                "scale": {
+                    "x": 0.9999999403953552,
+                    "y": 1.0,
+                    "z": 0.9999999403953552
+                }
+            },
+            "LocalTransformation": {
+                "position": {
+                    "x": -17.451446533203125,
+                    "y": 15.53066635131836,
+                    "z": -48.94223403930664
                 },
                 "rotation": {
                     "x": -0.000017580594430910423,

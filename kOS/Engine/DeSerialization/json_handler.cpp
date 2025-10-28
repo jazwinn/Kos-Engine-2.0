@@ -105,8 +105,7 @@ namespace Serialization {
 				LoadComponentreflect(&sceneData, entityData);
 				std::cout << scenename << " has been loaded" << std::endl;
 				ecs::ECS::GetInstance()->AddScene(scenename, sceneData);
-				//load physics layer
-				physicslayer::PhysicsLayer::m_GetInstance()->LoadCollisionLayer(sceneData.collisionData);
+
 			}
 			else {
 				LoadEntity(entityData, std::nullopt, scenename);

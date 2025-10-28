@@ -62,6 +62,8 @@ namespace physics {
 
 		m_controllerManager = PxCreateControllerManager(*m_scene);
 		PX_ASSERT(m_controllerManager);
+
+		physicslayer::PhysicsLayer::m_GetInstance()->LoadCollisionLayer();
 	}
 
 	void PhysicsManager::Shutdown() {

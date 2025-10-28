@@ -100,12 +100,13 @@ namespace gui {
                     scenemanager->SaveScene(m_activeScene);
                     std::string prefabName = m_activeScene;
                     //set current prefab back to inactive
-                    ecs->sceneMap.find(m_activeScene)->second.isActive = false;
+                    scenemanager->SetSceneActive(m_activeScene, false);
                     
                     //set back scene's active state
-                    for (auto& scene : ecs->sceneMap) {
-                        if(scene.second.isPrefab == false)
-                        scene.second.isActive = m_savedSceneState.find(scene.first)->second;            
+                    for (const auto& [scene, sceneData] : ecs->sceneMap) {
+                        if (sceneData.isPrefab == false) {
+                            scenemanager->SetSceneActive(scene, m_savedSceneState.find(scene)->second);
+                        }         
                     }
 
                     //set back active scene
@@ -122,10 +123,11 @@ namespace gui {
                     // Instead of Updating all the time, Differences needs to be checked.
                     // Prompt when leaving prefab mode, 
                     std::vector<std::string> diffList;
-                    prefab::Prefab::RefreshComponentDifferenceList(diffList, duppedID);
+                    const auto& prefabscene = ecs->sceneMap.find(prefabName);
+                    prefab::Prefab::RefreshComponentDifferenceList(diffList, prefabscene->second.prefabID);
 
-                    m_ecs->DeleteEntity(duppedID); // Dupping Somehow causes us to update all the prefab scenes?
-                    duppedID = -1;
+                    //m_ecs->DeleteEntity(duppedID); // Dupping Somehow causes us to update all the prefab scenes?
+                    //duppedID = -1;
 
                     for (const auto& id : ecs->GetEntitySignatureData()) {
                         ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id.first);
@@ -166,7 +168,7 @@ namespace gui {
                 }
 
                 if ((sceneentity.first != m_activeScene) && (sceneentity.second.isActive == true) && ImGui::MenuItem("Unload Scene")) {
-                    sceneentity.second.isActive = false;
+                    scenemanager->SetSceneActive(sceneentity.first, false);
                     m_clickedEntityId = -1;
 
                     if (!m_prefabSceneMode) {
@@ -187,7 +189,7 @@ namespace gui {
                 }
 
                 if ((sceneentity.second.isActive == false) && ImGui::MenuItem("load Scene")) {
-                    sceneentity.second.isActive = true;
+					scenemanager->SetSceneActive(sceneentity.first, true);
                     ImGui::EndPopup();
                     break;
                 }
@@ -293,17 +295,18 @@ namespace gui {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file"))
                 {
                     //IM_ASSERT(payload->DataSize == sizeof(std::filesystem::path));
-                    const char* name = static_cast<const char*>(payload->Data);
-                    std::cout << std::string(name) << std::endl;
-                    std::filesystem::path filename = static_cast<const char*>(payload->Data);
-                    std::cout << filename.filename().string() << std::endl;
+                    IM_ASSERT(payload->DataSize == sizeof(AssetPathGUID));
+                    const AssetPathGUID* data = static_cast<const AssetPathGUID*>(payload->Data);
 
-                    if (!m_prefabSceneMode && filename.filename().extension().string() == ".json") {
-                        scenemanager->LoadScene(filename);
+                    std::filesystem::path filePath = data->path;
+ 
+
+                    if (!m_prefabSceneMode && filePath.filename().extension().string() == ".json") {
+                        scenemanager->LoadScene(filePath);
                     }
 
-                    if (!m_prefabSceneMode && filename.filename().extension().string() == ".prefab") {
-                       prefab::Prefab::m_CreatePrefab(filename.filename().string(), m_activeScene);
+                    if (!m_prefabSceneMode && filePath.filename().extension().string() == ".prefab") {
+                       prefab::Prefab::m_CreatePrefab(filePath.filename().string(), m_activeScene);
                     }
                 }
                 ImGui::EndDragDropTarget();

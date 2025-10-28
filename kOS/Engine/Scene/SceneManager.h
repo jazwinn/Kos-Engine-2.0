@@ -33,11 +33,13 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "DeSerialization/json_handler.h"
 #include "Events/Delegate.h"
 #include "SceneData.h"
+#include "ECS/ECS.h"
 
 namespace scenes {
 
 	class SceneManager {
 	public:
+		SceneManager();
 		static SceneManager* m_GetInstance() {
 			if (!m_InstancePtr) {
 				m_InstancePtr.reset(new SceneManager{});
@@ -50,7 +52,7 @@ namespace scenes {
 		void LoadScene(const std::filesystem::path& scenepath);
 		void ReloadScene();
 
-		void ClearAllScene();
+		void ClearAllScene(bool includePrefabs = false);
 		void ClearScene(const std::string& scene);
 		void SaveScene(const std::string& scene);
 
@@ -64,7 +66,10 @@ namespace scenes {
 
 		void SaveAllActiveScenes(bool includeprefab = false);
 		void SwapScenes(const std::string& oldscene, const std::string& newscene , ecs::EntityID id);
-		void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
+
+		void SetSceneActive(const std::string& scene, bool active);
+
+		//void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
 		//EVENTS
 
 		Delegate<const SceneData&> onSceneLoaded;
@@ -91,6 +96,8 @@ namespace scenes {
 		*/
 		/******************************************************************/
 		static std::shared_ptr<SceneManager> m_InstancePtr;
+
+		ecs::ECS* m_ecs;
 
 	};
 }

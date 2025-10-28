@@ -53,7 +53,7 @@ namespace ecs {
             NameComponent* name = ecs->GetComponent<NameComponent>(id);
             CharacterControllerComponent* charctrl = ecs->GetComponent<CharacterControllerComponent>(id);
 
-            if (!trans || !charctrl || trans->scene != scene || name->hide) { continue; }
+            if (name->hide) { continue; }
 
             PxController* ctrl = static_cast<PxController*>(charctrl->controller);
 

@@ -91,6 +91,15 @@ void gui::ImGuiHandler::DrawComponentWindow()
                 }
 
             }
+            if (nc->isPrefab && !m_prefabSceneMode) {
+                ImGui::SameLine();
+                if (ImGui::Button("Overwrite")) {
+                    // Look for component of prefab and set data from me
+                    prefab::Prefab::UpdateAllPrefab(nc->prefabName);
+                    ImGui::End();
+                    return;
+                }
+            }
             
             ImGui::TextDisabled(std::string( "Entity ID: " + std::to_string(entityID)).c_str());
 

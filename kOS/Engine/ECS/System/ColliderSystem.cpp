@@ -99,7 +99,7 @@ namespace ecs {
             TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
             NameComponent* name = ecs->GetComponent<NameComponent>(id);
 
-            if (!trans || trans->scene != scene || name->hide) { continue; }
+            if (name->hide) { continue; }
             
             RigidbodyComponent* rb = ecs->GetComponent<RigidbodyComponent>(id);
             BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
