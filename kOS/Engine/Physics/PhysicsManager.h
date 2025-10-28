@@ -46,9 +46,11 @@ namespace physics {
 		PhysicsManager() = default;  
 		~PhysicsManager() = default;
 
-		static std::shared_ptr<PhysicsManager> GetInstance() {
-			if (!m_instancePtr) { m_instancePtr = std::make_shared<PhysicsManager>(); }
-			return m_instancePtr;
+		static PhysicsManager* GetInstance() {
+			if (!m_instancePtr) {
+				m_instancePtr.reset(new PhysicsManager{});
+			}
+			return m_instancePtr.get();
 		}
 		
 		void Init();
