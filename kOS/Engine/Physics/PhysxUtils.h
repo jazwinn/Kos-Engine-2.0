@@ -28,6 +28,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define PHYSXUTILS_H
 
 #include "ECS/Component/RigidbodyComponent.h"
+#include "ECS/Component/TransformComponent.h"
 #include "Physics/PhysicsLayer.h"
 #include "PHYSX/PxPhysicsAPI.h"
 
@@ -142,5 +143,13 @@ inline PxFilterFlags ToPhysxCustomFilter(PxFilterObjectAttributes a0, PxFilterDa
 	pairFlags |= PxPairFlag::eNOTIFY_TOUCH_LOST;
 	return PxFilterFlag::eDEFAULT;
 }
+
+struct RaycastHit {
+	PxRigidActor* rigidbody = nullptr;
+	PxShape* collider = nullptr;
+	glm::vec3 point;
+	glm::vec3 normal;
+	float distance = 0.0f;
+};
 
 #endif
