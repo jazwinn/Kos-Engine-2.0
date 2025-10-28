@@ -16,7 +16,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <RAPIDJSON/document.h>
 #include <RAPIDJSON/writer.h>
 #include <RAPIDJSON/stringbuffer.h>
-#include <iostream>
 
 template <typename T>
 struct SaveComponent {
