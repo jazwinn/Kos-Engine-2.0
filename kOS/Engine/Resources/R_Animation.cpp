@@ -86,7 +86,7 @@ R_Animation::NodeData R_Animation::NodeDataParser(std::string& serialized, int& 
         node.name += DecodeBinary<char>(serialized, offset);
     }
     std::cout << "ADDING NODE DATA NAME " << node.name;
-    node.transformation= DecodeBinary<glm::mat4>(serialized, offset);
+    node.transformation = DecodeBinary<glm::mat4>(serialized, offset);
     nameSize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
     //Add childrean kill me pls hi Sean
     for (unsigned int i{ 0 }; i < nameSize; i++) {
@@ -94,7 +94,7 @@ R_Animation::NodeData R_Animation::NodeDataParser(std::string& serialized, int& 
     }
     return node;
 }
-void R_Animation::Load()  {
+void R_Animation::Load() {
 
     //Load from file 
     std::ifstream inputFile(this->m_filePath.string().c_str(), std::ios::binary);
@@ -114,14 +114,14 @@ void R_Animation::Load()  {
         this->m_Name += DecodeBinary<char>(serialized, offset);
         //std::cout << this->m_Name << '\n';
     }
-    std::cout << "ANBIMATION DETAILKS\n";
-    std::cout << this->m_Duration <<'\n';
-    std::cout << this->m_TicksPerSecond << '\n';
-    std::cout << nameSize;
-    std::cout << this->m_Name<<'\n';
+    /// std::cout << "ANBIMATION DETAILKS\n";
+    /// std::cout << this->m_Duration << '\n';
+    /// std::cout << this->m_TicksPerSecond << '\n';
+    /// std::cout << nameSize;
+    /// std::cout << this->m_Name << '\n';
 
     unsigned int boneSize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
-    std::cout << "BONE SIZE" << boneSize << '\n';
+    ///std::cout << "BONE SIZE" << boneSize << '\n';
     for (unsigned int i{ 0 }; i < boneSize; i++) {
         //deserialize key
         unsigned int keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
@@ -132,15 +132,15 @@ void R_Animation::Load()  {
 
         //Add a bone based on the key
         m_Bones[key] = Bone{};
-        std::cout<<"KEY NAME" << key << '\n';
+        /// std::cout << "KEY NAME" << key << '\n';
 
-        //Get bone name
+         //Get bone name
         keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
         key.clear();
         for (unsigned int i{ 0 }; i < keySize; i++) {
             key += DecodeBinary<char>(serialized, offset);
         }
-        std::cout << "NAME" << key << '\n';
+        /// std::cout << "NAME" << key << '\n';
         m_Bones[key].m_Name = key;
 
         //Serialize ID
@@ -150,10 +150,10 @@ void R_Animation::Load()  {
         keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
         for (unsigned int i{ 0 }; i < keySize; i++) {
             glm::vec3 pos;
-            pos.x= DecodeBinary<float>(serialized, offset);
+            pos.x = DecodeBinary<float>(serialized, offset);
             pos.y = DecodeBinary<float>(serialized, offset);
             pos.z = DecodeBinary<float>(serialized, offset);
-            std::cout <<"POSITON DATA" << pos.x << ' ' << pos.y << ' ' << pos.z << '\n';
+            /// std::cout << "POSITON DATA" << pos.x << ' ' << pos.y << ' ' << pos.z << '\n';
             m_Bones[key].m_Positions.push_back(pos);
         }
 
@@ -161,7 +161,7 @@ void R_Animation::Load()  {
         keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
         for (unsigned int i{ 0 }; i < keySize; i++) {
             m_Bones[key].m_PosTimes.push_back(DecodeBinary<float>(serialized, offset));
-            std::cout << "POS TIME" << m_Bones[key].m_PosTimes.back() << '\n';
+            ///  std::cout << "POS TIME" << m_Bones[key].m_PosTimes.back() << '\n';
         }
 
 
@@ -173,7 +173,7 @@ void R_Animation::Load()  {
             rot.y = DecodeBinary<float>(serialized, offset);
             rot.z = DecodeBinary<float>(serialized, offset);
             rot.w = DecodeBinary<float>(serialized, offset);
-            std::cout << "Rotation DATA" << rot.x << ' ' << rot.y << ' ' << rot.z <<rot.w<< '\n';
+            /// std::cout << "Rotation DATA" << rot.x << ' ' << rot.y << ' ' << rot.z << rot.w << '\n';
             m_Bones[key].m_Rotations.push_back(rot);
         }
 
@@ -181,7 +181,7 @@ void R_Animation::Load()  {
         keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
         for (unsigned int i{ 0 }; i < keySize; i++) {
             m_Bones[key].m_RotTimes.push_back(DecodeBinary<float>(serialized, offset));
-            std::cout << "ROT TIME" << m_Bones[key].m_RotTimes.back() << '\n';
+            /// std::cout << "ROT TIME" << m_Bones[key].m_RotTimes.back() << '\n';
         }
 
         //Get scales 
@@ -191,7 +191,7 @@ void R_Animation::Load()  {
             scale.x = DecodeBinary<float>(serialized, offset);
             scale.y = DecodeBinary<float>(serialized, offset);
             scale.z = DecodeBinary<float>(serialized, offset);
-            std::cout << "Rotation DATA" << scale.x << ' ' << scale.y << ' ' << scale.z << '\n';
+            /// std::cout << "Rotation DATA" << scale.x << ' ' << scale.y << ' ' << scale.z << '\n';
             m_Bones[key].m_Scales.push_back(scale);
         }
 
@@ -199,13 +199,51 @@ void R_Animation::Load()  {
         keySize = static_cast<unsigned int>(DecodeBinary<size_t>(serialized, offset));
         for (unsigned int i{ 0 }; i < keySize; i++) {
             m_Bones[key].m_ScaleTimes.push_back(DecodeBinary<float>(serialized, offset));
-            std::cout << "POS TIME" << m_Bones[key].m_ScaleTimes.back() << '\n';
+            /// std::cout << "POS TIME" << m_Bones[key].m_ScaleTimes.back() << '\n';
         }
     }
-    this->m_RootNode=NodeDataParser(serialized, offset);
-    
+    this->m_RootNode = NodeDataParser(serialized, offset);
 
+    const int MAX_BONES{ 200 };
+    m_FinalBoneTransforms.resize(MAX_BONES, glm::mat4(1.0f));
+}
 
+void R_Animation::Update(float currentTime, const glm::mat4& parentTransform, const glm::mat4& globalInverse,
+    const std::unordered_map<std::string, int>& boneMap,
+    const std::vector<BoneInfo>& boneInfo)
+{
+    CalculateBoneTransform(GetRootNode(), parentTransform, globalInverse, boneMap, boneInfo);
+}
+
+void R_Animation::CalculateBoneTransform(const NodeData& node, const glm::mat4& parentTransform, const glm::mat4& globalInverse,
+    const std::unordered_map<std::string, int>& boneMap,
+    const std::vector<BoneInfo>& boneInfo)
+{
+    std::string nodeName(node.name);
+    glm::mat4 nodeTransform = node.transformation;
+
+    const Bone* bone = FindBone(nodeName);
+    if (bone)
+    {
+        nodeTransform = bone->Interpolate(m_CurrentTime);
+    }
+
+    glm::mat4 globalTransform = parentTransform * nodeTransform;
+
+    if (boneMap.find(nodeName) != boneMap.end())
+    {
+        int index = boneMap.at(nodeName);
+        m_FinalBoneTransforms[index] = globalInverse * globalTransform * boneInfo.at(index).offsetMatrix;
+    }
+    else
+    {
+        ///There shouldnt be any unrecognized bones here
+    }
+
+    for (const NodeData& child : node.children)
+    {
+        CalculateBoneTransform(child, globalTransform, globalInverse, boneMap, boneInfo);
+    }
 }
 
 void R_Animation::Unload() {

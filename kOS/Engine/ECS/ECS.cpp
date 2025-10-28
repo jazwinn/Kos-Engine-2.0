@@ -32,6 +32,7 @@ namespace ecs{
 		RegisterComponent<MeshFilterComponent>();
 		RegisterComponent<CanvasRendererComponent>();
 		RegisterComponent<MeshRendererComponent>();
+		RegisterComponent<MaterialComponent>();
 		RegisterComponent<SkinnedMeshRendererComponent>();
 		RegisterComponent<AnimatorComponent>();
 		RegisterComponent<LightComponent>();
@@ -54,9 +55,9 @@ namespace ecs{
 		RegisterSystem<PhysicsSystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<CameraSystem, TransformComponent, CameraComponent>();
 		RegisterSystem<RenderSystem, TransformComponent, SpriteComponent>();
-		RegisterSystem<MeshRenderSystem, TransformComponent, MeshRendererComponent, MeshFilterComponent>();
+		RegisterSystem<MeshRenderSystem, TransformComponent, MaterialComponent, MeshFilterComponent>();
 		RegisterSystem<SkinnedMeshRenderSystem, TransformComponent, SkinnedMeshRendererComponent>();
-		RegisterSystem<CubeRenderSystem, TransformComponent, MeshRendererComponent, CubeRendererComponent,BoxColliderComponent>();
+		RegisterSystem<CubeRenderSystem, TransformComponent, MeshRendererComponent, CubeRendererComponent>();
 		RegisterSystem<CanvasTextRenderSystem, TransformComponent, CanvasRendererComponent>();
 		RegisterSystem<CanvasSpriteRenderSystem, TransformComponent, CanvasRendererComponent>();
 		RegisterSystem<AnimatorSystem, TransformComponent, AnimatorComponent>();
@@ -82,7 +83,7 @@ namespace ecs{
 	void ECS::Update(float DT) {
 
 		//update deltatime
-		deltaTime = DT;
+		m_deltaTime = DT;
 
 		
 		//check for gamestate

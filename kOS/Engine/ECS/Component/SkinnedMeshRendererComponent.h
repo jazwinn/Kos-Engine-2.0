@@ -31,10 +31,25 @@ namespace ecs {
     class SkinnedMeshRendererComponent : public Component {
 
     public:
-        std::string meshGUID{};        // Skinned mesh asset
+        std::string skinnedMeshGUID{}; // Skinned mesh asset
         std::string materialGUID{};    // Material asset
+        std::string skeletonGUID{};
 
-        REFLECTABLE(SkinnedMeshRendererComponent, meshGUID, materialGUID);
+        //Temporary
+        std::string diffuseMaterialGUID{};   // Path or ID for material asset
+        std::string specularMaterialGUID{};
+        std::string normalMaterialGUID{};
+        std::string ambientOcclusionMaterialGUID{};
+        std::string roughnessMaterialGUID{};
+
+        REFLECTABLE(SkinnedMeshRendererComponent, skinnedMeshGUID, materialGUID, skeletonGUID, diffuseMaterialGUID, specularMaterialGUID, normalMaterialGUID, ambientOcclusionMaterialGUID, roughnessMaterialGUID);
+
+        std::string cachedSkinnedMeshGUID{};
+        std::string cachedMaterialGUID{};
+        std::string cachedSkeletonGUID{};
+        void* cachedSkinnedMeshResource{};
+        void* cachedMaterialResource{};
+        void* cachedSkeletonResource{};
     };
 
 }

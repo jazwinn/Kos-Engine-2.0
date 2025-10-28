@@ -88,6 +88,7 @@ namespace gui {
 		RegisterComponent<ecs::CubeRendererComponent>();
 		RegisterComponent<ecs::ParticleComponent>();
 
+		RegisterComponent<ecs::MaterialComponent>();
 		//Allocate to map
 		EditorComponentTypeRegistry::CreateAllDrawers(componentDrawers);
 
@@ -149,7 +150,7 @@ namespace gui {
 
 		NewFrame();
 
-		if (Input::InputSystem::inputSystem->IsKeyTriggered(keys::F11))
+		if (Input::InputSystem::GetInstance()->IsKeyTriggered(keys::F11))
 		{
 
 		}
