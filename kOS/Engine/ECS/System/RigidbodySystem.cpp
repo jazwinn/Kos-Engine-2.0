@@ -84,9 +84,9 @@ namespace ecs {
             PxRigidDynamic* actor = reinterpret_cast<PxRigidDynamic*>(rb->actor);
 
             if (!rb->actor) {
-                glm::quat rot{ glm::radians(trans->LocalTransformation.rotation) };
+                glm::quat rot{ glm::radians(trans->WorldTransformation.rotation) };
                 PxTransform pos{
-                    PxVec3{ trans->LocalTransformation.position.x, trans->LocalTransformation.position.y, trans->LocalTransformation.position.z },
+                    PxVec3{ trans->WorldTransformation.position.x, trans->WorldTransformation.position.y, trans->WorldTransformation.position.z },
                     PxQuat{ rot.x, rot.y, rot.z, rot.w }
                 };
 
@@ -155,8 +155,8 @@ namespace ecs {
                 ToPhysxInterpolation(actor, rb->interpolation);
             }
 
-            glm::vec3 pos{ trans->LocalTransformation.position };
-            glm::quat rot{ glm::radians(trans->LocalTransformation.rotation) };
+            glm::vec3 pos{ trans->WorldTransformation.position };
+            glm::quat rot{ glm::radians(trans->WorldTransformation.rotation) };
             PxTransform pxTrans{ PxVec3{ pos.x, pos.y, pos.z }, PxQuat{ rot.x, rot.y, rot.z, rot.w } };
 
             if (rb->isKinematic) {
@@ -164,9 +164,11 @@ namespace ecs {
             } else {
                 actor->setGlobalPose(pxTrans);
                 PxTransform pose = actor->getGlobalPose();
-                trans->LocalTransformation.position = glm::vec3{ pose.p.x,pose.p.y,pose.p.z };
+                TransformSystem::SetImmediateWorldPosition(trans, glm::vec3{ pose.p.x,pose.p.y,pose.p.z });
+                //trans->WorldTransformation.position = glm::vec3{ pose.p.x,pose.p.y,pose.p.z };
                 glm::quat q{ pose.q.w,pose.q.x,pose.q.y,pose.q.z };
-                trans->LocalTransformation.rotation = glm::degrees(glm::eulerAngles(q));
+                //trans->WorldTransformation.rotation = glm::degrees(glm::eulerAngles(q));
+                TransformSystem::SetImmediateWorldRotation(trans, glm::degrees(glm::eulerAngles(q)));
             }
         }
     }

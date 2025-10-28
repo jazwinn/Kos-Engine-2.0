@@ -361,9 +361,14 @@ namespace gui {
         }
 
         //create color if prefab
-        if (nc->isPrefab) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.2f, 0.1f, 1.0f));
+        if (nc->isPrefab) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.2f, 0.1f, 1.0f));
+        }
+        else if (nc->hide) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+        }
         bool open = ImGui::TreeNodeEx(std::to_string(id).c_str(), flag, nc->entityName.c_str());
-        if (nc->isPrefab) ImGui::PopStyleColor();
+        if (nc->isPrefab || nc->hide) ImGui::PopStyleColor();
 
         if (ImGui::IsItemClicked())
         {
