@@ -297,6 +297,7 @@ namespace gui {
 		//char filePath[MAX_PATH];
 		std::filesystem::path path = filewindow::m_OpenfileDialog(AssetManager::GetInstance()->GetAssetManagerDirectory().c_str());
 		if (!path.empty() && (path.filename().extension().string() == ".json")) {
+			ecs::ECS::GetInstance()->SetState(ecs::STOP);
 			//clear all other scenes
 			scenemanager->ClearAllScene();
 			scenemanager->LoadScene(path);

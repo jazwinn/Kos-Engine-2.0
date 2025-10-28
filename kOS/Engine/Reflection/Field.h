@@ -99,7 +99,7 @@ public:
 
 };
 
-class ComponentTypeRegistry {
+class FieldComponentTypeRegistry {
 private:
     static std::unordered_map<std::string, std::function<std::shared_ptr<IFieldInvoker>()>> actionFactories;
 

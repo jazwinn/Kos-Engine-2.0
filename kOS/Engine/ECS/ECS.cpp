@@ -5,7 +5,6 @@
 #include "Hierachy.h"
 #include "Reflection/ReflectionInvoker.h"
 #include "Debugging/Performance.h"
-#include "Config/ComponentRegistry.h"
 #include "Reflection/Field.h"
 #include "Scene/SceneManager.h"
 
@@ -18,9 +17,6 @@ namespace ecs{
 	std::unordered_map<std::string, std::function<std::shared_ptr<IActionInvoker>()>> ComponentTypeRegistry::actionFactories;
 
 	void ECS::Load() {
-
-		ComponentRegistry::SetECSInstance(m_InstancePtr.get());
-		ComponentRegistry::SetFieldInstance(FieldSingleton::GetInstance());
 
 		//Allocate memory to each component pool
 		RegisterComponent<NameComponent>();

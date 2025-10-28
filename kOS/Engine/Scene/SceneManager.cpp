@@ -35,12 +35,11 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ECS/ECS.h"
 #include "ECS/Hierachy.h"
 #include "Resources/ResourceManager.h"
-#include "Config/ComponentRegistry.h"
 
 namespace scenes {
     std::shared_ptr<SceneManager> SceneManager::m_InstancePtr = nullptr;
 
-    bool SceneManager::CreateNewScene(std::filesystem::path scene)
+    bool SceneManager::CreateNewScene(const std::filesystem::path& scene)
     {
         std::ifstream checkFile(scene.string());
         //check if file name exist
@@ -58,7 +57,6 @@ namespace scenes {
             return false; 
         }
 
-        // start with []
         fprintf(fp, "[]");
         char writeBuffer[1];  // Buffer to optimize file writing
         rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
@@ -67,11 +65,13 @@ namespace scenes {
 
         std::fclose(fp);
 
+		Serialization::SaveScene(scene.string());
+
         // return file path
         return true;
     }
 
-    void SceneManager::LoadScene(std::filesystem::path scene)
+    void SceneManager::LoadScene(const std::filesystem::path& scene)
     {
         m_loadQueue.push_back(scene);
     }
@@ -146,12 +146,12 @@ namespace scenes {
         }
     }
 
-    void SceneManager::ClearScene(std::string scene)
+    void SceneManager::ClearScene(const std::string& scene)
     {
         m_clearQueue.push_back(scene);
     }
 
-    void SceneManager::SaveScene(std::string scene)
+    void SceneManager::SaveScene(const std::string& scene)
     {
         const auto& scenepath = loadScenePath.find(scene);
         if (scenepath != loadScenePath.end()) {
@@ -196,15 +196,8 @@ namespace scenes {
 		}
 	}
 
-	bool SceneManager::ImmediateLoadScene(std::filesystem::path scene)
+	bool SceneManager::ImmediateLoadScene(const std::filesystem::path& scene)
 	{
-		// check if it is json file type
-		//if (scene.filename().extension().string() != ".json" && scene.filename().extension().string() != ".prefab") {
-
-		//	LOGGING_WARN("File Type not .json");
-
-		//	return;
-		//}
 
 
 		ecs::ECS* ecs = ecs::ECS::GetInstance();
@@ -275,7 +268,7 @@ namespace scenes {
         return true;
 	}
 
-	void SceneManager::ImmediateClearScene(std::string scene)
+	void SceneManager::ImmediateClearScene(const std::string& scene)
 	{
 		ecs::ECS* ecs = ecs::ECS::GetInstance();
 
@@ -294,7 +287,7 @@ namespace scenes {
 	}
 
 
-	void SceneManager::SwapScenes(std::string oldscene, std::string newscene, ecs::EntityID id)
+	void SceneManager::SwapScenes(const std::string& oldscene, const std::string& newscene, ecs::EntityID id)
     {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         std::vector<ecs::EntityID>& vectorenityid = ecs->sceneMap.find(oldscene)->second.sceneIDs;

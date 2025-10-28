@@ -6,7 +6,7 @@ class SceneData
 {
 public:
 
-	std::string collisionData;
+	std::string collisionData = "111111111|100000000|100000000|100000000|100000000|100000000|100000000|100000000|100000000|";
 	std::vector<std::string> skyBoxGUID;
 	float ambientIntensity{ 1.0f };
 	
