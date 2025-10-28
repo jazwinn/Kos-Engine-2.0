@@ -6,7 +6,7 @@
 \date      Oct 03 2025
 \brief     The main graphics manager for our system
 		   It initializes all the necessary objects to be used for
-		   rendering graphics. 
+		   rendering graphics.
 		   Houses functions to be called on update as well
 
 		   Rundown for the graphics system goes as follows
@@ -32,7 +32,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ShaderManager.h"
 #include "FramebufferManager.h"
 
-class GraphicsManager 
+class GraphicsManager
 {
 public:
 	//Singleton class, remove all copy and assignment operations
@@ -53,7 +53,7 @@ public:
 	}
 
 	//Main Functions
-	void gm_Initialize(float width,float height);
+	void gm_Initialize(float width, float height);
 	void gm_Update();
 	void gm_Render();
 	void gm_RenderDebug();
@@ -75,6 +75,11 @@ public:
 	inline void gm_PushCubeDebugData(BasicDebugData&& data) { debugRenderer.basicDebugCubes.emplace_back(std::move(data)); };
 	inline void gm_PushCubeData(CubeRenderer::CubeData&& data) { cubeRenderer.cubesToDraw.emplace_back(std::move(data)); };
 	void gm_DrawMaterial(const PBRMaterial& md, FrameBuffer& fb);
+	inline void gm_PushSkinnedMeshData(SkinnedMeshData&& skinnedMeshData) {
+		skinnedMeshRenderer.skinnedMeshesToDraw.emplace_back(std::move(skinnedMeshData));
+		skinnedMeshRenderer.skinnedMeshLookup[skinnedMeshRenderer.skinnedMeshesToDraw.back().entityID]
+			= &skinnedMeshRenderer.skinnedMeshesToDraw.back();
+	};
 
 	//Accessors
 	inline const FrameBuffer& gm_GetEditorBuffer() const { return framebufferManager.editorBuffer; };
@@ -106,16 +111,17 @@ private:
 	TextRenderer textRenderer;
 	SpriteRenderer spriteRenderer;
 	MeshRenderer meshRenderer;
+	SkinnedMeshRenderer skinnedMeshRenderer;
 	LightRenderer lightRenderer;
-	DebugRenderer debugRenderer;	
+	DebugRenderer debugRenderer;
 	CubeRenderer cubeRenderer;
 	//Managers
 	ShaderManager shaderManager;
 	FramebufferManager framebufferManager;
-	
+
 	Cube cube;
 	Sphere sphere;
 	//Viewport sizes
 	float windowWidth, windowHeight;
-	
+
 };

@@ -48,6 +48,15 @@ struct MeshRenderer : BasicRenderer
 	void Clear() override;
 	std::vector<MeshData> meshesToDraw{};
 };
+
+struct SkinnedMeshRenderer : BasicRenderer
+{
+	void Render(const CameraData& camera, Shader& shader);
+	void Clear() override;
+	std::vector<SkinnedMeshData> skinnedMeshesToDraw{};
+	std::unordered_map<unsigned int, SkinnedMeshData*> skinnedMeshLookup{}; //Entity ID, Skinned Mesh Pointer
+};
+
 struct CubeRenderer : BasicRenderer
 {
 	struct CubeData {
@@ -55,7 +64,7 @@ struct CubeRenderer : BasicRenderer
 		glm::mat4 transformation{ 1.f };
 		unsigned int entityID{ 0 };
 	};
-	void Render(const CameraData& camera, Shader& shader,Cube* cubePtr);
+	void Render(const CameraData& camera, Shader& shader, Cube* cubePtr);
 	void Clear();
 	std::vector<CubeData> cubesToDraw{};
 };
