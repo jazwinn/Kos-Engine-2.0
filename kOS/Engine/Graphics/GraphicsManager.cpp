@@ -27,7 +27,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 std::shared_ptr<GraphicsManager> GraphicsManager::gm = std::make_shared<GraphicsManager>();
 
 //Variables to debug graphics
-namespace DebugGraphics{
+namespace DebugGraphics {
 	std::map<std::string, Shader>shaderList;
 	std::vector<PBRMaterial> materialList;
 	std::vector<Textures> textureList;
@@ -45,7 +45,7 @@ namespace DebugGraphics{
 }
 
 void GraphicsManager::gm_Initialize(float width, float height) {
-	
+
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -70,23 +70,23 @@ void GraphicsManager::gm_Initialize(float width, float height) {
 
 void GraphicsManager::gm_Update()
 {
-	
+
 }
-	
+
 void GraphicsManager::gm_Render()
 {
 	glViewport(0, 0, static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
-		
+
 	//Force only first camera to be active for now
 	currentGameCameraIndex = 0;
 	if (currentGameCameraIndex + 1 <= gameCameras.size())
 		gm_RenderToGameFrameBuffer();
 	if (editorCameraActive) {
 		gm_RenderToEditorFrameBuffer();
-/*		std::vector<float> alpha(1920 * 1080);
-		glBindTexture(GL_TEXTURE_2D, framebufferManager.gBuffer.gMaterial);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_ALPHA, GL_FLOAT, alpha.data());
-		std::cout << alpha[0] << '\n'*/
+		/*		std::vector<float> alpha(1920 * 1080);
+				glBindTexture(GL_TEXTURE_2D, framebufferManager.gBuffer.gMaterial);
+				glGetTexImage(GL_TEXTURE_2D, 0, GL_ALPHA, GL_FLOAT, alpha.data());
+				std::cout << alpha[0] << '\n'*/
 	}
 	gm_Clear();
 }
@@ -108,6 +108,7 @@ void GraphicsManager::gm_Clear()
 	debugRenderer.Clear();
 	gameCameras.clear();
 	cubeRenderer.Clear();
+	skinnedMeshRenderer.Clear();
 	//editorCameraActive = false;
 }
 
@@ -124,7 +125,7 @@ void GraphicsManager::gm_InitializeMeshes()
 	debugRenderer.InitializeDebugRendererMeshes();
 }
 
- 
+
 void GraphicsManager::gm_RenderToEditorFrameBuffer()
 {
 	gm_FillDataBuffers(editorCamera);
@@ -140,8 +141,8 @@ void GraphicsManager::gm_RenderToEditorFrameBuffer()
 	gm_RenderUIObjects(editorCamera);
 
 	Shader* fboCompositeShader{ &shaderManager.engineShaders.find("FBOCompositeShader")->second };
-	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer, 
-									  framebufferManager.editorBuffer, *fboCompositeShader );
+	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer,
+		framebufferManager.editorBuffer, *fboCompositeShader);
 
 
 }
@@ -162,7 +163,7 @@ void GraphicsManager::gm_RenderToGameFrameBuffer()
 
 	Shader* fboCompositeShader{ &shaderManager.engineShaders.find("FBOCompositeShader")->second };
 	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer,
-								      framebufferManager.gameBuffer, *fboCompositeShader);
+		framebufferManager.gameBuffer, *fboCompositeShader);
 }
 
 
@@ -189,6 +190,7 @@ void GraphicsManager::gm_FillGBuffer(const CameraData& camera)
 
 	//Render all meshes
 	meshRenderer.Render(camera, *gBufferPBRShader);
+	skinnedMeshRenderer.Render(camera, *gBufferPBRShader);
 	cubeRenderer.Render(camera, *gBufferPBRShader, &this->cube);
 	//Render debug objects if any
 	debugRenderer.RenderPointLightDebug(camera, *gBufferPBRShader, lightRenderer.pointLightsToDraw);
@@ -206,15 +208,16 @@ void GraphicsManager::gm_FillDepthBuffer(const CameraData& camera)
 	glCullFace(GL_FRONT);
 	Shader* depthMapShader{ &shaderManager.engineShaders.find("DepthMapShader")->second };
 	lightRenderer.RenderAllLights(camera, *depthMapShader);
-	
+
 	depthMapShader->Use();
-	
+
 	//Manual bind
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferManager.depthBuffer.depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	//Render Objects
 	meshRenderer.Render(camera, *depthMapShader);
+	skinnedMeshRenderer.Render(camera, *depthMapShader);
 	cubeRenderer.Render(camera, *depthMapShader, &this->cube);
 
 	//Finish Depth Buffer
@@ -230,7 +233,7 @@ void GraphicsManager::gm_RenderCubeMap(const CameraData& camera)
 
 void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 {
-	Shader* deferredPBRShader{ &shaderManager.engineShaders.find("DeferredPBRShader")->second};
+	Shader* deferredPBRShader{ &shaderManager.engineShaders.find("DeferredPBRShader")->second };
 
 
 	lightRenderer.RenderAllLights(camera, *deferredPBRShader);
@@ -244,7 +247,7 @@ void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 	deferredPBRShader->SetInt("pointLightNo", static_cast<int>(lightRenderer.pointLightsToDraw.size()));
 	deferredPBRShader->SetInt("dirLightNo", static_cast<int>(lightRenderer.directionLightsToDraw.size()));
 	deferredPBRShader->SetInt("spotLightNo", static_cast<int>(lightRenderer.spotLightsToDraw.size()));
-	
+
 
 	framebufferManager.gBuffer.UseGTextures();
 	glActiveTexture(GL_TEXTURE5);
