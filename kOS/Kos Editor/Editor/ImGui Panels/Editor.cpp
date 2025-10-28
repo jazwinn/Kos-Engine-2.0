@@ -86,6 +86,7 @@ namespace gui {
 		RegisterComponent<ecs::AudioComponent>();
 		RegisterComponent<ecs::OctreeGeneratorComponent>();
 		RegisterComponent<ecs::CubeRendererComponent>();
+		RegisterComponent<ecs::ParticleComponent>();
 
 		//Allocate to map
 		EditorComponentTypeRegistry::CreateAllDrawers(componentDrawers);
