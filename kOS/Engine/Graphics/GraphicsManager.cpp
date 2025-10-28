@@ -27,7 +27,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 std::shared_ptr<GraphicsManager> GraphicsManager::gm = std::make_shared<GraphicsManager>();
 
 //Variables to debug graphics
-namespace DebugGraphics{
+namespace DebugGraphics {
 	std::map<std::string, Shader>shaderList;
 	std::vector<PBRMaterial> materialList;
 	std::vector<Textures> textureList;
@@ -45,7 +45,7 @@ namespace DebugGraphics{
 }
 
 void GraphicsManager::gm_Initialize(float width, float height) {
-	
+
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -70,23 +70,23 @@ void GraphicsManager::gm_Initialize(float width, float height) {
 
 void GraphicsManager::gm_Update()
 {
-	
+
 }
-	
+
 void GraphicsManager::gm_Render()
 {
 	glViewport(0, 0, static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
-		
+
 	//Force only first camera to be active for now
 	currentGameCameraIndex = 0;
 	if (currentGameCameraIndex + 1 <= gameCameras.size())
 		gm_RenderToGameFrameBuffer();
 	if (editorCameraActive) {
 		gm_RenderToEditorFrameBuffer();
-/*		std::vector<float> alpha(1920 * 1080);
-		glBindTexture(GL_TEXTURE_2D, framebufferManager.gBuffer.gMaterial);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_ALPHA, GL_FLOAT, alpha.data());
-		std::cout << alpha[0] << '\n'*/
+		/*		std::vector<float> alpha(1920 * 1080);
+				glBindTexture(GL_TEXTURE_2D, framebufferManager.gBuffer.gMaterial);
+				glGetTexImage(GL_TEXTURE_2D, 0, GL_ALPHA, GL_FLOAT, alpha.data());
+				std::cout << alpha[0] << '\n'*/
 	}
 	gm_Clear();
 }
@@ -108,6 +108,7 @@ void GraphicsManager::gm_Clear()
 	debugRenderer.Clear();
 	gameCameras.clear();
 	cubeRenderer.Clear();
+	skinnedMeshRenderer.Clear();
 	//editorCameraActive = false;
 }
 
@@ -119,12 +120,13 @@ void GraphicsManager::gm_ResetFrameBuffer() {
 void GraphicsManager::gm_InitializeMeshes()
 {
 	cube.CreateMesh();
+	sphere.CreateMesh();
 	textRenderer.InitializeTextRendererMeshes();
 	spriteRenderer.InitializeSpriteRendererMeshes();
 	debugRenderer.InitializeDebugRendererMeshes();
 }
 
- 
+
 void GraphicsManager::gm_RenderToEditorFrameBuffer()
 {
 	gm_FillDataBuffers(editorCamera);
@@ -140,8 +142,8 @@ void GraphicsManager::gm_RenderToEditorFrameBuffer()
 	gm_RenderUIObjects(editorCamera);
 
 	Shader* fboCompositeShader{ &shaderManager.engineShaders.find("FBOCompositeShader")->second };
-	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer, 
-									  framebufferManager.editorBuffer, *fboCompositeShader );
+	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer,
+		framebufferManager.editorBuffer, *fboCompositeShader);
 
 
 }
@@ -162,7 +164,7 @@ void GraphicsManager::gm_RenderToGameFrameBuffer()
 
 	Shader* fboCompositeShader{ &shaderManager.engineShaders.find("FBOCompositeShader")->second };
 	framebufferManager.ComposeBuffers(framebufferManager.sceneBuffer, framebufferManager.UIBuffer,
-								      framebufferManager.gameBuffer, *fboCompositeShader);
+		framebufferManager.gameBuffer, *fboCompositeShader);
 }
 
 
@@ -189,6 +191,7 @@ void GraphicsManager::gm_FillGBuffer(const CameraData& camera)
 
 	//Render all meshes
 	meshRenderer.Render(camera, *gBufferPBRShader);
+	skinnedMeshRenderer.Render(camera, *gBufferPBRShader);
 	cubeRenderer.Render(camera, *gBufferPBRShader, &this->cube);
 	//Render debug objects if any
 	debugRenderer.RenderPointLightDebug(camera, *gBufferPBRShader, lightRenderer.pointLightsToDraw);
@@ -206,22 +209,98 @@ void GraphicsManager::gm_FillDepthBuffer(const CameraData& camera)
 	glCullFace(GL_FRONT);
 	Shader* depthMapShader{ &shaderManager.engineShaders.find("DepthMapShader")->second };
 	lightRenderer.RenderAllLights(camera, *depthMapShader);
-	
+
 	depthMapShader->Use();
-	
+
 	//Manual bind
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferManager.depthBuffer.depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	//Render Objects
 	meshRenderer.Render(camera, *depthMapShader);
+	skinnedMeshRenderer.Render(camera, *depthMapShader);
 	cubeRenderer.Render(camera, *depthMapShader, &this->cube);
 
 	//Finish Depth Buffer
 	depthMapShader->Disuse();
 	glCullFace(GL_BACK);
 }
+void GraphicsManager::gm_DrawMaterial(const PBRMaterial& md,FrameBuffer& fb) {
 
+	//Fill g buffer first
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
+	glViewport(0, 0, static_cast<GLsizei>(fb.width), static_cast<GLsizei>(fb.height));
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "Framebuffer not complete: " << status << std::endl;
+	}
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	Shader* materialShader{ &shaderManager.engineShaders.find("MaterialShader")->second };
+	materialShader->Use();
+	glm::mat4 projection = glm::perspective(
+		glm::radians(45.0f),
+		(float)fb.width / fb.height,
+		0.1f, 200.0f
+	);
+	materialShader->SetTrans("projection", projection);
+
+	glm::mat4 view = glm::lookAt(
+		glm::vec3(0, 0, 5),   // camera in front of cube
+		glm::vec3(0, 0, 0),   // looking at cube center
+		glm::vec3(0, 1, 0)
+	);
+	materialShader->SetTrans("view", view);
+
+	glm::mat4 model(1.0f);   // cube at origin
+	model = glm::scale(model, glm::vec3(1.75f));
+	materialShader->SetTrans("model", model);
+
+
+	glActiveTexture(GL_TEXTURE0); // activate proper texture unit before binding
+	materialShader->SetInt("texture_diffuse1", 0);
+	unsigned int currentTexture = 0;
+	currentTexture = (md.albedo) ? md.albedo->RetrieveTexture() : 0;
+	glBindTexture(GL_TEXTURE_2D, currentTexture);
+	//Bind sepcular
+	glActiveTexture(GL_TEXTURE1); // activate proper texture unit before binding
+	materialShader->SetInt("texture_specular1", 1);
+	currentTexture = (md.specular) ? md.specular->RetrieveTexture() : 0;
+	glBindTexture(GL_TEXTURE_2D, currentTexture);
+	//Bind normal
+	glActiveTexture(GL_TEXTURE2); // activate proper texture unit before binding
+	materialShader->SetInt("texture_normal1", 2);
+
+	currentTexture = (md.normal) ? md.normal->RetrieveTexture() : 0;
+	glBindTexture(GL_TEXTURE_2D, currentTexture);
+	//Bind Metallic map
+	glActiveTexture(GL_TEXTURE4); // activate proper texture unit before binding
+	materialShader->SetInt("texture_ao1", 4);
+	currentTexture = (md.ao) ? md.ao->RetrieveTexture() : 0;
+	glBindTexture(GL_TEXTURE_2D, currentTexture);
+	//Bind roughness
+	glActiveTexture(GL_TEXTURE5); // activate proper texture unit before binding
+	materialShader->SetInt("texture_roughness1", 5);
+	currentTexture = (md.roughness) ? md.roughness->RetrieveTexture() : 0;
+	glBindTexture(GL_TEXTURE_2D, currentTexture);
+
+	glDisable(GL_CULL_FACE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//Bind materials
+
+	sphere.DrawMesh();
+
+	glEnable(GL_CULL_FACE);
+
+
+	materialShader->Disuse();
+	GLenum err = glGetError();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
 void GraphicsManager::gm_RenderCubeMap(const CameraData& camera)
 {
 	//Render the cubemap
@@ -230,7 +309,7 @@ void GraphicsManager::gm_RenderCubeMap(const CameraData& camera)
 
 void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 {
-	Shader* deferredPBRShader{ &shaderManager.engineShaders.find("DeferredPBRShader")->second};
+	Shader* deferredPBRShader{ &shaderManager.engineShaders.find("DeferredPBRShader")->second };
 
 
 	lightRenderer.RenderAllLights(camera, *deferredPBRShader);
@@ -244,7 +323,7 @@ void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 	deferredPBRShader->SetInt("pointLightNo", static_cast<int>(lightRenderer.pointLightsToDraw.size()));
 	deferredPBRShader->SetInt("dirLightNo", static_cast<int>(lightRenderer.directionLightsToDraw.size()));
 	deferredPBRShader->SetInt("spotLightNo", static_cast<int>(lightRenderer.spotLightsToDraw.size()));
-	
+
 
 	framebufferManager.gBuffer.UseGTextures();
 	glActiveTexture(GL_TEXTURE5);

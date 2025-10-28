@@ -17,9 +17,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /******************************************************************/
 
 #include "Config/pch.h"
-#include "ECS/ECS.h"
 #include "Input.h"
-#include "../Kos Editor/Application/Window.h"
 
 namespace Input {
 	/*--------------------------------------------------------------
@@ -29,12 +27,10 @@ namespace Input {
 	// The number of frames needed for a button to be pressed before the state turns from triggered to pressed.
 	float secondsBeforePressed = 0.05f;
 
-	// ECS
-	auto* ecs = ecs::ECS::GetInstance();
-
+	std::shared_ptr<InputSystem> InputSystem::m_InstancePtr = nullptr;
 	// Shared pointer
-	//std::shared_ptr<InputSystem> InputSystem::inputSystem{ std::make_shared<InputSystem>(InputSystem{}) };
-	std::unique_ptr<InputSystem> InputSystem::inputSystem{ std::make_unique<InputSystem>(InputSystem{}) };
+	//std::shared_ptr<InputSystem> InputSystem::GetInstance(){ std::make_shared<InputSystem>(InputSystem{}) };
+	
 	int test2 = 10;
 	int* test1 = &test2;
 
@@ -51,15 +47,15 @@ namespace Input {
 		glfwGetWindowSize(window, &width, &height);
 		ypos = static_cast<double>(height - ypos);
 	
-		InputSystem::inputSystem->mousePos.x = static_cast<float>(xpos);
-		InputSystem::inputSystem->mousePos.y = static_cast<float>(ypos);
+		InputSystem::GetInstance()->mousePos.x = static_cast<float>(xpos);
+		InputSystem::GetInstance()->mousePos.y = static_cast<float>(ypos);
 	}		
 	
 	void DropCallback([[maybe_unused]] GLFWwindow* window, int count, const char** paths) {
-		InputSystem::inputSystem->droppedFiles.clear();
+		InputSystem::GetInstance()->droppedFiles.clear();
 
 		for (int i = 0; i < count; ++i) {
-			InputSystem::inputSystem->droppedFiles.emplace_back(paths[i]);
+			InputSystem::GetInstance()->droppedFiles.emplace_back(paths[i]);
 		}
 	}
 	
@@ -81,20 +77,19 @@ namespace Input {
 	}
 	
 	void InputSystem::InputInit(GLFWwindow* window) {
-		InputSystem::inputSystem->inputWindow = window;
+		InputSystem::GetInstance()->inputWindow = window;
 	}
 
-	void InputSystem::InputUpdate() {
+	void InputSystem::InputUpdate(float deltaTime) {
 		
-
 		for (std::pair<const int, Key>& key : keysRegistered) {
 			int state;
 
 			if (key.first == keys::LMB || key.first == keys::RMB || key.first == keys::MMB) {
-				state = glfwGetMouseButton(InputSystem::inputSystem->inputWindow, key.first);
+				state = glfwGetMouseButton(InputSystem::GetInstance()->inputWindow, key.first);
 			}
 			else {
-				state = glfwGetKey(InputSystem::inputSystem->inputWindow, key.first);
+				state = glfwGetKey(InputSystem::GetInstance()->inputWindow, key.first);
 			}
 
 			// Update all prev and curr key states first
@@ -103,7 +98,7 @@ namespace Input {
 
 			// Current checks
 			if (state == GLFW_PRESS) {
-				if (key.second.prevKeyState == KeyState::UNUSED) {
+ 				if (key.second.prevKeyState == KeyState::UNUSED) {
 					if (!key.second.currPressedTimer) {
 						key.second.currKeyState = KeyState::TRIGGERED;
 					}
@@ -111,7 +106,7 @@ namespace Input {
 						key.second.currKeyState = KeyState::WAITING;
 					}
 
-					key.second.currPressedTimer += ecs->deltaTime;
+					key.second.currPressedTimer += deltaTime;
 				}
 
 				if(key.second.currPressedTimer >= secondsBeforePressed) {

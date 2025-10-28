@@ -86,7 +86,7 @@ namespace gui {
 		RegisterComponent<ecs::AudioComponent>();
 		RegisterComponent<ecs::OctreeGeneratorComponent>();
 		RegisterComponent<ecs::CubeRendererComponent>();
-
+		RegisterComponent<ecs::MaterialComponent>();
 		//Allocate to map
 		EditorComponentTypeRegistry::CreateAllDrawers(componentDrawers);
 
@@ -148,7 +148,7 @@ namespace gui {
 
 		NewFrame();
 
-		if (Input::InputSystem::inputSystem->IsKeyTriggered(keys::F11))
+		if (Input::InputSystem::GetInstance()->IsKeyTriggered(keys::F11))
 		{
 
 		}

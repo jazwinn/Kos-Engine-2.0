@@ -104,8 +104,8 @@ void TextRenderer::RenderScreenFonts(const CameraData& camera, Shader& shader)
 				if (!textData.textToDraw.size())return;
 				//std::cout << textData.fontToUse->m_characters.size()<< '\n';
 				//float xpos = (fonts["SF-Pro.ttf"][textData.textToDraw[0]].m_bearing.x / ((static_cast<float>(camera.size.y))) * (textXScalar));
-				float xpos = (textData.fontToUse->m_characters[textData.textToDraw[0]].m_bearing.x 
-							/ ((static_cast<float>(camera.size.y))) * (textXScalar));
+				float xpos = (textData.fontToUse->m_characters[textData.textToDraw[0]].m_bearing.x
+					/ ((static_cast<float>(camera.size.y))) * (textXScalar));
 				textData.position.x -= xpos;
 			}
 
@@ -119,7 +119,7 @@ void TextRenderer::RenderScreenFonts(const CameraData& camera, Shader& shader)
 				float ypos = (textData.position.y - ((float)ch.m_size.y - (float)ch.m_bearing.y) / ((static_cast<float>(camera.size.y))) * (textYScalar));
 				float w = ch.m_size.x * textXScalar / ((static_cast<float>(camera.size.y)));
 				float h = ch.m_size.y * textYScalar / ((static_cast<float>(camera.size.y)));
-				
+
 				// Update VBO for each character with texture coordinates from the atlas
 				float vertices[6][4] =
 				{
@@ -141,7 +141,7 @@ void TextRenderer::RenderScreenFonts(const CameraData& camera, Shader& shader)
 				glBindBuffer(GL_ARRAY_BUFFER, screenTextMesh.vboID);
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			
+
 				// Render quad
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -168,12 +168,33 @@ void TextRenderer::Clear()
 
 void MeshRenderer::Render(const CameraData& camera, Shader& shader)
 {
-	for (MeshData& mesh: meshesToDraw)
+	shader.SetBool("isNotRigged", true);
+	for (MeshData& mesh : meshesToDraw)
 	{
 		shader.SetTrans("model", mesh.transformation);
 		shader.SetInt("entityID", mesh.entityID);
 
 		mesh.meshToUse->PBRDraw(shader, mesh.meshMaterial);
+	}
+}
+
+void SkinnedMeshRenderer::Render(const CameraData& camera, Shader& shader)
+{
+	shader.SetBool("isNotRigged", false);
+	for (SkinnedMeshData& mesh : skinnedMeshesToDraw)
+	{
+		shader.SetTrans("model", mesh.transformation);
+		shader.SetInt("entityID", mesh.entityID);
+		if (mesh.animationToUse)
+		{
+			mesh.animationToUse->Update(mesh.animationToUse->GetCurrentTime(), glm::mat4(1.f), glm::mat4(1.f), mesh.meshToUse->GetBoneMap(), mesh.meshToUse->GetBoneInfo());
+			mesh.meshToUse->DrawAnimation(shader, mesh.meshMaterial, mesh.animationToUse->GetBoneFinalMatrices());
+		}
+		else
+		{
+			mesh.meshToUse->PBRDraw(shader, mesh.meshMaterial);
+		}
+
 	}
 }
 
@@ -184,7 +205,7 @@ void LightRenderer::RenderAllLights(const CameraData& camera, Shader& shader)
 		PointLightData& pointLight = pointLightsToDraw[i];
 		pointLight.SetUniform(&shader, i);
 		//pointLight.SetShaderMtrx(&shader, i);
-		
+
 	}
 
 	for (size_t i = 0; i < directionLightsToDraw.size(); i++)
@@ -215,6 +236,11 @@ void LightRenderer::DebugRender(const CameraData& camera, Shader& shader) {
 void MeshRenderer::Clear()
 {
 	meshesToDraw.clear();
+}
+
+void SkinnedMeshRenderer::Clear()
+{
+	skinnedMeshesToDraw.clear();
 }
 void CubeRenderer::Render(const CameraData& camera, Shader& shader, Cube* cubePtr) {
 	for (CubeData& cd : cubesToDraw) {
@@ -321,7 +347,7 @@ void DebugRenderer::RenderPointLightDebug(const CameraData& camera, Shader& shad
 		shader.SetFloat("uShaderType", 2.1f);
 		debugCircle.DrawMesh();
 	}
-	
+
 }
 void DebugRenderer::RenderDebugFrustums(const CameraData& camera, Shader& shader, const std::vector<CameraData>& debugFrustums)
 {
@@ -332,27 +358,27 @@ void DebugRenderer::RenderDebugFrustums(const CameraData& camera, Shader& shader
 		glm::mat4 view = cam.GetViewMtx();
 		glm::mat4 invVP = glm::inverse(proj * view);
 
-		glm::vec3 ndc[8] = 
+		glm::vec3 ndc[8] =
 		{
 			{-1,-1,-1}, { 1,-1,-1}, { 1, 1,-1}, {-1, 1,-1}, // near
 			{-1,-1, 1}, { 1,-1, 1}, { 1, 1, 1}, {-1, 1, 1}  // far
 		};
 
 		std::array<glm::vec3, 8> corners;
-		for (int i = 0; i < 8; i++) 
+		for (int i = 0; i < 8; i++)
 		{
 			glm::vec4 w = invVP * glm::vec4(ndc[i], 1.0f);
 			w /= w.w;
 			corners[i] = glm::vec3(w);
 		}
-		shader.SetTrans("model", glm::mat4{1.f});
+		shader.SetTrans("model", glm::mat4{ 1.f });
 		shader.SetMat4("vp", camera.GetViewMtx());
 		shader.SetFloat("uShaderType", 2.1f);
 
 		glBindBuffer(GL_ARRAY_BUFFER, debugFrustum.vboId);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * 8, corners.data());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
+
 		debugFrustum.DrawMesh();
 	}
 }

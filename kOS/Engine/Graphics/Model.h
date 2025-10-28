@@ -9,7 +9,7 @@
            This would be saved into a vector of meshes in the model, each having its own vertex data containing
            -Position
            -Normal
-           -Texcoords 
+           -Texcoords
            -Bitangents
            -Tangents
 
@@ -38,6 +38,16 @@ class Bone;
 class Animation;
 class Animator;
 
+struct SkinnedMeshData
+{
+    R_Model* meshToUse{ nullptr };
+    R_Animation* animationToUse{ nullptr };
+    PBRMaterial meshMaterial;
+    glm::mat4 transformation{ 1.f };
+    float currentDuration{};
+    unsigned int entityID{ 0 };
+};
+
 struct MeshData
 {
     std::shared_ptr<R_Model> meshToUse;
@@ -62,11 +72,11 @@ struct NodeData
     std::vector<NodeData> children;
 };
 
-struct BoneInfo
-{
-    glm::mat4 offsetMatrix;      // From ASSIMP during loading
-    glm::mat4 finalTransformation{ 1.f }; // Calculated each frame
-};
+//struct BoneInfo
+//{
+//    glm::mat4 offsetMatrix;      // From ASSIMP during loading
+//    glm::mat4 finalTransformation{ 1.f }; // Calculated each frame
+//};
 
 struct Vertex
 {
@@ -104,7 +114,7 @@ private:
 class Animation
 {
 public:
-    
+
     Animation(const aiAnimation* anim, const aiScene* scene, std::unordered_map<std::string, int>& boneMap);
 
     const Bone* FindBone(const std::string& name) const;
@@ -118,7 +128,7 @@ private:
     std::string m_Name;
     std::unordered_map<std::string, Bone> m_Bones;
 
-   
+
     NodeData CopyNodeHierarchy(const aiNode* src);
     NodeData m_RootNode;
 
@@ -140,7 +150,7 @@ private:
     std::unordered_map<std::string, int> m_BoneMap;
     glm::mat4 m_GlobalInverse{ 1.f };
     float m_CurrentTime = 0.0f;
-    
+
     void CalculateBoneTransform(const NodeData& node, const glm::mat4& parentTransform);
     glm::mat4 ConvertToGLMMat4(const aiMatrix4x4& original);
 };
@@ -198,7 +208,7 @@ public:
     /// </summary>
     std::vector<Animation> animations;
 
-   // void RetrieveAnimationIndex(unsigned int index) const;
+    // void RetrieveAnimationIndex(unsigned int index) const;
 private:
     template <typename T> T DecodeBinary(std::string& bin, int& offset);
     std::vector<Textures> textures_loaded;
@@ -206,17 +216,17 @@ private:
     std::vector<BoneInfo> bone_info; // Only contains the matrices of the bones not the bone itself
     // model data
     std::vector<Mesh> meshes;
-    
+
     std::string directory;
 
     //For animation purposes
     glm::mat4 globalInverseTransform{ 1.f };
-    
+
 
     void LoadModel(std::string path);
-    
+
     void ExtractBoneWeights(aiMesh* mesh, std::vector<Vertex>& vertices);
-    
+
     void ProcessNode(aiNode* node, const aiScene* scene, const aiMatrix4x4& transform);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const aiMatrix4x4& transform);
     std::vector<Textures> LoadMaterialTextures(aiMaterial* mat, aiTextureType type,
@@ -235,7 +245,7 @@ public:
         if (!m_Model->GetAnimations().empty())
         {
             m_Animator = std::make_unique<Animator>(
-               &(m_Model->GetAnimations()[0]),
+                &(m_Model->GetAnimations()[0]),
                 m_Model->GetBoneInfo(),
                 m_Model->GetBoneMap(),
                 m_Model->GetGlobalInverse()
@@ -251,12 +261,12 @@ public:
     {
         if (index < m_Model->GetAnimations().size())
         {
-           m_Animator = std::make_unique<Animator>(
+            m_Animator = std::make_unique<Animator>(
                 &m_Model->GetAnimations()[index],
                 m_Model->GetBoneInfo(),
                 m_Model->GetBoneMap(),
                 m_Model->GetGlobalInverse()
-           );
+            );
         }
         else
         {
@@ -266,9 +276,9 @@ public:
 
     void Update(float dt, glm::mat4 parentTransform)
     {
-        if (m_Animator) m_Animator->Update(dt,parentTransform);
+        if (m_Animator) m_Animator->Update(dt, parentTransform);
     }
-       
+
     void Draw(Shader& shader, const PBRMaterial& pbrMat)
     {
         if (m_Animator)
