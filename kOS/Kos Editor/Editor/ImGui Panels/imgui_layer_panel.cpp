@@ -131,17 +131,19 @@ void gui::ImGuiHandler::DrawLayerWindow() {
                 // Update the PhysicsLayer collision matrix when the checkbox is toggled
                 physicsLayer->m_SetCollision(row, col, isChecked);
 
-                if((m_ecs->sceneMap.find(m_activeScene) != m_ecs->sceneMap.end()) && 
-                   !m_ecs->sceneMap[m_activeScene].isPrefab) // Only save if not in prefab mode
-                {
-                    m_ecs->sceneMap.at(m_activeScene).collisionData = physicsLayer->ConvertLayerToString();
-				}
-
             }
             ImGui::PopStyleColor(2);
             ImGui::PopID();
         }
 
+    }
+
+    float windowWidth = ImGui::GetContentRegionAvail().x; // Available width inside window
+    float buttonWidth = 100.0f; // Width of your button
+
+    ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f); // Center horizontally
+    if (ImGui::Button("Save", ImVec2(buttonWidth, 0))) {
+		physicsLayer->SaveCollisionLayer();
     }
     ImGui::End();
 }

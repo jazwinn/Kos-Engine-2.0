@@ -18,7 +18,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 //Systems to be shared with DLL
 #include "Debugging/Logging.h"
-#include "Config/ComponentRegistry.h"
+#include "ComponentRegistry.h"
 #include "ECS/ECS.h"
 #include "Inputs/Input.h"
 
@@ -105,7 +105,7 @@ void ScriptManager::RunDLL() {
 		svm.field = FieldSingleton::GetInstance();
 		svm.input = Input::InputSystem::GetInstance();
 		svm.scene = scenes::SceneManager::m_GetInstance();
-		//svm.physics = physics::PhysicsManager::GetInstance();
+		svm.physics = physics::PhysicsManager::GetInstance();
 		svm.scriptNames = &scriptList;
 		DLLUpdateStatic updateFunc = (DLLUpdateStatic)GetProcAddress(hInstDLL, "UpdateStatic");
 		updateFunc(&svm);

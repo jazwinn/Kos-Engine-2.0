@@ -49,7 +49,7 @@ namespace ecs {
             SkinnedMeshRendererComponent* skinnedMesh = ecs->GetComponent<SkinnedMeshRendererComponent>(id);
 
             // Skip entities not in this scene or hidden
-            if ((skinnedMesh->scene != scene) || !ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
+            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
                 continue;
 
             R_Model* mesh{};

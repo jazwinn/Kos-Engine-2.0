@@ -143,7 +143,6 @@ namespace ecs {
 		const std::vector<EntityID>& GetComponentsEnties(const std::string& componentName);
 
 
-	private:
 		void RegisterEntity(EntityID);
 		void DeregisterEntity(EntityID);
 
@@ -259,15 +258,6 @@ namespace ecs {
 		T* ComponentPtr = std::static_pointer_cast<SparseSet<T>>(m_combinedComponentPool.at(T::classname()))->Set(ID, T());
 		ComponentPtr->entity = ID;
 
-		//assign component to a scene
-		//check for entity scene
-		const auto& scene = GetSceneByEntityID(ID);
-		if (!scene.empty()) {
-			static_cast<Component*>(ComponentPtr)->scene = scene;
-		}
-		else {
-			LOGGING_ASSERT_WITH_MSG("Entity not assigned scene");
-		}
 
 		m_entityMap.find(ID)->second.set(GetComponentKey<T>());
 

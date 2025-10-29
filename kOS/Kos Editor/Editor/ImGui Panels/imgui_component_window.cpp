@@ -42,7 +42,6 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
     //Add Component Window
 
-
     if (m_ecs->GetEntitySignatureData().size() > 0 && m_clickedEntityId >= 0) {
 
         ecs::EntityID entityID = m_clickedEntityId;
@@ -91,93 +90,129 @@ void gui::ImGuiHandler::DrawComponentWindow()
                 }
 
             }
+            if (nc->isPrefab && !m_prefabSceneMode) {
+                auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(entityID);
+                if (!tc->m_haveParent) {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Overwrite")) {
+                        // Look for component of prefab and set data from me
+                        try {
+                            prefab::Prefab::OverwriteScenePrefab(m_clickedEntityId);
+                            prefab::Prefab::UpdateAllPrefab(nc->prefabName);
+                        }
+                        catch (...) {
+                            LOGGING_ERROR("Prefab overwrite, failed");
+                        }
+
+                        ImGui::End();
+                        return;
+                    }
+                }
+            }
             
             ImGui::TextDisabled(std::string( "Entity ID: " + std::to_string(entityID)).c_str());
 
-            //layer selector
-            const char* layers[] = { m_ecs->layersStack.m_layerMap[layer::DEFAULT].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER1].first.c_str(),m_ecs->layersStack.m_layerMap[layer::LAYER2].first.c_str(),
-                                  m_ecs->layersStack.m_layerMap[layer::LAYER3].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER4].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER5].first.c_str(),
-                                  m_ecs->layersStack.m_layerMap[layer::LAYER6].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER7].first.c_str(), m_ecs->layersStack.m_layerMap[layer::LAYER8].first.c_str() };
+            {
+                //layer selector
+                static constexpr auto enumNames = magic_enum::enum_names<layer::LAYERS>();
 
-            std::vector<const char*> layers_vec;
-            for (const auto& _layer : m_ecs->layersStack.m_layerMap) {
-                layers_vec.push_back(_layer.second.first.c_str());
-            }
+                // Persistent storage for null-terminated strings
+                static std::array<std::string, enumNames.size()> namesStr{};
+                static std::array<const char*, enumNames.size()> items{};
 
-            int layer_current = nc->Layer;
-            if (ImGui::Combo("Layers", &layer_current, layers_vec.data(), static_cast<int>(layers_vec.size()))) {
-                m_ecs->layersStack.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);  
-            }
+                static bool initialized = false;
+                if (!initialized) {
+                    for (size_t i = 0; i < enumNames.size(); i++) {
+                        namesStr[i] = std::string(enumNames[i]);  // store the string
+                        items[i] = namesStr[i].c_str();           // pointer is valid now
+                    }
+                    initialized = true;
+                }
 
-            // Convert vector to array of char* for ImGui
-            std::vector<const char*> tag_Names(m_tags.size());
-            std::transform(m_tags.begin(), m_tags.end(), tag_Names.begin(), [](const std::string& tag) {  return tag.c_str(); });
-
-            int item{};
-            const auto& it = std::find(tag_Names.begin(), tag_Names.end(), nc->entityTag);
-            if (it != tag_Names.end()) {
-                item = static_cast<int>(std::distance(tag_Names.begin(), it));
-            }
-            else {
-                tag_Names.push_back(nc->entityTag.c_str());
-                const auto& it2 = std::find(tag_Names.begin(), tag_Names.end(), nc->entityTag);
-                item = static_cast<int>(std::distance(tag_Names.begin(), it2));
+                int layer_current = nc->Layer;
+                if (ImGui::Combo("Layers", &layer_current, items.data(), static_cast<int>(items.size()))) {
+                    m_ecs->layersStack.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);
+                }
             }
             
-            if (ImGui::Combo("Tag", &item, tag_Names.data(), static_cast<int>(tag_Names.size()))) {
-                nc->entityTag = m_tags[item];
+            {
+                // Convert vector to array of char* for ImGui
+                std::vector<const char*> tag_Names(m_tags.size());
+                std::transform(m_tags.begin(), m_tags.end(), tag_Names.begin(), [](const std::string& tag) {  return tag.c_str(); });
+
+                int item{};
+                const auto& it = std::find(tag_Names.begin(), tag_Names.end(), nc->entityTag);
+                if (it != tag_Names.end()) {
+                    item = static_cast<int>(std::distance(tag_Names.begin(), it));
+                }
+                else {
+                    tag_Names.push_back(nc->entityTag.c_str());
+                    const auto& it2 = std::find(tag_Names.begin(), tag_Names.end(), nc->entityTag);
+                    item = static_cast<int>(std::distance(tag_Names.begin(), it2));
+                }
+
+                if (ImGui::Combo("Tag", &item, tag_Names.data(), static_cast<int>(tag_Names.size()))) {
+                    nc->entityTag = m_tags[item];
+                }
             }
 
-           // std::cout << nc->entityTag << std::endl;
-            //create overwrite button for prefab
-            if (nc->isPrefab && !m_prefabSceneMode) {
-                auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(entityID);
-                if (!tc->m_haveParent || !m_ecs->GetComponent<ecs::NameComponent>(tc->m_parentID)->isPrefab) {
-                    static bool isHeaderOpen = false;
-                    static std::vector<std::string> diffComp;
-                    bool open = false;
-                    std::string headerName = nc->prefabName + " [Changed]";
-                    int IMGUI_ID = 0;
-                    if (open = ImGui::CollapsingHeader(headerName.c_str())) {
-                        for (const auto& compName : diffComp) {
-                            if (compName == ecs::NameComponent::classname()) continue;
-                            ImGui::TextDisabled(compName.c_str());
-                            ImGui::SameLine();
-                            ImGui::PushID(IMGUI_ID++);
-                            if(ImGui::Button("Revert")){
-                                // Look for component of prefab and set data into me
-                                prefab::Prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
+            {
+                // std::cout << nc->entityTag << std::endl;
+                            //create overwrite button for prefab
+                if (nc->isPrefab && !m_prefabSceneMode) {
+                    auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(entityID);
+                    if (!tc->m_haveParent || !m_ecs->GetComponent<ecs::NameComponent>(tc->m_parentID)->isPrefab) {
+                        static bool isHeaderOpen = false;
+                        static std::vector<std::string> diffComp;
+                        bool open = false;
+                        std::string headerName = nc->prefabName + " [Changed]";
+                        int IMGUI_ID = 0;
+                        if (open = ImGui::CollapsingHeader(headerName.c_str())) {
+                            for (const auto& compName : diffComp) {
+                                if (compName == ecs::NameComponent::classname()) continue;
+                                ImGui::TextDisabled(compName.c_str());
+                                ImGui::SameLine();
+                                ImGui::PushID(IMGUI_ID++);
+                                if (ImGui::Button("Revert")) {
+                                    // Look for component of prefab and set data into me
+                                    prefab::Prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
+                                    prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                }
+                                ImGui::SameLine();
+                                if (ImGui::Button("Overwrite")) {
+                                    // Look for component of prefab and set data from me
+                                    prefab::Prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
+                                    prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                }
+                                ImGui::PopID();
+                            }
+                            //if (ImGui::Button("Overwrite All")) {
+                            //    prefab::Prefab::m_OverWriteScenePrefab(entityID);
+                            //}
+                            //ImGui::SameLine();
+                            //if (ImGui::Checkbox("Sync", &nc->syncPrefab)) {
+                            //    prefab::Prefab::m_UpdateAllPrefabEntity(nc->prefabName);
+                            //}
+                        }
+
+                        if (isHeaderOpen != open) { // Needed to show change in state
+                            if (open) {
                                 prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
                             }
-                            ImGui::SameLine();
-                            if (ImGui::Button("Overwrite")) {
-                                // Look for component of prefab and set data from me
-                                prefab::Prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
-                                prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                            else {
+                                diffComp.clear();
                             }
-                            ImGui::PopID();
+                            isHeaderOpen = open;
                         }
-                        //if (ImGui::Button("Overwrite All")) {
-                        //    prefab::Prefab::m_OverWriteScenePrefab(entityID);
-                        //}
-                        //ImGui::SameLine();
-                        //if (ImGui::Checkbox("Sync", &nc->syncPrefab)) {
-                        //    prefab::Prefab::m_UpdateAllPrefabEntity(nc->prefabName);
-                        //}
                     }
-                    
-                    if (isHeaderOpen != open) { // Needed to show change in state
-                        if (open) {
-                            prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
-                        }
-                        else {
-                            diffComp.clear();
-                        }
-                        isHeaderOpen = open;
-                    }
+
                 }
-                
             }
+
+
+
+
+           
         }
 
         const auto& componentKey = m_ecs->GetComponentKeyData();

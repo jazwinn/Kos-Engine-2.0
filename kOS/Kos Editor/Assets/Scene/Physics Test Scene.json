@@ -1,7 +1,6 @@
 [
     {
         "SceneData": {
-            "collisionData": "111111111|100000000|100000000|100000000|100000000|100000000|100000000|100000000|100000000|",
             "skyBoxGUID": [],
             "ambientIntensity": 1.0
         }
@@ -328,7 +327,7 @@
         },
         "NameComponent": {
             "entityName": "Test Box",
-            "Layer": 0,
+            "Layer": 1,
             "entityTag": "Default",
             "isPrefab": false,
             "prefabName": ""

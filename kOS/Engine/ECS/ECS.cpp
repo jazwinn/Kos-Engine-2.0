@@ -5,7 +5,6 @@
 #include "Hierachy.h"
 #include "Reflection/ReflectionInvoker.h"
 #include "Debugging/Performance.h"
-#include "Config/ComponentRegistry.h"
 #include "Reflection/Field.h"
 #include "Scene/SceneManager.h"
 
@@ -18,9 +17,6 @@ namespace ecs{
 	std::unordered_map<std::string, std::function<std::shared_ptr<IActionInvoker>()>> ComponentTypeRegistry::actionFactories;
 
 	void ECS::Load() {
-
-		ComponentRegistry::SetECSInstance(m_InstancePtr.get());
-		ComponentRegistry::SetFieldInstance(FieldSingleton::GetInstance());
 
 		//Allocate memory to each component pool
 		RegisterComponent<NameComponent>();
@@ -222,7 +218,6 @@ namespace ecs{
 				auto& action = componentAction.at(ComponentName);
 
 				auto* comp = action->DuplicateComponent(DuplicatesID, NewEntity);
-				action->SetSceneToComponent(comp, scene);
 			}
 		}
 
@@ -231,8 +226,10 @@ namespace ecs{
 
 		//checks if duplicates entity has parent and assign it
 		if (Hierachy::GetParent(DuplicatesID).has_value()) {
-			TransformComponent* transform = GetComponent<TransformComponent>(Hierachy::GetParent(DuplicatesID).value());
-			transform->m_childID.push_back(NewEntity);
+			//TransformComponent* transform = GetComponent<TransformComponent>(Hierachy::GetParent(DuplicatesID).value());
+			//transform->m_childID.push_back(NewEntity);
+			auto parent = Hierachy::GetParent(DuplicatesID).value();
+			Hierachy::m_SetParent(parent, NewEntity);
 		}
 
 		//checks if entity has child call recursion

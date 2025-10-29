@@ -48,7 +48,7 @@ namespace ecs {
 			LightComponent* light = ecs->GetComponent<LightComponent>(id);
 
 			//skip component not of the scene
-			if ((light->scene != scene) || !ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide) continue;
+			if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide) continue;
 
 			switch (light->lightType)
 			{

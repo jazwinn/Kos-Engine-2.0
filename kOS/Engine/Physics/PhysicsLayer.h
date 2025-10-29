@@ -34,6 +34,11 @@ namespace physicslayer {
 
     constexpr int size = layer::LAYERS::MAXLAYER;
 
+    struct LayerData {
+        std::string collisionData = "111111111|100000000|100000000|100000000|100000000|100000000|100000000|100000000|100000000|";
+
+		REFLECTABLE(LayerData, collisionData);
+    };
 
    
     class PhysicsLayer {
@@ -63,7 +68,8 @@ namespace physicslayer {
         }
         
         std::string ConvertLayerToString() const;
-        void LoadCollisionLayer(const std::string& path) ;
+        void LoadCollisionLayer();
+		void SaveCollisionLayer();
 
 
     private:

@@ -73,26 +73,14 @@ namespace prefab
             return -1;
         }
        
-        std::vector<ecs::EntityID> vecid;
+        ecs::EntityID newId = ecs->CreateEntity(insertscene);
 
-        for (const auto& prefabentity : ecs->sceneMap.find(prefabscene)->second.sceneIDs) {
-            //duplicate only parents
-            if (ecs::Hierachy::GetParent(prefabentity).has_value())continue;
-            vecid.push_back(ecs->DuplicateEntity(prefabentity, insertscene));
-        }
+        DeepUpdatePrefab(ecs->sceneMap.at(prefabscene).prefabID, newId);
 
-        for (auto& id : vecid) {
-            //assign parent as prefab
-            ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
-            nc->isPrefab = true;
-            nc->prefabName = prefabscene;
 
-            const auto& vecChild = ecs::Hierachy::m_GetChild(id);
-            if (!vecChild.has_value()) continue;
-            AssignPrefabToNameComponent(id, prefabscene);     
-        }
+        AssignPrefabToNameComponent(newId, prefabscene);
 
-        return vecid[0];
+        return newId;
     }
 
     void Prefab::m_SaveEntitytoPrefab(ecs::EntityID id)
@@ -112,6 +100,9 @@ namespace prefab
             }
             count++;
         } while (ecs->sceneMap.find(filename) != ecs->sceneMap.end());
+
+        nc->isPrefab = true;
+        nc->prefabName = filename;
 
         std::string path = m_jsonFilePath + filename;
         scenes::SceneManager::m_GetInstance()->CreateNewScene(path);
@@ -151,265 +142,148 @@ namespace prefab
         scenes::SceneManager::m_GetInstance()->LoadScene(path);
     }
 
-    //void Prefab::m_AssignEntitytoPrefab(std::string prefab, ecs::EntityID id)
-    //{
-    //    ecs::ECS* ecs = ecs::ECS::m_GetInstance();
-    //    if (ecs->m_ECS_SceneMap.find(prefab) == ecs->m_ECS_SceneMap.end()) {
-    //        LOGGING_WARN("Prefab not loaded");
-    //        return;
-    //    }
-    //    // only store upmost parent id
-
-    //    ecs::TransformComponent* tc = static_cast<ecs::TransformComponent*>(ecs->m_ECS_CombinedComponentPool[ecs::TYPETRANSFORMCOMPONENT]->m_GetEntityComponent(id));
-    //    if (tc->m_haveParent) {
-    //        return;
-    //    }
-
-    //}  
-
-    
-    void Prefab::m_UpdateAllPrefabEntity(std::string prefab)
-    {
+    void Prefab::OverwriteScenePrefab(ecs::EntityID id) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
+        if (!nc->isPrefab) return;
 
-        //return if prefab dont exist
-        if (ecs->sceneMap.find(prefab) == ecs->sceneMap.end()) {
-            LOGGING_ERROR("Prefab do not exist");
+        const std::string& prefabName = nc->prefabName;
+
+        if (ecs->sceneMap.find(prefabName) != ecs->sceneMap.end()) {
+
+            const auto& sceneData = ecs->sceneMap.at(prefabName);
+            ecs::EntityID prefabID = sceneData.prefabID;
+
+            DeepUpdatePrefab(id, prefabID);
         }
-
-        ecs::EntityID scenePrefabID = ecs->sceneMap.find(prefab)->second.prefabID;
-
-        //retrieve prefabs children id
-        const std::vector<ecs::EntityID>& childrenid = ecs->sceneMap.find(prefab)->second.sceneIDs;
-
-        //the most scuff way //MAYBE prefab component?
-        for (const auto& id : ecs->GetEntitySignatureData()) {
-            ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id.first);
-            ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id.first);
-            if (nc->isPrefab && (nc->prefabName == prefab)) {
-                //if sync is turn off, skip update
-                //if (nc->syncPrefab == false) continue;
+        
 
 
-                //skip all prefabs children
-                if (std::find(childrenid.begin(), childrenid.end(), id.first) != childrenid.end()) continue;
-                if (tc->m_haveParent) {
-                    auto* parentnc = ecs->GetComponent<ecs::NameComponent>(tc->m_parentID);
-                    
-                    if (parentnc->isPrefab && parentnc->prefabName == prefab)continue;
-                }
+    }
 
-                m_UpdatePrefab(scenePrefabID, id.first);
+    void Prefab::UpdateAllPrefab(const std::string& prefabSceneName) {
+        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
+        const auto& prefabData = ecs->sceneMap.find(prefabSceneName);
+
+        ecs::EntityID prefabID = prefabData->second.prefabID;
+
+        for (const auto& [id, signature] : ecs->GetEntitySignatureData()) {
+            ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
+            ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
+            if (!(tc->m_haveParent) && nc->isPrefab && (nc->prefabName == prefabSceneName)) {
+                DeepUpdatePrefab(prefabID, id);
             }
         }
     }
 
-    void Prefab::m_UpdatePrefab(ecs::EntityID sceneprefabID, ecs::EntityID entityid, bool isPrefabChild)
-    {
-        if (sceneprefabID == entityid) return;
-
-        //update all of entity with prefab
+ 
+    void Prefab::DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
+        if (idA == idB)return;
 
-        ecs::ComponentSignature scenePrefabSignature = ecs->GetEntitySignature(sceneprefabID);
-        ecs::ComponentSignature entitySignature = ecs->GetEntitySignature(entityid);
+        const auto signatureA = ecs->GetEntitySignature(idA);
+        const auto signatureB = ecs->GetEntitySignature(idB);
 
-        //check if current entity have parent and store it
-        auto Parent = ecs::Hierachy::GetParent(entityid);
-
+        //update components
         const auto& componentKey = ecs->GetComponentKeyData();
         for (const auto& [ComponentName, key] : componentKey) {
-            //skip transform component and name componetn
-             // if entity is parent and component is transform component, skip
-            if ((isPrefabChild == false) && ComponentName == ecs::TransformComponent::classname()) continue;
-
-            //if component is namecomponent, only share layer and entity tag 
-            if (ComponentName == ecs::NameComponent::classname()) {// sync only layers and tagname
-                ecs::NameComponent* prefabNc = ecs->GetComponent<ecs::NameComponent>(sceneprefabID);
-                ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(entityid);
-
-                nc->Layer = prefabNc->Layer;
-                nc->entityTag = prefabNc->entityTag;
-
-                continue;
-            }
-
             auto action = ecs->componentAction[ComponentName];
 
-            if (scenePrefabSignature.test(key)){
+            if (signatureA.test(key)) {
 
-                //save prefab detail
-                if (ComponentName == ecs::TransformComponent::classname()) {
-                    //only duplicate, TRS
-                    ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(entityid);
-                    ecs::TransformComponent* prefabtc = ecs->GetComponent<ecs::TransformComponent>(sceneprefabID);
-
-                    tc->WorldTransformation.position = prefabtc->WorldTransformation.position;
-                    tc->WorldTransformation.rotation = prefabtc->WorldTransformation.rotation;
-                    tc->WorldTransformation.scale = prefabtc->WorldTransformation.scale;
-
-                    continue;
+                if (action->Compare(idA, idB) == false) { // if A != B or B does not exist, call duplicate (Assign and create(if missing) component
+                    action->DuplicateComponent(idA, idB);
                 }
-
-                //test if enityid has that component, if not add it
-                if (!entitySignature.test(key)) {
-                    action->AddComponent(entityid);
-                }
-                ecs::Component* comp = static_cast<ecs::Component*>(action->DuplicateComponent(sceneprefabID, entityid));
-                action->SetSceneToComponent(comp, ecs->GetSceneByEntityID(entityid));
             }
-            else {
-                if (entitySignature.test(key)) {
-                    action->RemoveComponent(entityid);
-                }
+            else if (signatureB.test(key)) { //if A does not have component, B has, remove B's component
+                action->RemoveComponent(idB);
+            }
+
+        }
+
+
+        //Objective: Make both have the same number of children
+        auto childsA = ecs::Hierachy::m_GetChild(idA);
+        auto childsB = ecs::Hierachy::m_GetChild(idB);
+
+        if (!childsA.has_value() && !childsB.has_value())return; // both id do not have children
+
+        int countA = 0, countB = 0; //number of children both id have
+
+        if (childsA.has_value()) {
+            countA = childsA.value().size();
+        }
+
+        if (childsB.has_value()) {
+            countB = childsB.value().size();
+        }
+
+        //make A == B
+        if (countA > countB) { 
+            int diff = countA - countB;
+            const auto& scene = ecs->GetSceneByEntityID(idB);
+            for (int n{}; n < diff; n++) {
+                ecs::Hierachy::m_SetParent(idB, ecs->CreateEntity(scene));
             }
         }
 
-        //checks if duplicates entity has parent and assign it
-        //if (Parent.has_value()) {
-        //    ecs::Hierachy::m_SetParent(Parent.value(), entityid);
-        //}
-
-        //checks if entity has child call recursion
-        const auto& scenePrefabChild = ecs::Hierachy::m_GetChild(sceneprefabID);
-        if (scenePrefabChild.has_value()) {
-            //clear child id of vector for new entity
-
-            std::vector<ecs::EntityID> childID = scenePrefabChild.value();
-            
-            ecs::EntityID entityChild;
-
-            //the most scuff way to do sth
-            //if size of prefab is less than entity (means a prefab entity was deleted)
-            //delete the entire of the childs entity and rebuilt
-            {
-                const auto& entitych = ecs::Hierachy::m_GetChild(entityid);
-                if (entitych.has_value() && (childID.size() < entitych.value().size())) {
-                    //delete all the children
-                    for (const auto& id : entitych.value()) {
-                        ecs->DeleteEntity(id);
-                    }
-                }
+        if (countA < countB) {
+            int diff = countB - countA;
+            std::vector<ecs::EntityID> childsVecB = childsB.value();
+            for (int n{}; n < diff; n++) {
+                ecs->DeleteEntity(childsVecB[n]);
             }
 
-            const auto& entitych = ecs::Hierachy::m_GetChild(entityid);
-            size_t count{};
-            for (const auto& prefabchild : childID) {
-
-                //check if entityid, have child, if no create child
-                if (!entitych.has_value()  || entitych.value().size() < (count +1)) {
-                    //create entity and assign to entityid
-                    
-                    entityChild = ecs->CreateEntity(ecs->GetSceneByEntityID(entityid));
-                    ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(entityChild);
-                    ecs::NameComponent* prefabnc = ecs->GetComponent<ecs::NameComponent>(prefabchild);
-                    nc->entityName = prefabnc->entityName;
-
-                    nc->isPrefab = true;
-                    nc->prefabName = ecs->GetSceneByEntityID(prefabchild);
-
-                    ecs::Hierachy::m_SetParent(entityid, entityChild);
-                }
-                else {
-                    entityChild = entitych.value()[count];
-                }
-
-                //ecs::TransformComponent* tc = static_cast<ecs::TransformComponent*>(ecs->m_ECS_CombinedComponentPool[ecs::TYPETRANSFORMCOMPONENT]->m_GetEntityComponent(entityChild));
-
-                m_UpdatePrefab(prefabchild, entityChild, true);
-
-                count++;
-            }
         }
-        else {
 
-            const auto& entitych = ecs::Hierachy::m_GetChild(entityid);
-            if (entitych.has_value() && (entitych.value().size() > 0)) {
-                //delete all the children
-                for (const auto& id : entitych.value()) {
-                    ecs->DeleteEntity(id);
-                }
+
+
+        const auto childsVecA = ecs::Hierachy::m_GetChild(idA);
+        const auto childsVecB = ecs::Hierachy::m_GetChild(idB);
+
+        if (childsVecA.has_value() && childsVecB.has_value()) {
+            //recurse the children
+            for (int n{}; n < childsVecA.value().size(); n++) {
+                DeepUpdatePrefab(childsVecA.value()[n], childsVecB.value()[n]);
             }
-        }
-    }
 
-    void CheckEntityisPrefab(ecs::EntityID id, std::string prefabscene) {
+        }
+
+
+
+   }
+
+
+    void Prefab::OverwritePrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
-        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
-        if (!nc->isPrefab) {
-            nc->isPrefab = true;
-            nc->prefabName = prefabscene;
-        }
-
-        const auto& child = ecs::Hierachy::m_GetChild(id);
-        if (child.has_value()) {
-
-            for (auto& childID : child.value()) {
-                CheckEntityisPrefab(childID, prefabscene);
-            }
-
-        }
-    }
-
-    // Change Prefab to its instance.
-    void Prefab::m_OverWriteScenePrefab(ecs::EntityID id)
-    {
-        //delete the all the prefab entity
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
-
-        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
-
-        const std::string& prefabSceneName = nc->prefabName;
-
-        if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) {
-            LOGGING_ERROR("Prefab Scene not loaded");
-        }
-
-        ecs->DeleteEntity(ecs->sceneMap.find(prefabSceneName)->second.prefabID);
-
-        //TODO if check if any new child entity, than assign it to be a prefab create a function
-        CheckEntityisPrefab(id, prefabSceneName);
-
-
-        //duplicate param entity into prefab
-
-        ecs->sceneMap.find(prefabSceneName)->second.prefabID = ecs->DuplicateEntity(id, prefabSceneName);
-
-
-        //save scene
-        scenes::SceneManager::m_GetInstance()->SaveScene(prefabSceneName);
-
-        //call to update all prefab
-
-        m_UpdateAllPrefabEntity(prefabSceneName);
-
-    }
-
-    void Prefab::OverwritePrefab_Component(ecs::EntityID entityID, std::string componentName, std::string prefabSceneName) {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         auto iter = ecs->sceneMap.find(prefabSceneName);
         if (iter == ecs->sceneMap.end()) return;
         ecs::EntityID prefabID = iter->second.prefabID;
         if (prefabID == entityID) return;
 
         auto action = ecs->componentAction[componentName];
-        action->RemoveComponent(prefabID);
-        ecs::Component* comp = static_cast<ecs::Component*>(action->DuplicateComponent(entityID, prefabID));
-        action->SetSceneToComponent(comp, ecs->GetSceneByEntityID(entityID));
+        action->DuplicateComponent(entityID, prefabID);
 
         // Update all Associated Prefabs;
-        for (const auto& id : ecs->GetEntitySignatureData()) {
-            ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id.first);
-            ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id.first);
+        for (const auto& [id, signature] : ecs->GetEntitySignatureData()) {
+            ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
             if (nc->isPrefab && (nc->prefabName == prefabSceneName)) {
                 // Remove Comp in Revert will already check if it contains comp 
-                RevertToPrefab_Component(id.first, componentName, nc->prefabName);
+				action->DuplicateComponent(prefabID, id);
+                /*RevertToPrefab_Component(id.first, componentName, nc->prefabName);*/
             }
         }
+
+        //save prefab
+		scenes::SceneManager::m_GetInstance()->SaveScene(prefabSceneName);
     }
 
-    void Prefab::RevertToPrefab_Component(ecs::EntityID entityID, std::string componentName, std::string prefabSceneName) {
+    void Prefab::RevertToPrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
+
+        if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         auto iter = ecs->sceneMap.find(prefabSceneName);
         if (iter == ecs->sceneMap.end()) return;
         ecs::EntityID prefabID = iter->second.prefabID;
@@ -417,21 +291,43 @@ namespace prefab
 
         auto action = ecs->componentAction[componentName];
         action->RemoveComponent(entityID);
-        ecs::Component* comp = static_cast<ecs::Component*>(action->DuplicateComponent(prefabID, entityID));
-        action->SetSceneToComponent(comp, ecs->GetSceneByEntityID(entityID));
     }
 
     void Prefab::LoadAllPrefabs() {
+        auto* sm = scenes::SceneManager::m_GetInstance();
+        ecs::ECS* ecs = ecs::ECS::GetInstance();
+
         std::string prefabPath = AssetManager::GetInstance()->GetAssetManagerDirectory() + "/Prefabs/"; // Should have a better way to get file directories
         if (!std::filesystem::exists(prefabPath))return;
         for (const auto& entry : std::filesystem::directory_iterator(prefabPath)) {
-            scenes::SceneManager::m_GetInstance()->LoadScene(entry.path().string());
+			auto scenename = entry.path().filename();
+
+            if (scenename.extension().string() == ".prefab") {
+                sm->ImmediateLoadScene(entry.path());
+                auto& prefabData = ecs->sceneMap.at(scenename.string());
+                prefabData.isPrefab = true;
+				sm->SetSceneActive(scenename.string(), false);
+
+
+				//find the prefab root entity id
+                for (auto& id : prefabData.sceneIDs) {
+                    ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
+                    if (!tc->m_haveParent) {
+                        ecs->sceneMap.find(scenename.string())->second.prefabID = id;
+                        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
+						nc->prefabName = scenename.string();
+                        break;
+                    }
+                }
+            }
         }
     }
 
     ecs::ComponentSignature Prefab::ComparePrefabWithInstance(ecs::EntityID entityID) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         std::string prefabName = ecs->GetComponent<ecs::NameComponent>(entityID)->prefabName;
+        if (ecs->sceneMap.find(prefabName) == ecs->sceneMap.end()) return ecs::ComponentSignature();
+
         ecs::EntityID prefabId = ecs->sceneMap.find(prefabName)->second.prefabID;
 
         auto entitySignature = ecs->GetEntitySignature(entityID);
@@ -442,8 +338,10 @@ namespace prefab
 
         const auto& componentKey = ecs->GetComponentKeyData();
         for (const auto& [ComponentName, key] : componentKey) {
-            if (entitySignature.test(ecs->GetComponentKey(ComponentName)) &&
-                prefabSignature.test(ecs->GetComponentKey(ComponentName))) {
+            auto componentKey = ecs->GetComponentKey(ComponentName);
+
+            if (entitySignature.test(componentKey) &&
+                prefabSignature.test(componentKey)) {
                 auto* idComp = ecs->GetIComponent<ecs::Component*>(ComponentName, entityID);
                 auto* prefabComp = ecs->GetIComponent<ecs::Component*>(ComponentName, prefabId);
 
@@ -452,6 +350,13 @@ namespace prefab
                     result.set(ecs->GetComponentKey(ComponentName));
                 }
             }
+            else if (prefabSignature.test(componentKey) && (!entitySignature.test(componentKey))) { // if prefab has component, but object does not
+                auto& actionInvoker = ecs->componentAction[ComponentName];
+                actionInvoker->AddComponent(entityID);
+                actionInvoker->DuplicateComponent(prefabId, entityID);
+            };
+
+
         }
 
         return result;
