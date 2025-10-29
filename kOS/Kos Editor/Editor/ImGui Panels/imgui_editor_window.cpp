@@ -353,7 +353,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        ecs::SpriteComponent* spriteCom = ecs->AddComponent<ecs::SpriteComponent>(id);
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;
@@ -370,7 +370,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
         //        m_clickedEntityId = id;
         //    }
@@ -386,7 +386,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;
@@ -396,7 +396,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        try {
         //            //check to see if prefab is even loaded
         //            if (ecs->sceneMap.find(filename->filename().string()) != ecs->sceneMap.end()) {
-        //                ecs::EntityID id = prefab::Prefab::m_CreatePrefab(filename->filename().string(), m_activeScene);
+        //                ecs::EntityID id = prefab::m_CreatePrefab(filename->filename().string(), m_activeScene);
         //                ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
         //                transCom->WorldTransformation.position = translate;
         //            }

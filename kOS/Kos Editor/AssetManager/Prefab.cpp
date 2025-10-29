@@ -33,7 +33,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace prefab 
 {
     void AssignPrefabToNameComponent(ecs::EntityID parentid, std::string scenename) {
-        const auto& vecChild = ecs::Hierachy::m_GetChild(parentid);
+        const auto& vecChild = hierachy::m_GetChild(parentid);
         if (!vecChild.has_value()) return;
         for (auto& childid : vecChild.value()) {
             ecs::ECS* ecs = ecs::ECS::GetInstance();
@@ -41,14 +41,14 @@ namespace prefab
             nc->isPrefab = true;
             nc->prefabName = scenename;
 
-            if (ecs::Hierachy::m_GetChild(childid).has_value()) {
+            if (hierachy::m_GetChild(childid).has_value()) {
                 AssignPrefabToNameComponent(childid, scenename);
             }
         }
     }
 
     // Creating Prefab Instance
-    int Prefab::m_CreatePrefab(std::string prefabscene, std::string insertscene)
+    int m_CreatePrefab(std::string prefabscene, std::string insertscene)
     {
         if (prefabscene == insertscene) {
             LOGGING_ERROR("Cannot load onto itself");
@@ -83,7 +83,7 @@ namespace prefab
         return newId;
     }
 
-    void Prefab::m_SaveEntitytoPrefab(ecs::EntityID id)
+    void m_SaveEntitytoPrefab(ecs::EntityID id)
     {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
@@ -142,7 +142,7 @@ namespace prefab
         scenes::SceneManager::m_GetInstance()->LoadScene(path);
     }
 
-    void Prefab::OverwriteScenePrefab(ecs::EntityID id) {
+    void OverwriteScenePrefab(ecs::EntityID id) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
         if (!nc->isPrefab) return;
@@ -161,7 +161,7 @@ namespace prefab
 
     }
 
-    void Prefab::UpdateAllPrefab(const std::string& prefabSceneName) {
+    void UpdateAllPrefab(const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         const auto& prefabData = ecs->sceneMap.find(prefabSceneName);
@@ -178,7 +178,7 @@ namespace prefab
     }
 
  
-    void Prefab::DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB) {
+    void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (idA == idB)return;
 
@@ -223,8 +223,8 @@ namespace prefab
 
 
         //Objective: Make both have the same number of children
-        auto childsA = ecs::Hierachy::m_GetChild(idA);
-        auto childsB = ecs::Hierachy::m_GetChild(idB);
+        auto childsA = hierachy::m_GetChild(idA);
+        auto childsB = hierachy::m_GetChild(idB);
 
         if (!childsA.has_value() && !childsB.has_value())return; // both id do not have children
 
@@ -243,7 +243,7 @@ namespace prefab
             int diff = countA - countB;
             const auto& scene = ecs->GetSceneByEntityID(idB);
             for (int n{}; n < diff; n++) {
-                ecs::Hierachy::m_SetParent(idB, ecs->CreateEntity(scene));
+                hierachy::m_SetParent(idB, ecs->CreateEntity(scene));
             }
         }
 
@@ -258,8 +258,8 @@ namespace prefab
 
 
 
-        const auto childsVecA = ecs::Hierachy::m_GetChild(idA);
-        const auto childsVecB = ecs::Hierachy::m_GetChild(idB);
+        const auto childsVecA = hierachy::m_GetChild(idA);
+        const auto childsVecB = hierachy::m_GetChild(idB);
 
         if (childsVecA.has_value() && childsVecB.has_value()) {
             //recurse the children
@@ -274,7 +274,7 @@ namespace prefab
    }
 
 
-    void Prefab::OverwritePrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
+    void OverwritePrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         auto iter = ecs->sceneMap.find(prefabSceneName);
@@ -299,7 +299,7 @@ namespace prefab
 		scenes::SceneManager::m_GetInstance()->SaveScene(prefabSceneName);
     }
 
-    void Prefab::RevertToPrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
+    void RevertToPrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
 
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
@@ -312,7 +312,7 @@ namespace prefab
         action->RemoveComponent(entityID);
     }
 
-    void Prefab::LoadAllPrefabs() {
+    void LoadAllPrefabs() {
         auto* sm = scenes::SceneManager::m_GetInstance();
         ecs::ECS* ecs = ecs::ECS::GetInstance();
 
@@ -342,7 +342,7 @@ namespace prefab
         }
     }
 
-    ecs::ComponentSignature Prefab::ComparePrefabWithInstance(ecs::EntityID entityID) {
+    ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID entityID) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         std::string prefabName = ecs->GetComponent<ecs::NameComponent>(entityID)->prefabName;
         if (ecs->sceneMap.find(prefabName) == ecs->sceneMap.end()) return ecs::ComponentSignature();
@@ -381,9 +381,9 @@ namespace prefab
         return result;
     }
 
-    void Prefab::RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID) {
+    void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID) {
         ecs::ECS* m_ecs = ecs::ECS::GetInstance();
-        ecs::ComponentSignature sig = prefab::Prefab::ComparePrefabWithInstance(entityID);
+        ecs::ComponentSignature sig = ComparePrefabWithInstance(entityID);
         diffComp.clear();
         const auto& componentKey = m_ecs->GetComponentKeyData();
         for (const auto& [ComponentName, key] : componentKey) {

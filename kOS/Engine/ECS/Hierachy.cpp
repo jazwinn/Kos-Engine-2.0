@@ -4,9 +4,9 @@
 #include "Scene/SceneManager.h"
 #include "Utility/MathUtility.h"
 
-namespace ecs {
+namespace hierachy {
 
-	void Hierachy::m_SetParent(EntityID parent, EntityID child) {
+	void m_SetParent(EntityID parent, EntityID child) {
 
 		ECS* ecs = ECS::GetInstance();
 
@@ -40,7 +40,7 @@ namespace ecs {
 		math::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
 	}
 
-	void Hierachy::m_RemoveParent(EntityID child) {
+	void m_RemoveParent(EntityID child) {
 		// removes id from both the child and the parents vector
 		ECS* ecs = ECS::GetInstance();
 
@@ -68,7 +68,7 @@ namespace ecs {
 		math::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
 	}
 
-	std::optional<EntityID> Hierachy::GetParent(EntityID child)
+	std::optional<EntityID> GetParent(EntityID child)
 	{
 		ECS* ecs = ECS::GetInstance();
 		TransformComponent* childTransform = ecs->GetComponent<TransformComponent>(child);
@@ -80,7 +80,7 @@ namespace ecs {
 
 	}
 
-	std::optional<std::vector<EntityID>>Hierachy::m_GetChild(EntityID parent)
+	std::optional<std::vector<EntityID>>m_GetChild(EntityID parent)
 	{
 		ECS* ecs = ECS::GetInstance();
 		TransformComponent* parentTransform = ecs->GetComponent<TransformComponent>(parent);
@@ -92,7 +92,7 @@ namespace ecs {
 
 	}
 
-	void Hierachy::m_UpdateChildScene(EntityID parent)
+	void m_UpdateChildScene(EntityID parent)
 	{
 		ECS* ecs = ECS::GetInstance();
 		scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();

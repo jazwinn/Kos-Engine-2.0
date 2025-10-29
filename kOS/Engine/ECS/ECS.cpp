@@ -225,23 +225,23 @@ namespace ecs{
 		RegisterEntity(NewEntity);
 
 		//checks if duplicates entity has parent and assign it
-		if (Hierachy::GetParent(DuplicatesID).has_value()) {
-			//TransformComponent* transform = GetComponent<TransformComponent>(Hierachy::GetParent(DuplicatesID).value());
+		if (hierachy::GetParent(DuplicatesID).has_value()) {
+			//TransformComponent* transform = GetComponent<TransformComponent>(hierachy::GetParent(DuplicatesID).value());
 			//transform->m_childID.push_back(NewEntity);
-			auto parent = Hierachy::GetParent(DuplicatesID).value();
-			Hierachy::m_SetParent(parent, NewEntity);
+			auto parent = hierachy::GetParent(DuplicatesID).value();
+			hierachy::m_SetParent(parent, NewEntity);
 		}
 
 		//checks if entity has child call recursion
-		if (Hierachy::m_GetChild(DuplicatesID).has_value()) {
+		if (hierachy::m_GetChild(DuplicatesID).has_value()) {
 			//clear child id of vector for new entity
 			TransformComponent* transform = GetComponent<TransformComponent>(NewEntity);
 			transform->m_childID.clear();
 
-			std::vector<EntityID> childID = Hierachy::m_GetChild(DuplicatesID).value();
+			std::vector<EntityID> childID = hierachy::m_GetChild(DuplicatesID).value();
 			for (const auto& child : childID) {
 				EntityID dupChild = DuplicateEntity(child, scene);
-				Hierachy::m_SetParent(NewEntity, dupChild);
+				hierachy::m_SetParent(NewEntity, dupChild);
 			}
 		}
 
@@ -259,8 +259,8 @@ namespace ecs{
 		}
 
 
-		if (Hierachy::GetParent(ID).has_value()) {
-			EntityID parent = Hierachy::GetParent(ID).value();
+		if (hierachy::GetParent(ID).has_value()) {
+			EntityID parent = hierachy::GetParent(ID).value();
 			// if parent id is deleted, no need to remove its child
 			if (m_entityMap.find(parent) != m_entityMap.end()) {
 				TransformComponent* parentTransform = GetComponent<TransformComponent>(parent);
@@ -291,8 +291,8 @@ namespace ecs{
 
 
 		//get child
-		if (Hierachy::m_GetChild(ID).has_value()) {
-			std::vector<EntityID> childs = Hierachy::m_GetChild(ID).value();
+		if (hierachy::m_GetChild(ID).has_value()) {
+			std::vector<EntityID> childs = hierachy::m_GetChild(ID).value();
 			for (auto& x : childs) {
 				DeleteEntity(x);
 			}

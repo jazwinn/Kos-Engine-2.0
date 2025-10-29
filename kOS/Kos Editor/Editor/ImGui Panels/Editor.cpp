@@ -57,7 +57,7 @@ namespace gui {
 			}
 			
 			if (m_prefabSceneMode) {
-				prefab::Prefab::UpdateAllPrefab(m_activeScene);
+				prefab::UpdateAllPrefab(m_activeScene);
 			}
 
 
@@ -135,7 +135,7 @@ namespace gui {
 		LoadLayout();
 
 		// Load Prefabs into scenes
-		prefab::Prefab::LoadAllPrefabs();
+		prefab::LoadAllPrefabs();
 
 		//load scene
 		openAndLoadSceneDialog();

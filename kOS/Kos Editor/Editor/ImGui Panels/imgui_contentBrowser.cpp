@@ -431,7 +431,7 @@ namespace gui {
 					IM_ASSERT(payload->DataSize == sizeof(ecs::EntityID));
 					LOGGING_DEBUG("Dropping To Save Prefab");
 					ecs::EntityID id = *static_cast<ecs::EntityID*>(payload->Data);
-					prefab::Prefab::m_SaveEntitytoPrefab(id);
+					prefab::m_SaveEntitytoPrefab(id);
 				}
 				ImGui::EndDragDropTarget();
 			}

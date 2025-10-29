@@ -97,8 +97,8 @@ void gui::ImGuiHandler::DrawComponentWindow()
                     if (ImGui::Button("Overwrite")) {
                         // Look for component of prefab and set data from me
                         try {
-                            prefab::Prefab::OverwriteScenePrefab(m_clickedEntityId);
-                            prefab::Prefab::UpdateAllPrefab(nc->prefabName);
+                            prefab::OverwriteScenePrefab(m_clickedEntityId);
+                            prefab::UpdateAllPrefab(nc->prefabName);
                         }
                         catch (...) {
                             LOGGING_ERROR("Prefab overwrite, failed");
@@ -175,29 +175,29 @@ void gui::ImGuiHandler::DrawComponentWindow()
                                 ImGui::PushID(IMGUI_ID++);
                                 if (ImGui::Button("Revert")) {
                                     // Look for component of prefab and set data into me
-                                    prefab::Prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
-                                    prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                    prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
+                                    prefab::RefreshComponentDifferenceList(diffComp, entityID);
                                 }
                                 ImGui::SameLine();
                                 if (ImGui::Button("Overwrite")) {
                                     // Look for component of prefab and set data from me
-                                    prefab::Prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
-                                    prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                    prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
+                                    prefab::RefreshComponentDifferenceList(diffComp, entityID);
                                 }
                                 ImGui::PopID();
                             }
                             //if (ImGui::Button("Overwrite All")) {
-                            //    prefab::Prefab::m_OverWriteScenePrefab(entityID);
+                            //    prefab::m_OverWriteScenePrefab(entityID);
                             //}
                             //ImGui::SameLine();
                             //if (ImGui::Checkbox("Sync", &nc->syncPrefab)) {
-                            //    prefab::Prefab::m_UpdateAllPrefabEntity(nc->prefabName);
+                            //    prefab::m_UpdateAllPrefabEntity(nc->prefabName);
                             //}
                         }
 
                         if (isHeaderOpen != open) { // Needed to show change in state
                             if (open) {
-                                prefab::Prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                prefab::RefreshComponentDifferenceList(diffComp, entityID);
                             }
                             else {
                                 diffComp.clear();

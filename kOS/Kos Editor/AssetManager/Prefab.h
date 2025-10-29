@@ -22,56 +22,16 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ECS/ECSList.h"
 
 namespace prefab {
-
-	class Prefab {
-
-	public:
-
-		/******************************************************************/
-		/*!
-			\fn        int m_CreatePrefab(std::string prefabscene, std::string insertscene = {})
-			\brief     Creates a prefab in the specified scene by duplicating entities from an existing scene.
-			\param[in] prefabscene  The name of the scene from which to create the prefab.
-			\param[in] insertscene  The name of the scene where the prefab will be inserted. If empty, uses the first scene in the ECS scene map.
-			\return    The ID of the created prefab entity or -1 if an error occurs.
-		*/
-		/******************************************************************/
-		static int m_CreatePrefab(std::string prefabscene, std::string insertscene = {});
-
-		/******************************************************************/
-		/*!
-			\fn        void m_SaveEntitytoPrefab(ecs::EntityID id)
-			\brief     Saves an entity and its components as a new prefab, creating a JSON file for the prefab data.
-			\param[in] id  The ID of the entity to save as a prefab.
-			\details   Serializes the entity and its hierarchy into a JSON file and loads it as a prefab scene.
-		*/
-		/******************************************************************/
-		static void m_SaveEntitytoPrefab(ecs::EntityID);
-
-
-		//A being the true prefab
-		static void OverwriteScenePrefab(ecs::EntityID id);
-		static void UpdateAllPrefab(const std::string& prefabSceneName);
-		static void DeepUpdatePrefab(ecs::EntityID idA , ecs::EntityID idB);
-
-
-
-		//static void m_AssignEntitytoPrefab(std::string prefab, ecs::EntityID id);
-		/******************************************************************/
-		/*!
-			\fn        void LoadAllPrefabs()
-			\brief     Loads All Prefab files stored in Editor Prefab Folders into memory
-		*/
-		/******************************************************************/
-		static void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
-		static void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
-		static void LoadAllPrefabs();
-		static ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
-		static void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);
-
-	private:
-
-	};
+	int m_CreatePrefab(std::string prefabscene, std::string insertscene = {});
+	void m_SaveEntitytoPrefab(ecs::EntityID);
+	void OverwriteScenePrefab(ecs::EntityID id);
+	void UpdateAllPrefab(const std::string& prefabSceneName);
+	void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB);
+	void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+	void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+	void LoadAllPrefabs();
+	ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
+	void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);
 }
 #endif PREFAB_H
 

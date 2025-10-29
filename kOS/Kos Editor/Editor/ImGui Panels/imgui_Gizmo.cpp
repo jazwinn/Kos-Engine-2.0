@@ -35,7 +35,7 @@
 
         //Change projection based on type... how ah
         glm::mat4 projection = m_isUi ? glm::mat4{ EditorCamera::editorCamera.GetUIOrthoMtx() } : EditorCamera::editorCamera.GetPerspMtx();
-        glm::mat4 transformation = ecs::Hierachy::GetParent(m_clickedEntityId).has_value() ? transcom->localTransform : transcom->transformation;
+        glm::mat4 transformation = hierachy::GetParent(m_clickedEntityId).has_value() ? transcom->localTransform : transcom->transformation;
         if (m_isUi) { ImGuizmo::SetOrthographic(true); }
         else{ ImGuizmo::SetOrthographic(false); }
         // Not need for now.
