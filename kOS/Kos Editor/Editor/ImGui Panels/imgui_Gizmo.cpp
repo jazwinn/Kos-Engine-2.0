@@ -30,20 +30,18 @@
             useSnap = false;
         }
 
- 
         glm::mat4 cameraView = m_isUi ? glm::mat4{ 1.f } : EditorCamera::editorCamera.GetViewMtx();
 
         //Change projection based on type... how ah
         glm::mat4 projection = m_isUi ? glm::mat4{ EditorCamera::editorCamera.GetUIOrthoMtx() } : EditorCamera::editorCamera.GetPerspMtx();
-        glm::mat4 transformation = hierachy::GetParent(m_clickedEntityId).has_value() ? transcom->localTransform : transcom->transformation;
-        if (m_isUi) { ImGuizmo::SetOrthographic(true); }
-        else{ ImGuizmo::SetOrthographic(false); }
+        glm::mat4 transformation = transcom->transformation;
+        ImGuizmo::SetOrthographic(m_isUi ? true : false);
         // Not need for now.
         glm::mat4 deltaMtx(1.0f);
 
         ImGuizmo::Manipulate(
             glm::value_ptr(cameraView), glm::value_ptr(projection),
-            mCurrentGizmoOperation, ImGuizmo::WORLD,
+            mCurrentGizmoOperation, ImGuizmo::LOCAL,
             glm::value_ptr(transformation),
             glm::value_ptr(deltaMtx),
             useSnap ? &snap[0] : NULL);

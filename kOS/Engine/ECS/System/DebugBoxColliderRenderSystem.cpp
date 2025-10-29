@@ -46,12 +46,12 @@ namespace ecs {
 
             if (!transform || !box) { continue; }
 
-            glm::vec3 scale  = transform->LocalTransformation.scale;
+            glm::vec3 scale = transform->WorldTransformation.scale;
             glm::vec3 size   = box->box.size * scale;
-            glm::vec3 center = box->box.center * scale + transform->LocalTransformation.position;
+            glm::vec3 center = box->box.center * scale + transform->WorldTransformation.position;
 
             glm::mat4 result{ 1.0f };
-            result = glm::translate(result, center) * glm::mat4_cast(glm::quat(glm::radians(transform->LocalTransformation.rotation))) * glm::scale(result, size);
+            result = glm::translate(result, center) * glm::mat4_cast(glm::quat(glm::radians(transform->WorldTransformation.rotation))) * glm::scale(result, size);
 
             gm->gm_PushCubeDebugData(BasicDebugData{ result });
         }

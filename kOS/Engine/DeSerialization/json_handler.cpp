@@ -103,7 +103,6 @@ namespace Serialization {
 				//load scene data
 				SceneData sceneData;
 				LoadComponentreflect(&sceneData, entityData);
-				std::cout << scenename << " has been loaded" << std::endl;
 				ecs::ECS::GetInstance()->AddScene(scenename, sceneData);
 
 			}
