@@ -182,6 +182,12 @@ namespace gui {
         ImVec2 gameWindowSize;
         /************************************/
 
+        /***********Delegates****************/
+        Delegate<const std::string&> onSaveAll;
+        void RegisterCallBack();
+        /************************************/
+
+
         std::string m_imgui_layout;
 
         inline void SaveLayout() {
