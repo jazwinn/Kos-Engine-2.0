@@ -1,0 +1,49 @@
+name: Build Engine (Windows Container)
+
+on:
+  push:
+    branches:
+      - main
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    name: Build Engine in Windows Container
+    runs-on: windows-latest  # Uses GitHub-hosted Windows runner
+    container:
+      image: mcr.microsoft.com/windows/servercore:ltsc2022  # Example base image
+      options: --isolation=process
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install prerequisites (CMake, Build Tools)
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=1' -y
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --norestart" -y
+        shell: powershell
+
+      - name: Configure CMake
+        run: cmake -S kOS -B kOS/build
+        shell: powershell
+
+      - name: Build (Release)
+        run: cmake --build kOS/build --config Release -- /m
+        shell: powershell
+
+      - name: Run tests
+        run: |
+          cd kOS/bin
+          mkdir ..\test-results
+          .\Release\Kos_test.exe --gtest_output=xml:..\test-results\report.xml
+        shell: powershell
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: kOS/test-results/report.xml
