@@ -46,10 +46,29 @@ namespace gui {
 
 	std::unordered_map<std::string, std::function<std::shared_ptr<IEditorActionInvoker>()>>  EditorComponentTypeRegistry::s_drawerFactories;
 
+	void ImGuiHandler::RegisterCallBack() {
+		onSaveAll.Add([&](const std::string& scene) {
+
+			if (scene.empty()) {
+				scenes::SceneManager::m_GetInstance()->SaveAllActiveScenes(true);
+			}
+			else {
+				scenes::SceneManager::m_GetInstance()->SaveScene(scene);
+			}
+			
+			if (m_prefabSceneMode) {
+				prefab::Prefab::UpdateAllPrefab(m_activeScene);
+			}
+
+
+	});
+
+	}
+
 	ImGuiHandler::ImGuiHandler(Application::AppWindow& window) :m_window(window) {
 
 		m_ecs = ecs::ECS::GetInstance();
-
+		RegisterCallBack();
 
 
 
@@ -249,25 +268,7 @@ namespace gui {
 
 	void ImGuiHandler::m_UpdateOnPrefabMode()
 	{
-		static bool colorChanged = false;
-		static glm::vec3 originalColor = {}; // Store original color
 
-		if (m_prefabSceneMode)
-		{
-			if (!colorChanged)
-			{
-				colorChanged = true;
-			}
-			//std::cout << "Gui Call for Updating Prefabs" << std::endl;
-			//prefab::Prefab::m_UpdateAllPrefabEntity(m_activeScene); //?
-		}
-		else
-		{
-			if (colorChanged)
-			{
-				colorChanged = false;
-			}
-		}
 
 
 	}
@@ -281,8 +282,7 @@ namespace gui {
 		//If CTRL + S press, save
 		if (io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)) && (m_ecs->GetState() != ecs::RUNNING)) {
 
-			scenemanager->SaveAllActiveScenes();
-
+			onSaveAll.Invoke("");
 		}
 
 	}

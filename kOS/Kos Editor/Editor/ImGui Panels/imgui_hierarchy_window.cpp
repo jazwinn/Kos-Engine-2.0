@@ -195,7 +195,7 @@ namespace gui {
                 }
 
                 if (ImGui::MenuItem("Save Scene")) {
-                    scenemanager->SaveScene(sceneentity.first);
+                    onSaveAll.Invoke(sceneentity.first);
                 }
 
                 if ((sceneentity.first != m_activeScene) && ImGui::MenuItem("Set Active")) {

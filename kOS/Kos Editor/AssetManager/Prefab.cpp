@@ -186,9 +186,28 @@ namespace prefab
         const auto signatureB = ecs->GetEntitySignature(idB);
 
         //update components
+        size_t transformKey = ecs->GetComponentKey(ecs::TransformComponent::classname());
         const auto& componentKey = ecs->GetComponentKeyData();
         for (const auto& [ComponentName, key] : componentKey) {
             auto action = ecs->componentAction[ComponentName];
+
+            {//peform conditions
+
+                //keep position unique to each object
+                if (key == transformKey) {
+                    //auto* tcA = ecs->GetComponent<ecs::TransformComponent>(idA);
+                    //auto* tcB = ecs->GetComponent<ecs::TransformComponent>(idB);
+
+                    //auto deepCopy = DeepCopyComponents<ecs::TransformComponent>();
+
+                    ////skip position and roation
+                    //deepCopy(tcA->WorldTransformation.rotation, tcA->WorldTransformation.rotation);
+                    //deepCopy(tcA->WorldTransformation.scale, tcA->WorldTransformation.scale);
+
+                    continue;
+                }
+            }
+
 
             if (signatureA.test(key)) {
 
