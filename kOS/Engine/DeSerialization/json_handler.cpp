@@ -156,7 +156,7 @@ namespace Serialization {
 				//Start saving the entities
 				std::vector<ecs::EntityID> entities = ecs->sceneMap.find(sceneName)->second.sceneIDs;
 				for (const auto& entityId : entities) {
-					if (!ecs::Hierachy::GetParent(entityId).has_value()) {
+					if (!hierachy::GetParent(entityId).has_value()) {
 						SaveEntity(entityId, doc, allocator, savedEntities);
 					}
 				}
@@ -209,7 +209,7 @@ namespace Serialization {
 
 
 		// Add children
-		std::optional<std::vector<ecs::EntityID>> childrenOptional = ecs::Hierachy::m_GetChild(entityId);
+		std::optional<std::vector<ecs::EntityID>> childrenOptional = hierachy::m_GetChild(entityId);
 		if (childrenOptional.has_value()) {
 			std::vector<ecs::EntityID> children = childrenOptional.value();
 			if (!children.empty()) {
@@ -242,7 +242,7 @@ namespace Serialization {
 
 		//Attach entity to parent
 		if (parentID.has_value()) {
-			ecs::Hierachy::m_SetParent(parentID.value(), newEntityId);
+			hierachy::m_SetParent(parentID.value(), newEntityId);
 		}
 
 		// Load children 

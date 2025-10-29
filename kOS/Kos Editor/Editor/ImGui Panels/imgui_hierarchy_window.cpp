@@ -71,7 +71,7 @@ namespace gui {
                     //if in prefab mode, assign entity to upmost parent
                     if (m_prefabSceneMode) {
                         ecs::EntityID id = ecs->sceneMap.find(m_activeScene)->second.prefabID;
-                        ecs::Hierachy::m_SetParent(std::move(id), newEntityID);
+                        hierachy::m_SetParent(std::move(id), newEntityID);
                     }
 
                     m_clickedEntityId = newEntityID;
@@ -222,12 +222,12 @@ namespace gui {
                     }
 
                     //if entity is a child, break from parent
-                    const auto& parent = ecs::Hierachy::GetParent(Id);
+                    const auto& parent = hierachy::GetParent(Id);
                     if (parent.has_value()) {
-                        ecs::Hierachy::m_RemoveParent(Id);
+                        hierachy::m_RemoveParent(Id);
                     }
 
-                    ecs::Hierachy::m_UpdateChildScene(Id);
+                    hierachy::m_UpdateChildScene(Id);
                 }
 
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file"))
@@ -257,7 +257,7 @@ namespace gui {
 
                     //draw parent entity node
                     //draw entity with no parents hahaha
-                    if (!ecs::Hierachy::GetParent(entity).has_value()) {
+                    if (!hierachy::GetParent(entity).has_value()) {
                         if (DrawEntityNode(entity) == false) {
                             //delete is called
                             break;
@@ -281,14 +281,14 @@ namespace gui {
                     ecs::EntityID Id = *static_cast<ecs::EntityID*>(payload->Data);
 
                     // if in prefab mode and parent does not have parent, reject
-                    if (m_prefabSceneMode && ecs::Hierachy::GetParent(Id).has_value() && (!ecs::Hierachy::GetParent(ecs::Hierachy::GetParent(Id).value()).has_value())) {
+                    if (m_prefabSceneMode && hierachy::GetParent(Id).has_value() && (!hierachy::GetParent(hierachy::GetParent(Id).value()).has_value())) {
                         
                     }
                     if (m_prefabSceneMode) {
-                        ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, Id);
+                        hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, Id);
                     }
                     else {
-                        ecs::Hierachy::m_RemoveParent(Id);
+                        hierachy::m_RemoveParent(Id);
                     }
                 }
 
@@ -374,8 +374,8 @@ namespace gui {
             m_isUi = false;
             //Check if it houses any ui elements
             if (ecs->HasComponent<ecs::CanvasRendererComponent>(id)
-                ||( ecs::Hierachy::GetParent(m_clickedEntityId).has_value()&&
-                    ecs->HasComponent<ecs::CanvasRendererComponent>(ecs::Hierachy::GetParent(m_clickedEntityId).value()))) {
+                ||( hierachy::GetParent(m_clickedEntityId).has_value()&&
+                    ecs->HasComponent<ecs::CanvasRendererComponent>(hierachy::GetParent(m_clickedEntityId).value()))) {
                 std::cout << "IS UI\n";
                 m_isUi = true;
             }
@@ -417,13 +417,13 @@ namespace gui {
                 if (m_prefabSceneMode) {
 
                     
-                    const auto& parent = ecs::Hierachy::GetParent(id);
+                    const auto& parent = hierachy::GetParent(id);
                     //if id does not have parent, make it the parent
                     if (!parent.has_value()) {
-                        ecs::Hierachy::m_SetParent(id, newid);
+                        hierachy::m_SetParent(id, newid);
                     }
                     else {
-                        ecs::Hierachy::m_SetParent(parent.value(), newid);
+                        hierachy::m_SetParent(parent.value(), newid);
                     }
 
                    
@@ -459,10 +459,10 @@ namespace gui {
                     LOGGING_WARN("Unable to drag prefabs of same type into each other, pls go to prefab editor");
                 }
                 else {
-                    ecs::Hierachy::m_SetParent(id, childId);
+                    hierachy::m_SetParent(id, childId);
                     LOGGING_INFO("Set Parent: %d, Child: %d", id, childId);
                     // update child's scene
-                    ecs::Hierachy::m_UpdateChildScene(id);
+                    hierachy::m_UpdateChildScene(id);
 
                     //return
                     ImGui::EndDragDropTarget();

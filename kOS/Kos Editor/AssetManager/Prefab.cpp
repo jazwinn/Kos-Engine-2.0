@@ -33,7 +33,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace prefab 
 {
     void AssignPrefabToNameComponent(ecs::EntityID parentid, std::string scenename) {
-        const auto& vecChild = ecs::Hierachy::m_GetChild(parentid);
+        const auto& vecChild = hierachy::m_GetChild(parentid);
         if (!vecChild.has_value()) return;
         for (auto& childid : vecChild.value()) {
             ecs::ECS* ecs = ecs::ECS::GetInstance();
@@ -41,7 +41,7 @@ namespace prefab
             nc->isPrefab = true;
             nc->prefabName = scenename;
 
-            if (ecs::Hierachy::m_GetChild(childid).has_value()) {
+            if (hierachy::m_GetChild(childid).has_value()) {
                 AssignPrefabToNameComponent(childid, scenename);
             }
         }
@@ -223,8 +223,8 @@ namespace prefab
 
 
         //Objective: Make both have the same number of children
-        auto childsA = ecs::Hierachy::m_GetChild(idA);
-        auto childsB = ecs::Hierachy::m_GetChild(idB);
+        auto childsA = hierachy::m_GetChild(idA);
+        auto childsB = hierachy::m_GetChild(idB);
 
         if (!childsA.has_value() && !childsB.has_value())return; // both id do not have children
 
@@ -243,7 +243,7 @@ namespace prefab
             int diff = countA - countB;
             const auto& scene = ecs->GetSceneByEntityID(idB);
             for (int n{}; n < diff; n++) {
-                ecs::Hierachy::m_SetParent(idB, ecs->CreateEntity(scene));
+                hierachy::m_SetParent(idB, ecs->CreateEntity(scene));
             }
         }
 
@@ -258,8 +258,8 @@ namespace prefab
 
 
 
-        const auto childsVecA = ecs::Hierachy::m_GetChild(idA);
-        const auto childsVecB = ecs::Hierachy::m_GetChild(idB);
+        const auto childsVecA = hierachy::m_GetChild(idA);
+        const auto childsVecB = hierachy::m_GetChild(idB);
 
         if (childsVecA.has_value() && childsVecB.has_value()) {
             //recurse the children

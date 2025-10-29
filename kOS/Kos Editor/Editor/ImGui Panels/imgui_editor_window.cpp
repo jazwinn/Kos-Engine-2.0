@@ -353,7 +353,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        ecs::SpriteComponent* spriteCom = ecs->AddComponent<ecs::SpriteComponent>(id);
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;
@@ -370,7 +370,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
         //        m_clickedEntityId = id;
         //    }
@@ -386,7 +386,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            ecs::Hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;

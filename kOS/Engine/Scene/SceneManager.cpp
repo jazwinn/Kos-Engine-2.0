@@ -252,7 +252,7 @@ namespace scenes {
 		for (int n{}; n < numberOfEntityInScene; n++) {
 			if (m_ecs->sceneMap.find(scene)->second.sceneIDs.size() <= 0) break;
 			auto entityid = m_ecs->sceneMap.find(scene)->second.sceneIDs.begin();
-			if (!ecs::Hierachy::GetParent(*entityid)) {
+			if (!hierachy::GetParent(*entityid)) {
 				m_ecs->DeleteEntity(*entityid);
 			}
 		}
@@ -318,7 +318,7 @@ namespace scenes {
     //    }
 
     //    //if id has children, call recurse
-    //    const auto& child = m_ecs::Hierachy::m_GetChild(id);
+    //    const auto& child = m_hierachy::m_GetChild(id);
     //    if (child.has_value()) {
     //        for (auto id2 : child.value()) {
     //            AssignEntityNewScene(scene , id2);

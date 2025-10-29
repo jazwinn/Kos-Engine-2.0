@@ -51,7 +51,7 @@ namespace ecs {
             if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
                 continue;
 
-            std::optional<std::vector<EntityID>> childEntities = Hierachy::m_GetChild(id);
+            std::optional<std::vector<EntityID>> childEntities = hierachy::m_GetChild(id);
             if (!childEntities.has_value()) continue;
 
             for (EntityID childID : childEntities.value())
