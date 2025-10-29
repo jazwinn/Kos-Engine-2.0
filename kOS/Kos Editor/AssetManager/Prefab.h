@@ -50,6 +50,7 @@ namespace prefab {
 
 
 		//A being the true prefab
+		static void OverwriteScenePrefab(ecs::EntityID id);
 		static void UpdateAllPrefab(const std::string& prefabSceneName);
 		static void DeepUpdatePrefab(ecs::EntityID idA , ecs::EntityID idB);
 

@@ -142,6 +142,25 @@ namespace prefab
         scenes::SceneManager::m_GetInstance()->LoadScene(path);
     }
 
+    void Prefab::OverwriteScenePrefab(ecs::EntityID id) {
+        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
+        if (!nc->isPrefab) return;
+
+        const std::string& prefabName = nc->prefabName;
+
+        if (ecs->sceneMap.find(prefabName) != ecs->sceneMap.end()) {
+
+            const auto& sceneData = ecs->sceneMap.at(prefabName);
+            ecs::EntityID prefabID = sceneData.prefabID;
+
+            DeepUpdatePrefab(id, prefabID);
+        }
+        
+
+
+    }
+
     void Prefab::UpdateAllPrefab(const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
@@ -151,7 +170,8 @@ namespace prefab
 
         for (const auto& [id, signature] : ecs->GetEntitySignatureData()) {
             ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
-            if (nc->isPrefab && (nc->prefabName == prefabSceneName)) {
+            ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
+            if (!(tc->m_haveParent) && nc->isPrefab && (nc->prefabName == prefabSceneName)) {
                 DeepUpdatePrefab(prefabID, id);
             }
         }
@@ -214,15 +234,23 @@ namespace prefab
             for (int n{}; n < diff; n++) {
                 ecs->DeleteEntity(childsVecB[n]);
             }
+
         }
 
-        const auto childsVecA = ecs::Hierachy::m_GetChild(idA).value();
-        const auto childsVecB = ecs::Hierachy::m_GetChild(idB).value();
 
-        //recurse the children
-        for (int n{}; n < childsVecA.size(); n++) {
-            DeepUpdatePrefab(childsVecA[n], childsVecB[n]);
+
+        const auto childsVecA = ecs::Hierachy::m_GetChild(idA);
+        const auto childsVecB = ecs::Hierachy::m_GetChild(idB);
+
+        if (childsVecA.has_value() && childsVecB.has_value()) {
+            //recurse the children
+            for (int n{}; n < childsVecA.value().size(); n++) {
+                DeepUpdatePrefab(childsVecA.value()[n], childsVecB.value()[n]);
+            }
+
         }
+
+
 
    }
 

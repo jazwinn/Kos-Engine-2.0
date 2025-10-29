@@ -226,8 +226,10 @@ namespace ecs{
 
 		//checks if duplicates entity has parent and assign it
 		if (Hierachy::GetParent(DuplicatesID).has_value()) {
-			TransformComponent* transform = GetComponent<TransformComponent>(Hierachy::GetParent(DuplicatesID).value());
-			transform->m_childID.push_back(NewEntity);
+			//TransformComponent* transform = GetComponent<TransformComponent>(Hierachy::GetParent(DuplicatesID).value());
+			//transform->m_childID.push_back(NewEntity);
+			auto parent = Hierachy::GetParent(DuplicatesID).value();
+			Hierachy::m_SetParent(parent, NewEntity);
 		}
 
 		//checks if entity has child call recursion

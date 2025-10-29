@@ -414,8 +414,19 @@ namespace gui {
             if (ImGui::MenuItem("Duplicate Entity")) {
                 ecs::EntityID newid = ecs->DuplicateEntity(id);
 
-                if (m_prefabSceneMode && (!ecs::Hierachy::GetParent(id).has_value())) {
-                   ecs::Hierachy::m_SetParent(id, newid);
+                if (m_prefabSceneMode) {
+
+                    
+                    const auto& parent = ecs::Hierachy::GetParent(id);
+                    //if id does not have parent, make it the parent
+                    if (!parent.has_value()) {
+                        ecs::Hierachy::m_SetParent(id, newid);
+                    }
+                    else {
+                        ecs::Hierachy::m_SetParent(parent.value(), newid);
+                    }
+
+                   
                 }
 
                 ImGui::EndPopup();
