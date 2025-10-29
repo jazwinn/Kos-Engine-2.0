@@ -124,7 +124,7 @@ namespace gui {
                     // Prompt when leaving prefab mode, 
                     std::vector<std::string> diffList;
                     const auto& prefabscene = ecs->sceneMap.find(prefabName);
-                    prefab::Prefab::RefreshComponentDifferenceList(diffList, prefabscene->second.prefabID);
+                    prefab::RefreshComponentDifferenceList(diffList, prefabscene->second.prefabID);
 
                     //m_ecs->DeleteEntity(duppedID); // Dupping Somehow causes us to update all the prefab scenes?
                     //duppedID = -1;
@@ -134,7 +134,7 @@ namespace gui {
                         if (nc->isPrefab && (nc->prefabName == prefabName)) {
                             for (const auto& compName : diffList) {
                                 if (compName == ecs::NameComponent::classname()) continue;
-                                prefab::Prefab::RevertToPrefab_Component(id.first, compName, prefabName);
+                                prefab::RevertToPrefab_Component(id.first, compName, prefabName);
                             }
                         }
                     }
@@ -236,7 +236,7 @@ namespace gui {
                     std::filesystem::path filename = static_cast<const char*>(payload->Data);
 
                     if (filename.filename().extension().string() == ".prefab") {                     
-                        prefab::Prefab::m_CreatePrefab(filename.filename().string(), sceneentity.first);
+                        prefab::m_CreatePrefab(filename.filename().string(), sceneentity.first);
                     }
                 }
                 ImGui::EndDragDropTarget();
@@ -306,7 +306,7 @@ namespace gui {
                     }
 
                     if (!m_prefabSceneMode && filePath.filename().extension().string() == ".prefab") {
-                       prefab::Prefab::m_CreatePrefab(filePath.filename().string(), m_activeScene);
+                       prefab::m_CreatePrefab(filePath.filename().string(), m_activeScene);
                     }
                 }
                 ImGui::EndDragDropTarget();
@@ -436,7 +436,7 @@ namespace gui {
 
             if (ImGui::MenuItem("Create Prefab")) {
                 if (!m_prefabSceneMode) {
-                    prefab::Prefab::m_SaveEntitytoPrefab(id);
+                    prefab::m_SaveEntitytoPrefab(id);
                 }            
             }
 

@@ -48,7 +48,7 @@ namespace prefab
     }
 
     // Creating Prefab Instance
-    int Prefab::m_CreatePrefab(std::string prefabscene, std::string insertscene)
+    int m_CreatePrefab(std::string prefabscene, std::string insertscene)
     {
         if (prefabscene == insertscene) {
             LOGGING_ERROR("Cannot load onto itself");
@@ -83,7 +83,7 @@ namespace prefab
         return newId;
     }
 
-    void Prefab::m_SaveEntitytoPrefab(ecs::EntityID id)
+    void m_SaveEntitytoPrefab(ecs::EntityID id)
     {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
@@ -142,7 +142,7 @@ namespace prefab
         scenes::SceneManager::m_GetInstance()->LoadScene(path);
     }
 
-    void Prefab::OverwriteScenePrefab(ecs::EntityID id) {
+    void OverwriteScenePrefab(ecs::EntityID id) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
         if (!nc->isPrefab) return;
@@ -161,7 +161,7 @@ namespace prefab
 
     }
 
-    void Prefab::UpdateAllPrefab(const std::string& prefabSceneName) {
+    void UpdateAllPrefab(const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         const auto& prefabData = ecs->sceneMap.find(prefabSceneName);
@@ -178,7 +178,7 @@ namespace prefab
     }
 
  
-    void Prefab::DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB) {
+    void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (idA == idB)return;
 
@@ -274,7 +274,7 @@ namespace prefab
    }
 
 
-    void Prefab::OverwritePrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
+    void OverwritePrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
         auto iter = ecs->sceneMap.find(prefabSceneName);
@@ -299,7 +299,7 @@ namespace prefab
 		scenes::SceneManager::m_GetInstance()->SaveScene(prefabSceneName);
     }
 
-    void Prefab::RevertToPrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
+    void RevertToPrefab_Component(ecs::EntityID entityID, const std::string& componentName, const std::string& prefabSceneName) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
 
         if (ecs->sceneMap.find(prefabSceneName) == ecs->sceneMap.end()) return;
@@ -312,7 +312,7 @@ namespace prefab
         action->RemoveComponent(entityID);
     }
 
-    void Prefab::LoadAllPrefabs() {
+    void LoadAllPrefabs() {
         auto* sm = scenes::SceneManager::m_GetInstance();
         ecs::ECS* ecs = ecs::ECS::GetInstance();
 
@@ -342,7 +342,7 @@ namespace prefab
         }
     }
 
-    ecs::ComponentSignature Prefab::ComparePrefabWithInstance(ecs::EntityID entityID) {
+    ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID entityID) {
         ecs::ECS* ecs = ecs::ECS::GetInstance();
         std::string prefabName = ecs->GetComponent<ecs::NameComponent>(entityID)->prefabName;
         if (ecs->sceneMap.find(prefabName) == ecs->sceneMap.end()) return ecs::ComponentSignature();
@@ -381,9 +381,9 @@ namespace prefab
         return result;
     }
 
-    void Prefab::RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID) {
+    void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID) {
         ecs::ECS* m_ecs = ecs::ECS::GetInstance();
-        ecs::ComponentSignature sig = prefab::Prefab::ComparePrefabWithInstance(entityID);
+        ecs::ComponentSignature sig = ComparePrefabWithInstance(entityID);
         diffComp.clear();
         const auto& componentKey = m_ecs->GetComponentKeyData();
         for (const auto& [ComponentName, key] : componentKey) {

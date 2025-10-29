@@ -396,7 +396,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //        try {
         //            //check to see if prefab is even loaded
         //            if (ecs->sceneMap.find(filename->filename().string()) != ecs->sceneMap.end()) {
-        //                ecs::EntityID id = prefab::Prefab::m_CreatePrefab(filename->filename().string(), m_activeScene);
+        //                ecs::EntityID id = prefab::m_CreatePrefab(filename->filename().string(), m_activeScene);
         //                ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
         //                transCom->WorldTransformation.position = translate;
         //            }
