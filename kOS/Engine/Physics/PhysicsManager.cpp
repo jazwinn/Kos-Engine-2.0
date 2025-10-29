@@ -112,14 +112,29 @@ namespace physics {
 	void PhysicsManager::AddForce(void* actor, const glm::vec3& force, ForceMode mode) {
 		PxRigidDynamic* rb = static_cast<PxRigidDynamic*>(actor);
 		if (!rb->getRigidBodyFlags().isSet(PxRigidBodyFlag::eKINEMATIC)) {
-			rb->addForce(PxVec3(force.x, force.y, force.z), ToPhysxForceMode(mode));
+			rb->addForce(PxVec3{ force.x, force.y, force.z }, ToPhysxForceMode(mode));
 		}
 	}
 
 	void PhysicsManager::AddTorque(void* actor, const glm::vec3& torque, ForceMode mode) {
 		PxRigidDynamic* rb = static_cast<PxRigidDynamic*>(actor);
 		if (!rb->getRigidBodyFlags().isSet(PxRigidBodyFlag::eKINEMATIC)) {
-			rb->addTorque(PxVec3(torque.x, torque.y, torque.z), ToPhysxForceMode(mode));
+			rb->addTorque(PxVec3{ torque.x, torque.y, torque.z }, ToPhysxForceMode(mode));
 		}
+	}
+
+	bool PhysicsManager::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit& outHit) {
+		if (!m_scene) { return false; }
+		PxRaycastBuffer hit;
+		bool isHit = m_scene->raycast(PxVec3{ origin.x, origin.y, origin.z }, PxVec3{ direction.x, direction.y, direction.z }.getNormalized(), maxDistance, hit);
+		if (isHit && hit.hasBlock) {
+			outHit.rigidbody = hit.block.actor;
+			outHit.collider = hit.block.shape;
+			outHit.point = glm::vec3{ hit.block.position.x, hit.block.position.y, hit.block.position.z };
+			outHit.normal = glm::vec3{ hit.block.normal.x, hit.block.normal.y, hit.block.normal.z };
+			outHit.distance = hit.block.distance;
+			return true;
+		}
+		return false;
 	}
 }
