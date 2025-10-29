@@ -46,7 +46,7 @@ namespace ecs {
 			if (transformComp->m_haveParent) continue;
 
 			NameComponent* NameComp = ecs->GetComponent<NameComponent>(id);
-			if ((transformComp->scene != scene) || !ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
+			if (!ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
 			
 			CalculateAllTransform(transformComp);
 		}

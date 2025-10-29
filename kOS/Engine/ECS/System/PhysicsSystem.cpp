@@ -21,7 +21,7 @@ namespace ecs {
             auto* trans = ecs->GetComponent<TransformComponent>(id);
             auto* name = ecs->GetComponent<NameComponent>(id);
 
-            if (!rb || !trans || trans->scene != scene || name->hide) { continue; }
+            if (name->hide) { continue; }
 
             if (!rb->isKinematic) {
                 PxRigidActor* actor = static_cast<PxRigidActor*>(rb->actor);
@@ -41,7 +41,7 @@ namespace ecs {
             auto* trans = ecs->GetComponent<TransformComponent>(id);
             auto* name = ecs->GetComponent<NameComponent>(id);
 
-            if (!rb || !trans || trans->scene != scene || name->hide) { continue; }
+            if (name->hide) { continue; }
 
             PxRigidActor* actor = static_cast<PxRigidActor*>(rb->actor);
             if (actor && !rb->isKinematic) {

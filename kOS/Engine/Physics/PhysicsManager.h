@@ -34,7 +34,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Physics/PhysicsEventCallback.h"
 #include "Physics/PhysxUtils.h"
-#include "PHYSX/PxPhysicsAPI.h"
 
 using namespace ecs;
 using namespace physx;
@@ -66,6 +65,8 @@ namespace physics {
 
 		void AddForce(void*, const glm::vec3&, ForceMode mode = ForceMode::Force);
 		void AddTorque(void*, const glm::vec3&, ForceMode mode = ForceMode::Force);
+
+		bool Raycast(const glm::vec3&, const glm::vec3&, float, RaycastHit&);
 
 		CollisionCallbacks* GetCollisionCallbacks(EntityID entity) { return m_eventCallback->RegisterCollisionCallbacks(entity); }
 		TriggerCallbacks* GetTriggerCallbacks(EntityID entity) { return m_eventCallback->RegisterTriggerCallbacks(entity); }

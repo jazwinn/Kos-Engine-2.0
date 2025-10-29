@@ -17,6 +17,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /******************************************************************/
 #pragma once
 #include "config/pch.h"
+#include "AssetManager/AssetDatabase.h"
 
 constexpr float sameLineParam = 200.0f; //Padding for the slider
 
@@ -210,11 +211,15 @@ struct DrawComponents {
         count++;
 
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file")) {
-				// Cast the payload back to your type
-				const char* droppedData = static_cast<const char*>(payload->Data);
-				_args = droppedData; // assign to std::string
-			}
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file")) {
+                IM_ASSERT(payload->DataSize == sizeof(AssetPathGUID));
+                const AssetPathGUID* data = static_cast<const AssetPathGUID*>(payload->Data);
+
+                if (std::strlen(data->GUID) == 0)
+                    _args = data->path;
+                else
+                    _args = data->GUID;
+            }
 			ImGui::EndDragDropTarget();
 		}
     }

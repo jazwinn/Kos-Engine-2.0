@@ -27,6 +27,7 @@ public:
     virtual void Load(ecs::EntityID ID, const rapidjson::Value& entityData) = 0;
 
     virtual bool Compare(void* componentData1, void* componentData2) = 0;
+    virtual bool Compare(ecs::EntityID ID, ecs::EntityID ID2) = 0;
 
     virtual void* AddComponent(ecs::EntityID ID) = 0;
 
@@ -35,8 +36,6 @@ public:
     virtual void RemoveComponent(ecs::EntityID ID) = 0;
 
     virtual void ResetComponent(ecs::EntityID ID) = 0;
-
-    virtual void SetSceneToComponent(void* componentData, const std::string& scene) = 0;
 
     virtual void* DuplicateComponent(ecs::EntityID duplicateID, ecs::EntityID newID) = 0;
 

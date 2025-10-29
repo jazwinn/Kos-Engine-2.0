@@ -79,7 +79,7 @@ namespace ecs {
             TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
             RigidbodyComponent* rb = ecs->GetComponent<RigidbodyComponent>(id);
 
-            if (!rb || !trans || trans->scene != scene || name->hide) { continue; }
+            if ( name->hide) { continue; }
 
             PxRigidDynamic* actor = reinterpret_cast<PxRigidDynamic*>(rb->actor);
 

@@ -25,70 +25,20 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "ECS.h"
 
-namespace ecs {
+using namespace ecs;
 
+namespace hierachy {
 
-	class Hierachy {
+	void m_SetParent(EntityID parent, EntityID child);
 
-	public:
+	void m_RemoveParent(EntityID child);
 
-		/******************************************************************/
-		/*!
-			\fn        void m_SetParent(EntityID parent, EntityID child)
-			\brief     Defines a parent-child relationship between two entities.
-			\param[in] parent The ID of the parent entity.
-			\param[in] child  The ID of the child entity.
-			\details   Establishes a hierarchical relationship, setting the specified
-					   entity as a child of the parent entity.
-		*/
-		/******************************************************************/
-		static void m_SetParent(EntityID parent, EntityID child);
+	std::optional<EntityID> GetParent(EntityID child);
 
-		/******************************************************************/
-		/*!
-			\fn        void m_RemoveParent(EntityID child)
-			\brief     Removes the parent of a specified child entity.
-			\param[in] child The ID of the child entity.
-			\details   Detaches the child entity from its parent, if any, and updates
-					   the parent’s child list accordingly.
-		*/
-		/******************************************************************/
-		static void m_RemoveParent(EntityID child);
+	std::optional<std::vector<EntityID>> m_GetChild(EntityID parent);
 
-		/******************************************************************/
-		/*!
-			\fn        std::optional<EntityID> m_GetParent(EntityID child)
-			\brief     Retrieves the parent of a specified entity, if one exists.
-			\param[in] child The ID of the child entity.
-			\return    An optional containing the parent entity ID, or nullopt if none.
-			\details   Allows querying of an entity's parent within the hierarchy.
-		*/
-		/******************************************************************/
-		static std::optional<EntityID> GetParent(EntityID child);
+	void m_UpdateChildScene(EntityID parent);
 
-		/******************************************************************/
-		/*!
-			\fn        std::optional<std::vector<EntityID>> m_GetChild(EntityID parent)
-			\brief     Retrieves a list of children for a specified parent entity.
-			\param[in] parent The ID of the parent entity.
-			\return    An optional vector containing the IDs of the child entities, or nullopt if none.
-			\details   Allows querying of an entity's children within the hierarchy.
-		*/
-		/******************************************************************/
-		static std::optional<std::vector<EntityID>> m_GetChild(EntityID parent);
-
-		/******************************************************************/
-		/*!
-			\fn        void m_UpdateChildScene(EntityID parent)
-			\brief     Recursively updates the scene association of a parent entity and its children.
-			\param[in] parent The ID of the parent entity whose scene is to be propagated.
-			\details   Ensures all child entities belong to the same scene as the parent by
-					   recursively updating scene associations.
-		*/
-		/******************************************************************/
-		static void m_UpdateChildScene(EntityID parent);
-
-	};
 }
 
 #define HIERACHY_H
