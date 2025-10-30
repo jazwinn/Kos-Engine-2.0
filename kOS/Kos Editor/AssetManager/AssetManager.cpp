@@ -30,8 +30,10 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
     m_resourceDirectory = resourceDirectory;
 
     std::function<void(const std::string&)> readDirectory;
+    std::vector<std::future<void>> compilingAsync;
 
     readDirectory = [&](const std::string& Dir) {
+        int count = 0;
         for (const auto& entry : std::filesystem::directory_iterator(Dir)) {
             std::string filepath = entry.path().string();
 
@@ -40,12 +42,46 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
             }
             else {
                 RegisterAsset(entry.path());
+
+                //test if resource is already in the resource folder
+                std::filesystem::path metaPath = filepath + ".meta";
+
+
+                if (std::filesystem::exists(metaPath)) {
+                    AssetData data = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+                    const auto& map = m_compilerMap.at(entry.path().filename().extension().string());
+                    for (const auto& compilerData : map)
+                    {
+                        std::string type = compilerData.type;
+                        std::string outputResourcePath = std::filesystem::absolute(m_resourceDirectory).string() + "/" + data.GUID + compilerData.outputExtension;
+                        if (!std::filesystem::exists(outputResourcePath)) {
+                            std::cout << ++count << std::endl;
+                            compilingAsync.push_back(Compilefile(filepath));
+                        }
+
+                    }
+                }
+                else {
+                    continue;
+                }
+
+
             }
         }
         };
 
 
 	readDirectory(m_assetDirectory);
+
+    for (size_t i = 0; i < compilingAsync.size(); ) {
+        if (compilingAsync[i].wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            compilingAsync[i].get();
+            compilingAsync.erase(compilingAsync.begin() + i);
+        }
+        else {
+            ++i;
+        }
+    }
 
 
     //Setup Watchers
@@ -58,11 +94,13 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
         {
 		case ADDED:
             LOGGING_INFO("Watcher: Added - " + filePath.string());
-            
+            RegisterAsset(filePath);
+            Compilefile(filePath);
+
 			break;
 		case MODIFIED:
             LOGGING_INFO("Watcher: Modified - " + filePath.string());
-            //Compilefile(filePath)
+            Compilefile(filePath);
 
 			break;
 		case REMOVED:
@@ -80,26 +118,6 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
 
     m_assetWatcher->Start();
 
-	//m_scriptWatcher = std::make_unique<Watcher>(std::filesystem::absolute(configpath::scriptWatherFilePath).parent_path().string(), std::chrono::milliseconds(3000));
-
- //   m_scriptWatcher->SetCallback([&](ACTION action, const std::filesystem::path& filePath) {
- //       switch (action)
- //       {
- //       case MODIFIED:
- //           while(ecs::ECS::GetInstance()->GetState() == ecs::RUNNING) {
- //               std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-	//		}
-
- //           LOGGING_INFO("Script Watcher: Modified - " + filePath.string());
- //           //Compilefile(filePath);
- //           if (filePath.filename().string() == "SCRIPTS.dll")
- //           {
- //               ScriptHotReload(filePath.filename().string());
- //           }
- //       }
-	//	});
-
- //   m_scriptWatcher->Start();
 
 
 }
@@ -122,24 +140,20 @@ void AssetManager::RegisterAsset(const std::filesystem::path& filePath)
     m_GUIDtoFilePath[GUID] = filePath;
 }
 
-void AssetManager::Compilefile(const std::filesystem::path& filePath, const std::string& outputExtension)
+std::future<void> AssetManager::Compilefile(const std::filesystem::path& filePath)
 {
-    //see if meta file exist
     if (!std::filesystem::exists(filePath)) {
         LOGGING_WARN("Compile File: " + filePath.string() + " filepath does not exist");
-        return;
+        return std::async(std::launch::deferred, []() {});
     }
 
     std::string inputExtension = filePath.extension().string();
 	//check if compiler have been registered
 	if (m_compilerMap.find(inputExtension) == m_compilerMap.end()) {
 		//LOGGING_WARN("Compile File: " + inputExtension + "not found");
-		return;
+		return std::async(std::launch::deferred, []() {});
 		
         //just copy the file over to the resource
-
-
-
 
 	}
     
@@ -152,7 +166,7 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath, const std:
 
         if (!std::filesystem::exists(metaPath)) {
 			LOGGING_WARN("Compile File: Meta file does not exist after registering asset");
-			return;
+			return std::async(std::launch::deferred, []() {});
         }
 	}
     //get file type from meta
@@ -161,70 +175,77 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath, const std:
     const auto& map = m_compilerMap.at(inputExtension);
     for(const auto& compilerData : map)
     {
-        if (compilerData.outputExtension == outputExtension)
+        std::string guid = data.GUID;
+
+        std::string inputPath = std::filesystem::absolute(filePath).string();
+        std::string outputResourcePath =
+            std::filesystem::absolute(m_resourceDirectory).string() + "\\" +
+            data.GUID + compilerData.outputExtension;
+
+
+        //assets that have a compiler
+        if (compilerData.compilerFilePath != "null")
         {
-            std::string type = compilerData.type;
+            //COMPILING CODE HERE
+            std::string compilerPath = std::filesystem::absolute(compilerData.compilerFilePath).string();
+            std::string absmetaPath = std::filesystem::absolute(metaPath).string();
 
-            std::string guid = data.GUID;
+            //std::string command = "\"" + compilerPath + "\" \"" + inputPath + "\" \"" + absmetaPath + "\" \"" + outputResourcePath + "\"";
 
-            std::string inputPath = std::filesystem::absolute(filePath).string();
-            std::string outputResourcePath = std::filesystem::absolute(m_resourceDirectory).string() + "/" + type + "/" + data.GUID + outputExtension;
+            //std::cout << "Running: " << command << std::endl;
 
-            //assets that have a compiler
-            if (compilerData.compilerFilePath != "null")
-            {
-                //COMPILING CODE HERE
-                std::string compilerPath = std::filesystem::absolute(compilerData.compilerFilePath).string();
-                std::string absmetaPath = std::filesystem::absolute(metaPath).string();
-
-                //std::string command = "\"" + compilerPath + "\" \"" + inputPath + "\" \"" + absmetaPath + "\" \"" + outputResourcePath + "\"";
-
-                //std::cout << "Running: " << command << std::endl;
-
-                std::string tempBatch = "temp_run_meshcompiler.bat";
-                // Write the batch file
-                std::ofstream batchFile(tempBatch);
-                if (!batchFile) {
-                    std::cerr << "Failed to create batch file!" << std::endl;
-                    return;
-                }
-
-                batchFile << "@echo off\n";
-                batchFile << "set EXE=\"" << compilerPath << "\"\n";
-                batchFile << "%EXE% \"" << inputPath << "\" \"" << absmetaPath << "\" \"" << outputResourcePath << "\" \"" << "\"\n";
-                batchFile.close();
-
-                // Run the batch file
-                int result = std::system(tempBatch.c_str());
-                if (result != 0) {
-                    std::cerr << "Command failed with code: " << result << std::endl;
-                }
-
-
-
-                // Delete the temporary batch file
-                std::filesystem::remove(tempBatch);
-            }
-            else {
-                //assets without
-
-                //check if directory exist, if not create one
-
-                std::filesystem::path dir = std::filesystem::path(outputResourcePath).parent_path();
-
-                if (!std::filesystem::exists(dir)) {
-                    if (!std::filesystem::create_directories(dir)) {
-                        LOGGING_ERROR("Fail to create directory");
-                    }
-                }
-
-
-                std::filesystem::copy_file(inputPath, outputResourcePath, std::filesystem::copy_options::overwrite_existing);
-
+            std::string tempBatch = "temp_run_" + guid + ".bat";
+            // Write the batch file
+            std::ofstream batchFile(tempBatch);
+            if (!batchFile) {
+                std::cerr << "Failed to create batch file!" << std::endl;
+                return std::async(std::launch::deferred, []() {});
             }
 
-            return;
+            batchFile << "@echo off\n";
+            batchFile << "set EXE=\"" << compilerPath << "\"\n";
+            batchFile << "%EXE% \"" << inputPath << "\" \"" << absmetaPath << "\" \"" << outputResourcePath << "\" \"" << "\"\n";
+            batchFile.close();
+
+            // Run the batch file
+            auto runSystemAsync = [](const std::string& batfile)
+                {
+                    auto future = std::async(std::launch::async, [batfile]() {
+                        int result = std::system(batfile.c_str());
+                        if (result != 0) {
+                            std::cerr << "Command failed with code: " << result << std::endl;
+                        }
+
+                        // Delete the temporary batch file
+                        std::filesystem::remove(batfile);
+                     });
+
+                    return future; // you can store this if you want to wait later
+                };
+
+            auto AsyncCompile = runSystemAsync(tempBatch);
+
+            return AsyncCompile;
         }
+        else {
+            //assets without
+
+            //check if directory exist, if not create one
+
+            std::filesystem::path dir = std::filesystem::path(outputResourcePath).parent_path();
+
+            if (!std::filesystem::exists(dir)) {
+                if (!std::filesystem::create_directories(dir)) {
+                    LOGGING_ERROR("Fail to create directory");
+                }
+            }
+
+
+            std::filesystem::copy_file(inputPath, outputResourcePath, std::filesystem::copy_options::overwrite_existing);
+
+        }
+
+        return std::async(std::launch::deferred, []() {});
 	}
 
 

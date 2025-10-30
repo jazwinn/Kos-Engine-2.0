@@ -10,14 +10,6 @@ struct MeshCompiler {
 	std::vector<std::string> inputExtensions;
 	REFLECTABLE(MeshCompiler, path, outputExtension, inputExtensions);
 };
-
-struct AnimationCompiler {
-	std::string type = R_Animation::classname();
-	std::string path;
-	std::string outputExtension;
-	std::vector<std::string> inputExtensions;
-	REFLECTABLE(AnimationCompiler, path, outputExtension, inputExtensions);
-};
 struct TextureCompiler {
 	std::string type = R_Texture::classname();
 	std::string path;
@@ -65,11 +57,10 @@ struct CompilerData {
 	TextureCompiler textureCompiler;
 	FontCompiler fontCompiler;
 	SceneCompiler sceneCompiler;
-	AnimationCompiler animationCompiler;
 	AudioCompiler audioCompiler;
 	MaterialCompiler materialCompiler;
 
-	REFLECTABLE(CompilerData, meshCompiler,textureCompiler, fontCompiler, sceneCompiler, animationCompiler, audioCompiler, materialCompiler);
+	REFLECTABLE(CompilerData, meshCompiler,textureCompiler, fontCompiler, sceneCompiler, audioCompiler, materialCompiler);
 };
 
 

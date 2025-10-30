@@ -261,7 +261,7 @@ void SkinnedMeshRenderer::Clear()
 void CubeRenderer::Render(const CameraData& camera, Shader& shader, Cube* cubePtr) {
 	for (CubeData& cd : cubesToDraw) {
 		shader.SetTrans("model", cd.transformation);
-		shader.SetInt("entityID", cd.entityID);
+		shader.SetInt("entityID", cd.entityID + 1);
 		glActiveTexture(GL_TEXTURE0); // activate proper texture unit before binding
 		shader.SetInt("texture_diffuse1", 0);
 		unsigned int currentTexture = 0;
