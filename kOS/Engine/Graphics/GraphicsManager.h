@@ -98,6 +98,7 @@ private:
 	void gm_FillDataBuffers(const CameraData& camera);
 	void gm_FillGBuffer(const CameraData& camera);
 	void gm_FillDepthBuffer(const CameraData& camera);
+	void gm_FillDepthCube(const CameraData& camera);
 	void gm_RenderCubeMap(const CameraData& camera);
 	void gm_RenderDebugObjects(const CameraData& camera);
 	void gm_RenderUIObjects(const CameraData& camera);
