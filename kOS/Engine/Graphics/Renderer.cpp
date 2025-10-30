@@ -172,7 +172,7 @@ void MeshRenderer::Render(const CameraData& camera, Shader& shader)
 	for (MeshData& mesh : meshesToDraw)
 	{
 		shader.SetTrans("model", mesh.transformation);
-		shader.SetInt("entityID", mesh.entityID);
+		shader.SetInt("entityID", mesh.entityID+1);
 
 		mesh.meshToUse->PBRDraw(shader, mesh.meshMaterial);
 	}
