@@ -60,7 +60,7 @@ namespace scenes {
 		void ClearAllSceneImmediate();
 
 		//Do not call this in the script
-		bool ImmediateLoadScene(const std::filesystem::path& scenepath);
+		bool ImmediateLoadScene(const std::filesystem::path& scenepath, const std::string forcedSceneName = "");
 		//Do not call this in the script
 		void ImmediateClearScene(const std::string& scene);
 
@@ -68,6 +68,10 @@ namespace scenes {
 		void SwapScenes(const std::string& oldscene, const std::string& newscene , ecs::EntityID id);
 
 		void SetSceneActive(const std::string& scene, bool active);
+
+		void CacheCurrentScene();
+		void DeleteAllCacheScenes();
+		bool LoadCacheSceneImmediate(const std::filesystem::path& scene, std::string originalName);
 
 		//void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
 		//EVENTS
@@ -88,7 +92,7 @@ namespace scenes {
 		std::unordered_map<std::string, std::filesystem::path> unloadScenePath;
 		std::unordered_map<std::string, std::filesystem::path> loadScenePath;
 		std::vector<std::filesystem::path> m_recentFiles;
-
+		std::vector<std::filesystem::path> cacheScenePath;
 		/******************************************************************/
 		/*!
 		\var     static std::unique_ptr<SceneManager> m_InstancePtr

@@ -53,10 +53,10 @@ void gui::ImGuiHandler::DrawMainMenuBar() {
             ImGui::EndMenu();
         }
 
-        //if (ImGui::BeginMenu("Edit")) {
-        //    ImGui::MenuItem("Preferences", NULL, &openPreferencesTab);
-        //    ImGui::EndMenu();
-        //}
+        if (ImGui::BeginMenu("Edit")) {
+            ImGui::MenuItem("Preferences", NULL, &openPreferencesTab);
+            ImGui::EndMenu();
+        }
 
         if (ImGui::BeginMenu("Window")) {
             if (ImGui::MenuItem("Save Layout")) {

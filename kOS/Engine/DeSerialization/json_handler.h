@@ -23,8 +23,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "SerializationReflection.h"
 
 namespace Serialization {
-		void LoadScene(const std::filesystem::path& jsonFilePath);
-		void SaveScene(const std::filesystem::path& filePath);
+		void LoadScene(const std::filesystem::path& jsonFilePath, const std::string sceneName = "");
+		void SaveScene(const std::filesystem::path& filePath, const std::filesystem::path& targetFilePath = "");
 
 		void SaveEntity(ecs::EntityID entityId, rapidjson::Value& parentArray, rapidjson::Document::AllocatorType& allocator, std::unordered_set<ecs::EntityID>& savedEntities);
 		void LoadEntity(const rapidjson::Value& entityData, std::optional<ecs::EntityID> parentID, const std::string& sceneName);
