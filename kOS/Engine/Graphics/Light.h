@@ -29,17 +29,22 @@ enum LightType {
 struct PointLightData {
 
 	PointLightData() = default;
+	PointLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad, float inten) :
+		position(pos), color(col), diffuseStrength(diff), specularStrength(spec), linear(lin), quadratic(quad), intensity{ inten } {
 
-	PointLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad) :
-		position(pos), color(col), diffuseStrength(diff), specularStrength(spec), linear(lin), quadratic(quad) {};
+	};
+	PointLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad,float inten, bool shadowCast) :
+		position(pos), color(col), diffuseStrength(diff), specularStrength(spec), linear(lin), quadratic(quad), intensity{ inten },shadowCon{ shadowCast } {
+	};
 
 	glm::vec3 position{0.f,0.f,0.f};
 	glm::vec3 color{1.f,1.f,1.f};
 	glm::vec3  diffuseStrength{1.f};
 	glm::vec3  specularStrength{1.f};
+	float intensity;
 	float linear{0.09f};
 	float quadratic{ 0.032f };
-
+	bool shadowCon; 
 	static glm::vec3  ambientStrength;
 	virtual void SetUniform(Shader* shader, size_t number);
 	virtual void SetShaderMtrx(Shader* shader, size_t number);
@@ -49,10 +54,12 @@ struct DirectionalLightData :public PointLightData {
 
 	DirectionalLightData() = default;
 	
-	DirectionalLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad, glm::vec3 dir)
-		: PointLightData(pos, col, diff, spec, lin, quad), direction(dir) {}
+	DirectionalLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad, float intens, glm::vec3 dir)
+		: PointLightData(pos, col, diff, spec, lin, quad, intens), direction(dir), intensity(intens) {
+	}
 
 	glm::vec3 direction{ 0.f,0.f,1.f };
+	float intensity;
 	void SetUniform(Shader* shader, size_t number);
 	void SetShaderMtrx(Shader* shader, size_t number);
 };
@@ -61,8 +68,8 @@ struct SpotLightData :public PointLightData {
 
 	SpotLightData() = default;
 
-	SpotLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad, glm::vec3 dir, float cutoff, float outercutoff) :
-		PointLightData(pos, col, diff, spec, lin, quad), direction(dir), cutOff(cutoff), outerCutOff(outercutoff) {};
+	SpotLightData(glm::vec3 pos, glm::vec3 col, glm::vec3 diff, glm::vec3 spec, float lin, float quad, float intens, glm::vec3 dir, float cutoff, float outercutoff) :
+		PointLightData(pos, col, diff, spec, lin, quad, intens), direction(dir), cutOff(cutoff), outerCutOff(outercutoff) {};
 
 	glm::vec3 direction{0.f,0.f,1.f};
 	float cutOff{5.5f};

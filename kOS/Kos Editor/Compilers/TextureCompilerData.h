@@ -14,8 +14,8 @@ enum ColorFormat {
 struct TextureCompilerData {
 	bool HoriztonalFlip = false;
 	bool VerticalFlip = false;
-	float Width = 1.0f;
-	float Height = 1.0f;
+	float Width = 0.0f;
+	float Height = 0.0f;
 	int MipLevels = 1;
 	WrapMode Wrap = WRAP_CLAMP;
 	ColorFormat ColorSpace = CS_SRGB;
