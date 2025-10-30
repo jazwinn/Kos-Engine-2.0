@@ -35,6 +35,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ECS/Hierachy.h"
 #include "Resources/ResourceManager.h"
 
+
 namespace scenes {
     std::shared_ptr<SceneManager> SceneManager::m_InstancePtr = nullptr;
 
@@ -82,27 +83,53 @@ namespace scenes {
 
     void SceneManager::ReloadScene()
     {
-		//retrieve open scenes
+        // If Cached Scenes exist reload all Cached Scenes
+        if (cacheScenePath.size() > 0) {
+            std::vector<std::string> scenesToClear;
+            for (auto& [scene, data] : m_ecs->sceneMap) {
+                if (!data.isPrefab) {
+                    scenesToClear.push_back(scene);
+                }
+            }
+            for (auto const& scene : scenesToClear) {
+                ImmediateClearScene(scene);
+            }
+            const std::string cacheExt("[Cached]");
+            for (auto& filePath : cacheScenePath) {
+                std::string fileName = filePath.filename().string();
+                size_t pos = fileName.find(cacheExt);
+                if (pos != std::string::npos) {
+                    fileName.erase(pos, cacheExt.size());
+                }
+                ImmediateLoadScene(filePath, fileName);
+            }
+            // Change File Path for loadScenePath since filepath for cached scenes will contain [Cached]
+            for (auto& [scene, filePath] : loadScenePath) {
+                std::string path = filePath.string();
+                size_t pos = path.find(cacheExt);
+                if (pos != std::string::npos) {
+                    path.erase(pos, cacheExt.size());
+                    filePath = path;
+                }
+            }
 
-		std::vector<std::string> sce;
-		for (auto& scenes : m_ecs->sceneMap) {
-			sce.push_back(scenes.first);
-		}
+            DeleteAllCacheScenes();
+            cacheScenePath.clear();
+        }
+        else {
+            //store scene path
+            std::vector<std::string> scenepath;
+            for (auto& scene : m_ecs->sceneMap) {
+                scenepath.push_back(loadScenePath.find(scene.first)->second.string());
+            }
 
-		//store scene path
-		std::vector<std::string> scenepath;
-		for (auto& scene : sce) {
-			scenepath.push_back(loadScenePath.find(scene)->second.string());
-		}
-
-		//clear all scenes
-		ClearAllScene();
-
-		//load baack previous scene
-
-		for (auto& scene : scenepath) {
-			LoadScene(scene);
-		}
+            //clear all scenes
+            //load baack previous scene
+		    ClearAllScene();
+            for (auto& scene : scenepath) {
+                LoadScene(scene);
+            }
+        }
     }
 
     void SceneManager::ClearAllScene(bool includePrefabs) //EXCEPT PREFABS
@@ -198,7 +225,7 @@ namespace scenes {
 		}
 	}
 
-	bool SceneManager::ImmediateLoadScene(const std::filesystem::path& scene)
+	bool SceneManager::ImmediateLoadScene(const std::filesystem::path& scene, const std::string forcedSceneName)
 	{
 
 		if (m_ecs->sceneMap.find(scene.filename().string()) != m_ecs->sceneMap.end()) {
@@ -218,27 +245,20 @@ namespace scenes {
 			}
 
 		}
+		std::string scenename = forcedSceneName.empty() ? scene.filename().string() : forcedSceneName;
 
 		//contain scene path
-		loadScenePath[scene.filename().string()] = scene;
-
-
-		std::string scenename = scene.filename().string();
+		loadScenePath[scenename] = scene;
 
 		//create new scene
 		m_ecs->sceneMap[scenename];
 		//check if file is prefab or scene
 
-
 		// Load entities from the JSON file
 		LOGGING_INFO("Loading entities from: {}", scene.string().c_str());
-		Serialization::LoadScene(scene.string());  // Load into ECS
 
-
-
-
+		Serialization::LoadScene(scene.string(), scenename);  // Load into ECS
         onSceneLoaded.Invoke(m_ecs->sceneMap.at(scenename));
-
 
 		LOGGING_INFO("Entities successfully loaded!");
         return true;
@@ -302,6 +322,29 @@ namespace scenes {
 		}
     }
 
+    // Files will be cached in the same location with added "filename[Cached].json" label
+    void SceneManager::CacheCurrentScene(){
+        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        for (auto [fileName, path] : loadScenePath) {
+            auto iter = ecs->sceneMap.find(fileName);
+            if (iter != ecs->sceneMap.end()) {
+                if (iter->second.isPrefab) continue;
+                std::string newPath = path.parent_path().string() + '\\' + path.stem().string() + "[Cached]" + path.extension().string();
+                cacheScenePath.push_back(newPath);
+                Serialization::SaveScene(fileName, newPath);
+
+                SetFileAttributesA(newPath.c_str(), GetFileAttributesA(newPath.c_str()) | FILE_ATTRIBUTE_HIDDEN);
+            }
+        }
+    }
+
+    void SceneManager::DeleteAllCacheScenes() {
+        for (auto const& filePath : cacheScenePath) {
+            std::filesystem::remove(filePath);
+        }
+    }
+
+  
     //void SceneManager::AssignEntityNewScene(const std::string& scene, m_ecs::EntityID id)
     //{
     //    m_ecs::ECS* m_ecs = m_ecs::ECS::GetInstance();

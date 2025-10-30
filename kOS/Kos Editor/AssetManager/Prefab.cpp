@@ -156,9 +156,6 @@ namespace prefab
 
             DeepUpdatePrefab(id, prefabID);
         }
-        
-
-
     }
 
     void UpdateAllPrefab(const std::string& prefabSceneName) {
