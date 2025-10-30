@@ -130,7 +130,10 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         // Read just one pixel
         float pixelVal;
         glReadPixels(pixelX, pixelY, 1, 1, GL_ALPHA, GL_FLOAT, &pixelVal);
-        m_clickedEntityId = pixelVal;
+        if (pixelVal >= 0) {
+            m_clickedEntityId = pixelVal;
+        }
+
         //std::cout << "PixelVal is " << pixelVal << '\n';
         //Get texture
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
