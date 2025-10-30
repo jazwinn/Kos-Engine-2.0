@@ -36,6 +36,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Model.h"
 #include "Camera.h"
 #include <vector>
+#include "CubeMap.h"
 
 struct BasicRenderer
 {
@@ -92,12 +93,15 @@ private:
 
 struct LightRenderer : BasicRenderer
 {
+	void InitializeLightRenderer();
+	void UpdateDCM();
 	void RenderAllLights(const CameraData& camera, Shader& shader);
 	void DebugRender(const CameraData& camera, Shader& shader);
 	void Clear() override;
 	std::vector<PointLightData> pointLightsToDraw{};
 	std::vector<DirectionalLightData> directionLightsToDraw{};
 	std::vector<SpotLightData> spotLightsToDraw{};
+	DepthCubeMap dcm[16];
 };
 struct DebugRenderer : BasicRenderer {
 

@@ -172,7 +172,7 @@ void MeshRenderer::Render(const CameraData& camera, Shader& shader)
 	for (MeshData& mesh : meshesToDraw)
 	{
 		shader.SetTrans("model", mesh.transformation);
-		shader.SetInt("entityID", mesh.entityID);
+		shader.SetInt("entityID", mesh.entityID+1);
 
 		mesh.meshToUse->PBRDraw(shader, mesh.meshMaterial);
 	}
@@ -197,12 +197,28 @@ void SkinnedMeshRenderer::Render(const CameraData& camera, Shader& shader)
 
 	}
 }
-
+void LightRenderer::InitializeLightRenderer() {
+	for (int i{ 0 }; i < 16; i++) {
+		dcm[i].InitializeMap();
+	}
+}
+void LightRenderer::UpdateDCM() {
+	for (size_t i = 0; i < pointLightsToDraw.size(); i++)
+	{
+		PointLightData& pointLight = pointLightsToDraw[i];
+		if (pointLight.shadowCon) {
+			dcm[i].FillMap(pointLight.position);
+		}
+	}
+}
 void LightRenderer::RenderAllLights(const CameraData& camera, Shader& shader)
 {
 	for (size_t i = 0; i < pointLightsToDraw.size(); i++)
 	{
 		PointLightData& pointLight = pointLightsToDraw[i];
+		if (pointLight.shadowCon) {
+			//FIll up with uniform data
+		}
 		pointLight.SetUniform(&shader, i);
 		//pointLight.SetShaderMtrx(&shader, i);
 
