@@ -140,13 +140,14 @@ int main(int argc, char* argv[])
 	std::string metaLine;
 	std::getline(metaFile, metaLine);
 	std::string serializedVertex;
-
-	if (metaLine.find("R_Animation") != std::string::npos) {
+	std::filesystem::path outPath = outputPath;
+	if (ourModel.animations.size()) {
 		std::cout << "Attempt to read animation file";
 		std::cout << metaPath << '\n';
 		std::cout << metaLine << '\n';
 		std::cout << outputPath << '\n';
-
+		// Change extension, e.g. ".anim"
+		outPath.replace_extension(".anim");
 		ParseAnimation(serializedVertex, ourModel.animations[0]);
 
 		std::filesystem::path dir = std::filesystem::path(outputPath).parent_path();
@@ -166,13 +167,12 @@ int main(int argc, char* argv[])
 
 		file.write(serializedVertex.data(), serializedVertex.size());
 		file.close();
-		return 1;
 	}
 	////Attempt decoding the binary
 	//float decodedResult = br.DecodeBinary<float>(result);
 	//std::cout << "Decoded result is" << decodedResult << '\n';
 	//Transform to mesh
-
+	serializedVertex.clear();
 	serializedVertex += br.EncodeBinary(ourModel.meshes.size());
 	for (Mesh& mesh : ourModel.meshes) {
 		//Add vertexes inside
@@ -272,6 +272,7 @@ int main(int argc, char* argv[])
 	//testVertex.TexCoords = glm::vec2{ 1.f,4.2f};
 	//testVertex.Tangent = glm::vec3{ 1.f,2.f,3.15f };
 	//testVertex.Bitangent = glm::vec3{ 1.f,2.f,3.15f };
+	outPath.replace_extension(".mesh");
 
 	std::filesystem::path dir = std::filesystem::path(outputPath).parent_path();
 
@@ -282,7 +283,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	std::ofstream file(outputPath, std::ios::binary);
+	std::ofstream file(outPath.string(), std::ios::binary);
 	if (!file) {
 		std::cerr << "Failed to open file for writing\n";
 		return 0;
