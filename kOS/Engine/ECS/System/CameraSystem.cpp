@@ -42,7 +42,7 @@ namespace ecs {
 			CameraComponent* camera = ecs->GetComponent<CameraComponent>(id);
 
 			//skip component not of the scene
-			if ((transform->scene != scene) || !ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
+			if (!ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
 			
 			GraphicsManager::GetInstance()->gm_PushGameCameraData(CameraData{ camera->fov, camera->nearPlane, camera->farPlane,
 																			camera->size, transform->WorldTransformation.position,transform->LocalTransformation.rotation,

@@ -15,7 +15,6 @@ public:
 	static ecs::ECS* ecsPtr;
 	static Input::InputSystem* Input;
 	static scenes::SceneManager* Scenes;
-	
 private:
 };
 

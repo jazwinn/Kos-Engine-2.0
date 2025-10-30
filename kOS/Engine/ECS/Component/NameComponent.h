@@ -45,7 +45,7 @@ namespace ecs {
 
 		std::string prefabName{};
 
-		REFLECTABLE(NameComponent, entityName, Layer, entityTag, isPrefab, prefabName);
+		REFLECTABLE(NameComponent, entityName, Layer, entityTag, isPrefab, prefabName, hide);
 	};
 
 }

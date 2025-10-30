@@ -28,11 +28,11 @@ namespace ecs {
                 //Base scale on this instead
                 BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
 
-                glm::vec3 scale = transform->LocalTransformation.scale;
+                glm::vec3 scale = transform->WorldTransformation.scale;
                 glm::vec3 size = box->box.size * scale;
-                glm::vec3 center = box->box.center * scale + transform->LocalTransformation.position;
+                glm::vec3 center = box->box.center * scale + transform->WorldTransformation.position;
                 model = glm::mat4{ 1.f };
-                model = glm::translate(model, center) * glm::mat4_cast(glm::quat(glm::radians(transform->LocalTransformation.rotation))) * glm::scale(model, size);
+                model = glm::translate(model, center) * glm::mat4_cast(glm::quat(glm::radians(transform->WorldTransformation.rotation))) * glm::scale(model, size);
 
             }
                 std::shared_ptr<R_Texture> albedoTex = rm->GetResource<R_Texture>(meshRenderer->diffuseMaterialGUID);

@@ -16,6 +16,12 @@ struct AssetData
 	REFLECTABLE(AssetData, GUID, Type, Arg1);
 };
 
+struct AssetPathGUID {
+	char path[260];
+	char GUID[64];
+	REFLECTABLE(AssetPathGUID, path, GUID);
+};;
+
 class AssetDatabase {
 	//return GUID
 public:

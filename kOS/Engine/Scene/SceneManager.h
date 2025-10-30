@@ -33,11 +33,13 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "DeSerialization/json_handler.h"
 #include "Events/Delegate.h"
 #include "SceneData.h"
+#include "ECS/ECS.h"
 
 namespace scenes {
 
 	class SceneManager {
 	public:
+		SceneManager();
 		static SceneManager* m_GetInstance() {
 			if (!m_InstancePtr) {
 				m_InstancePtr.reset(new SceneManager{});
@@ -45,23 +47,29 @@ namespace scenes {
 			return m_InstancePtr.get();
 		}
 		void Update();
-		bool CreateNewScene(std::filesystem::path scenepath);
+		bool CreateNewScene(const std::filesystem::path& scenepath);
 
-		void LoadScene(std::filesystem::path scenepath);
+		void LoadScene(const std::filesystem::path& scenepath);
 		void ReloadScene();
 
-		void ClearAllScene();
-		void ClearScene(std::string scene);
-		void SaveScene(std::string scene);
+		void ClearAllScene(bool includePrefabs = false);
+		void ClearScene(const std::string& scene);
+		void SaveScene(const std::string& scene);
 
 		std::vector<std::filesystem::path> GetAllScenesPath();
 		void ClearAllSceneImmediate();
-		bool ImmediateLoadScene(std::filesystem::path scenepath);
-		void ImmediateClearScene(std::string scene);
+
+		//Do not call this in the script
+		bool ImmediateLoadScene(const std::filesystem::path& scenepath);
+		//Do not call this in the script
+		void ImmediateClearScene(const std::string& scene);
 
 		void SaveAllActiveScenes(bool includeprefab = false);
-		void SwapScenes(std::string oldscene, std::string newscene , ecs::EntityID id);
-		void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
+		void SwapScenes(const std::string& oldscene, const std::string& newscene , ecs::EntityID id);
+
+		void SetSceneActive(const std::string& scene, bool active);
+
+		//void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
 		//EVENTS
 
 		Delegate<const SceneData&> onSceneLoaded;
@@ -88,6 +96,8 @@ namespace scenes {
 		*/
 		/******************************************************************/
 		static std::shared_ptr<SceneManager> m_InstancePtr;
+
+		ecs::ECS* m_ecs;
 
 	};
 }

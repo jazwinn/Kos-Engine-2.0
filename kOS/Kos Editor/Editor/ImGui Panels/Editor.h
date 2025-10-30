@@ -165,7 +165,7 @@ namespace gui {
 
         /***********PREFAB*************/
         bool m_prefabSceneMode{ false };
-        ecs::EntityID duppedID = -1;    //Used to check if prefab has been changed.
+        //ecs::EntityID duppedID = -1;    //Used to check if prefab has been changed.
         bool m_collisionSetterMode{ false };
         std::unordered_map<std::string, bool> m_savedSceneState;
         /******************************/
@@ -181,6 +181,12 @@ namespace gui {
         ImVec2 gameWindowPos;
         ImVec2 gameWindowSize;
         /************************************/
+
+        /***********Delegates****************/
+        Delegate<const std::string&> onSaveAll;
+        void RegisterCallBack();
+        /************************************/
+
 
         std::string m_imgui_layout;
 
