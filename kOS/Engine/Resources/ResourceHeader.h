@@ -5,4 +5,5 @@
 #include "R_Scene.h"
 #include "R_Animation.h"
 #include "R_Audio.h"
+#include "R_AudioStudio.h"
 #include "R_Material.h"
