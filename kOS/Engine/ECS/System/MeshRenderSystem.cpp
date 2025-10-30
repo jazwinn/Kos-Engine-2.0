@@ -60,6 +60,7 @@ namespace ecs {
                 continue;
 
             std::shared_ptr<R_Material> mat= rm->GetResource<R_Material>(matRenderer->materialGUID);
+            if (!mat)return;;
             std::shared_ptr<R_Model> mesh = rm->GetResource<R_Model>(meshFilter->meshGUID);
             std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(mat->md.diffuseMaterialGUID);
             std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(mat->md.specularMaterialGUID);

@@ -18,7 +18,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Light.h"
 
 
-glm::vec3 PointLightData::ambientStrength{ 0.1f };
+glm::vec3 PointLightData::ambientStrength{ 0.005f };
 
  
 float CaluclateRadius(glm::vec3 color, float linear, float quadratic) {
@@ -59,9 +59,16 @@ void PointLightData::SetUniform(Shader* shader,size_t number) {
     shader->SetFloat(s.str(), this->quadratic);
 
     s.str("");
+    s << "light[" << number << "].intensity";
+    shader->SetFloat(s.str(), this->intensity);
+
+    s.str("");
+    s << "light[" << number << "].shadowCon";
+    shader->SetBool(s.str(), this->shadowCon);
+
+    s.str("");
     s << "light[" << number << "].radius";
     shader->SetFloat(s.str(), CaluclateRadius(this->color,linear,quadratic));
-    ///std::cout << "POINT LIGHT BEING SHOWN\n";
     shader->Disuse();
 }
 
@@ -117,6 +124,10 @@ void SpotLightData::SetUniform(Shader* shader, size_t number) {
     s << "spotLight[" << number << "].outerCutOff";
     shader->SetFloat(s.str(), glm::cos(glm::radians(this->outerCutOff)));
 
+    s.str("");
+    s << "spotLight[" << number << "].intensity";
+    shader->SetFloat(s.str(), this->intensity);
+
     shader->Disuse();
 
 }
@@ -145,6 +156,9 @@ void DirectionalLightData::SetUniform(Shader* shader, size_t number) {
     s << "directionalLight[" << number << "].Ls";
     shader->SetVec3(s.str(), this->specularStrength);
 
+    s.str("");
+    s << "directionalLight[" << number << "].intensity";
+    shader->SetFloat(s.str(), this->intensity);
     shader->Disuse();
 }
 

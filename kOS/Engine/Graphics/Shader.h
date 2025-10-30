@@ -120,6 +120,72 @@ public:
 		glDeleteShader(fragment);
 		LOGGING_INFO("Created shader");
 	}
+	Shader(const char* vertexSourceCode, const char* fragmentSourceCode, const char* geometrySourceCode) {
+
+		// compile shaders
+		int success;
+		unsigned int vertex, fragment, geometry;
+
+		vertex = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex, 1, &vertexSourceCode, NULL);
+		glCompileShader(vertex);
+		glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+
+		if (!success) {
+			std::cout << "Shader did not compile Vertex" << '\n';
+			int log_len;
+			glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &log_len);
+			if (log_len > 0) {
+				char* log = new char[log_len];
+				GLsizei written_log_len;
+				glGetShaderInfoLog(vertex, log_len, &written_log_len, log);
+				std::cout << "ERROR LOGG" << std::string{ log };
+				delete[] log;
+			}
+			return;
+		}
+
+		fragment = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment, 1, &fragmentSourceCode, NULL);
+		glCompileShader(fragment);
+		glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+
+		if (!success) {
+			std::cout << "Fragment shader did not compile";
+			return;
+		}
+
+		geometry = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geometry, 1, &geometrySourceCode, NULL);
+		glCompileShader(geometry);
+		glGetShaderiv(geometry, GL_COMPILE_STATUS, &success);
+
+		if (!success) {
+			std::cout << "Geometry shader did not compile";
+			return;;
+		}
+
+		ID = glCreateProgram();
+		glAttachShader(ID, vertex);
+		glAttachShader(ID, fragment);
+		glAttachShader(ID, geometry);
+
+		glLinkProgram(ID);
+
+		glGetProgramiv(ID, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			char infoLog[512];
+			glGetProgramInfoLog(ID, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			return;
+		}
+
+		glDeleteShader(vertex);
+		glDeleteShader(fragment);
+		glDeleteShader(geometry);
+		std::cout << "Created shader with vfg\n";
+	}
 
 	Shader(Shader const& shad) {
 		this->ID = shad.ID;
@@ -262,6 +328,10 @@ public:
 
 	void SetMat3(const std::string& name, const glm::mat3& value) {
 		glUniformMatrix3fv(GetLocation(name), 1, GL_FALSE, glm::value_ptr(value));
+	}
+
+	void SetIntArray(const std::string& name, int* values, int count) {
+		glUniform1iv(GetLocation(name), count, values);
 	}
 };
 #endif // ! SHADER_H

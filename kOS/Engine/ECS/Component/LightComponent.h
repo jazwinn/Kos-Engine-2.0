@@ -57,9 +57,13 @@ namespace ecs {
         glm::vec3 direction{ 1.f };
         float cutOff{ 5.5f };
         float outerCutOff{ 10.5f };
-
+        float intesnity{ 1.f };
+        //STRICTLY FOR POINT LIGHTS ONLY
+        bool shadowCast;
+        //bool bakedLighting;
+        //std::string bakedMap;
         REFLECTABLE(LightComponent, lightType, color, diffuseStrength, specularStrength, linear,
-            quadratic, direction, cutOff, outerCutOff);
+            quadratic, direction, cutOff, outerCutOff, intesnity,shadowCast);
     };
 
 }
