@@ -68,9 +68,13 @@ namespace physics {
 
 		bool Raycast(const glm::vec3&, const glm::vec3&, float, RaycastHit&);
 
-		CollisionCallbacks* GetCollisionCallbacks(EntityID entity) { return m_eventCallback->RegisterCollisionCallbacks(entity); }
-		TriggerCallbacks* GetTriggerCallbacks(EntityID entity) { return m_eventCallback->RegisterTriggerCallbacks(entity); }
-		void UnregisterCallbacks(EntityID entity) { m_eventCallback->UnregisterCallbacks(entity); }
+		Delegate<const Collision&> OnCollisionEnter;
+		Delegate<const Collision&> OnCollisionStay;
+		Delegate<const Collision&> OnCollisionExit;
+		Delegate<const Collision&> OnTriggerEnter;
+		Delegate<const Collision&> OnTriggerStay;
+		Delegate<const Collision&> OnTriggerExit;
+
 	private:
 		PhysicsManager(const PhysicsManager&) = delete;
 		PhysicsManager& operator=(const PhysicsManager&) = delete;

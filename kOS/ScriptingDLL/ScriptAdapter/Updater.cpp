@@ -10,7 +10,6 @@
 
 
 static std::vector<std::string>* scriptNames;
-static physics::PhysicsManager* physicsManager;
 
 template <typename T>
 void RegisterScript() {
@@ -29,12 +28,12 @@ extern "C"  __declspec(dllexport) void UpdateStatic(StaticVariableManager* svm) 
 	ComponentRegistry::SetFieldInstance(static_cast<FieldSingleton*>(svm->field));
 	ComponentRegistry::SetInputInstance(static_cast<Input::InputSystem*>(svm->input));
 	ComponentRegistry::SetSceneInstance(static_cast<scenes::SceneManager*>(svm->scene));
+	ComponentRegistry::SetPhysicsInstance(static_cast<physics::PhysicsManager*>(svm->physics));
 
 	TemplateSC::ecsPtr = ComponentRegistry::GetECSInstance();
 	TemplateSC::Input = ComponentRegistry::GetInputInstance();
 	TemplateSC::Scenes = ComponentRegistry::GetSceneInstance();
-	
-	physicsManager = static_cast<physics::PhysicsManager*>(svm->physics);
+	TemplateSC::physicsPtr = ComponentRegistry::GetPhysicsInstance();
 
 
 
