@@ -97,12 +97,12 @@ private:
 
 		// Check for added or modified files
 		for (auto& file : std::filesystem::recursive_directory_iterator(m_path)) {
-			
+			const auto& path = file.path();
 			const std::string pathStr = file.path().string();
 			if (isIgnored(pathStr))
 				continue;
 
-			auto currentFileTime = std::filesystem::last_write_time(file);
+			auto currentFileTime = std::filesystem::last_write_time(path);
 			if (!m_files.contains(pathStr)) {
 				m_files[pathStr] = currentFileTime;
 				Notify(ADDED, pathStr);

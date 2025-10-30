@@ -30,8 +30,10 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
     m_resourceDirectory = resourceDirectory;
 
     std::function<void(const std::string&)> readDirectory;
+    std::vector<std::future<void>> compilingAsync;
 
     readDirectory = [&](const std::string& Dir) {
+        int count = 0;
         for (const auto& entry : std::filesystem::directory_iterator(Dir)) {
             std::string filepath = entry.path().string();
 
@@ -51,15 +53,16 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
                     for (const auto& compilerData : map)
                     {
                         std::string type = compilerData.type;
-                        std::string outputResourcePath = std::filesystem::absolute(m_resourceDirectory).string() + "/" + type + "/" + data.GUID + compilerData.outputExtension;
+                        std::string outputResourcePath = std::filesystem::absolute(m_resourceDirectory).string() + "/" + data.GUID + compilerData.outputExtension;
                         if (!std::filesystem::exists(outputResourcePath)) {
-                            Compilefile(filepath);
+                            std::cout << ++count << std::endl;
+                            compilingAsync.push_back(Compilefile(filepath));
                         }
 
                     }
                 }
                 else {
-                    return;
+                    continue;
                 }
 
 
@@ -69,6 +72,16 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
 
 
 	readDirectory(m_assetDirectory);
+
+    for (size_t i = 0; i < compilingAsync.size(); ) {
+        if (compilingAsync[i].wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            compilingAsync[i].get();
+            compilingAsync.erase(compilingAsync.begin() + i);
+        }
+        else {
+            ++i;
+        }
+    }
 
 
     //Setup Watchers
@@ -127,18 +140,18 @@ void AssetManager::RegisterAsset(const std::filesystem::path& filePath)
     m_GUIDtoFilePath[GUID] = filePath;
 }
 
-void AssetManager::Compilefile(const std::filesystem::path& filePath)
+std::future<void> AssetManager::Compilefile(const std::filesystem::path& filePath)
 {
     if (!std::filesystem::exists(filePath)) {
         LOGGING_WARN("Compile File: " + filePath.string() + " filepath does not exist");
-        return;
+        return std::async(std::launch::deferred, []() {});
     }
 
     std::string inputExtension = filePath.extension().string();
 	//check if compiler have been registered
 	if (m_compilerMap.find(inputExtension) == m_compilerMap.end()) {
 		//LOGGING_WARN("Compile File: " + inputExtension + "not found");
-		return;
+		return std::async(std::launch::deferred, []() {});
 		
         //just copy the file over to the resource
 
@@ -153,7 +166,7 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath)
 
         if (!std::filesystem::exists(metaPath)) {
 			LOGGING_WARN("Compile File: Meta file does not exist after registering asset");
-			return;
+			return std::async(std::launch::deferred, []() {});
         }
 	}
     //get file type from meta
@@ -162,12 +175,13 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath)
     const auto& map = m_compilerMap.at(inputExtension);
     for(const auto& compilerData : map)
     {
-        std::string type = compilerData.type;
-
         std::string guid = data.GUID;
 
         std::string inputPath = std::filesystem::absolute(filePath).string();
-        std::string outputResourcePath = std::filesystem::absolute(m_resourceDirectory).string() + "/" + type + "/" + data.GUID + compilerData.outputExtension;
+        std::string outputResourcePath =
+            std::filesystem::absolute(m_resourceDirectory).string() + "\\" +
+            data.GUID + compilerData.outputExtension;
+
 
         //assets that have a compiler
         if (compilerData.compilerFilePath != "null")
@@ -180,12 +194,12 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath)
 
             //std::cout << "Running: " << command << std::endl;
 
-            std::string tempBatch = "temp_run_meshcompiler.bat";
+            std::string tempBatch = "temp_run_" + guid + ".bat";
             // Write the batch file
             std::ofstream batchFile(tempBatch);
             if (!batchFile) {
                 std::cerr << "Failed to create batch file!" << std::endl;
-                return;
+                return std::async(std::launch::deferred, []() {});
             }
 
             batchFile << "@echo off\n";
@@ -209,9 +223,9 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath)
                     return future; // you can store this if you want to wait later
                 };
 
-            runSystemAsync(tempBatch);
+            auto AsyncCompile = runSystemAsync(tempBatch);
 
-
+            return AsyncCompile;
         }
         else {
             //assets without
@@ -231,7 +245,7 @@ void AssetManager::Compilefile(const std::filesystem::path& filePath)
 
         }
 
-        return;
+        return std::async(std::launch::deferred, []() {});
 	}
 
 
