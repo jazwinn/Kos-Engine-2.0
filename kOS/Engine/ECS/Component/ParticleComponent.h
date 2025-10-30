@@ -17,12 +17,10 @@ namespace ecs {
 		glm::vec4 color;
 		bool play_On_Awake;
 		//max particles
-		int max_Particles = 1000;
-		//Counter for alive 
-		int no_of_Particles = 0;
-		
+		int max_Particles = 1000;	
+		int particles_Alive = 0;
 		//NvFlex 
-		void* pointers[3];
+		void* pointers[4];
 		void* library;
 		void* solver;
 
@@ -31,7 +29,7 @@ namespace ecs {
 		std::vector<float> emitterTimers;   // Emission timer per entity
 		std::vector<float> durationTimers;  // Duration timer per entity
 
-		REFLECTABLE(ParticleComponent, duration, looping, start_Lifetime, start_Velocity, size, rotation, color, play_On_Awake, max_Particles);
+		REFLECTABLE(ParticleComponent, duration, looping, start_Lifetime, start_Velocity, size, rotation, color, play_On_Awake);
 	};
 }
 #endif

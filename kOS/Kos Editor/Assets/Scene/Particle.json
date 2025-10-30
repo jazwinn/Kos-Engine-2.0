@@ -15,27 +15,26 @@
             "prefabName": ""
         },
         "ParticleComponent": {
-            "duration": 0.0,
-            "looping": false,
-            "start_Lifetime": 0.0,
-            "start_Velocity": 0.0,
-            "size": 0.0,
-            "rotation": 0.0,
+            "duration": 5.0,
+            "looping": true,
+            "start_Lifetime": 5.0,
+            "start_Velocity": 5.0,
+            "size": 1.0,
+            "rotation": 1.0,
             "color": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 0.0
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0,
+                "w": 1.0
             },
-            "play_On_Awake": false,
-            "max_Particles": 1000
+            "play_On_Awake": true
         },
         "TransformComponent": {
             "WorldTransformation": {
                 "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -50,13 +49,13 @@
             },
             "LocalTransformation": {
                 "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 0.0,
+                    "y": -0.0,
                     "z": 0.0
                 },
                 "scale": {
