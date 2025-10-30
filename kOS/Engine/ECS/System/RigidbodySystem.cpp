@@ -141,7 +141,9 @@ namespace ecs {
                     capsule->actor = rb->actor;
                 }
                 PxRigidBodyExt::updateMassAndInertia(*actor, rb->mass);
+                actor->userData = reinterpret_cast<void*>(static_cast<uintptr_t>(id));
                 pm->GetScene()->addActor(*actor);
+
             } else {
                 actor->setMass(rb->mass);
                 actor->setLinearDamping(rb->drag);
@@ -165,9 +167,7 @@ namespace ecs {
                 actor->setGlobalPose(pxTrans);
                 PxTransform pose = actor->getGlobalPose();
                 TransformSystem::SetImmediateWorldPosition(trans, glm::vec3{ pose.p.x,pose.p.y,pose.p.z });
-                //trans->WorldTransformation.position = glm::vec3{ pose.p.x,pose.p.y,pose.p.z };
                 glm::quat q{ pose.q.w,pose.q.x,pose.q.y,pose.q.z };
-                //trans->WorldTransformation.rotation = glm::degrees(glm::eulerAngles(q));
                 TransformSystem::SetImmediateWorldRotation(trans, glm::degrees(glm::eulerAngles(q)));
             }
         }

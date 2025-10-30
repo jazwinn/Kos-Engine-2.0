@@ -28,7 +28,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define PHYSXUTILS_H
 
 #include "ECS/Component/RigidbodyComponent.h"
-#include "ECS/Component/TransformComponent.h"
 #include "Physics/PhysicsLayer.h"
 #include "PHYSX/PxPhysicsAPI.h"
 
@@ -140,6 +139,7 @@ inline PxFilterFlags ToPhysxCustomFilter(PxFilterObjectAttributes a0, PxFilterDa
 	if (!shouldCollide) { return PxFilterFlag::eSUPPRESS; }
 	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 	pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+	pairFlags |= PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
 	pairFlags |= PxPairFlag::eNOTIFY_TOUCH_LOST;
 	return PxFilterFlag::eDEFAULT;
 }
