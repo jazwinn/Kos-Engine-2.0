@@ -49,6 +49,7 @@ public:
 		engineShaders.insert({ "FrameBufferShader",Shader(frameBufferVS, frameBufferFS) });
 		engineShaders.insert({ "FBOCompositeShader",Shader(fboCompositeVS, fboCompositeFS) });
 		engineShaders.insert({ "MaterialShader",Shader(materialVS, materialFS) });
+		engineShaders.insert({ "PointShadowShader",Shader(pointShadowVS, pointShadowFS,pointShadowGS) });
 
 	}
 
@@ -75,6 +76,20 @@ private:
 	{
 		#include "CoreEngineShaders/Shaders/MaterialShader/MaterialShader.fs"
 	};
+
+	const char* pointShadowVS
+	{
+		#include "CoreEngineShaders/Shaders/PointShadowShader/PointShadowShader.vs"
+	};
+	const char* pointShadowFS
+	{
+		#include "CoreEngineShaders/Shaders/PointShadowShader/PointShadowShader.fs"
+	};
+	const char* pointShadowGS
+	{
+		#include "CoreEngineShaders/Shaders/PointShadowShader/PointShadowShader.gs"
+	};
+
 	const char* frameBufferVS
 	{
 		#include "CoreEngineShaders/Shaders/FrameBuffShader/FrameBuffShader.vs"

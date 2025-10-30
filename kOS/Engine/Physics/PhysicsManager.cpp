@@ -51,7 +51,7 @@ namespace physics {
 		sceneDesc.cpuDispatcher = m_cpuDispatcher;
 		sceneDesc.filterShader = ToPhysxCustomFilter;
 		
-		m_eventCallback = new PhysicsEventCallback();
+		m_eventCallback = new PhysicsEventCallback{};
 		sceneDesc.simulationEventCallback = m_eventCallback;
 
 		m_scene = m_physics->createScene(sceneDesc);
@@ -104,7 +104,10 @@ namespace physics {
 		while (m_accumulator >= m_fixedDeltaTime) {
 			m_scene->simulate(m_fixedDeltaTime);
 			m_scene->fetchResults(true);
-			if (m_eventCallback) { m_eventCallback->ProcessTriggerStay(); }
+			if (m_eventCallback) { 
+				m_eventCallback->ProcessCollisionStay();
+				m_eventCallback->ProcessTriggerStay(); 
+			}
 			m_accumulator -= m_fixedDeltaTime;
 		}
 	}

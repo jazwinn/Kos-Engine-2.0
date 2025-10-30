@@ -83,7 +83,7 @@ public:
 		//Asset not loaded
 
         //create file path
-        std::string path = m_resourceDirectory + "/" + className + "/" + GUID + m_resourceExtension.at(className);
+        std::string path = m_resourceDirectory + "/" + GUID + m_resourceExtension.at(className);
 
 		//Check if file path exists
 

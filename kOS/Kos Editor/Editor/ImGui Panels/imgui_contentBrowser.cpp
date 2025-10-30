@@ -320,7 +320,7 @@ namespace gui {
 								{
 									if (ImGui::MenuItem(comp.type.c_str()))
 									{
-										assetmanager->Compilefile(directoryPath.path(), comp.outputExtension);
+										assetmanager->Compilefile(directoryPath.path());
 									}
 								}
 								ImGui::EndMenu();
@@ -410,9 +410,6 @@ namespace gui {
 
 								// Copy directory and all contents recursively
 								std::filesystem::copy(source, destination, std::filesystem::copy_options::recursive);
-
-								//load new asset
-								assetmanager->RegisterAsset(destination / source.filename());
 							}
 
 						}

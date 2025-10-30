@@ -4,7 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
-
+#include <RAPIDJSON/rapidjson.h>
+#include <RAPIDJSON/document.h>
+#include <RAPIDJSON/error/en.h>
 
 std::string getShortPath(const std::string& longPath) {
 	char shortPath[MAX_PATH];
@@ -51,10 +53,70 @@ int main(int argc, char* argv[])
 	//batchFile.close();
 	std::cout << "Output file path basrgaregret test" << outputFilePath<< '\n';
 	std::cout << "Texture file path" << texturePath << '\n';
+	//Open texture META file path settings
+	std::ifstream ifs(metaPath);
+	if (!ifs.is_open()) {
+		std::cerr << "Could not open file: " << metaPath << std::endl;
+		return 1;
+	}
+	std::stringstream buffer;
+	buffer << ifs.rdbuf();
+	std::string jsonStr = buffer.str();
 
+	rapidjson::Document doc;
+	doc.Parse(jsonStr.c_str());	
+
+	bool hf,vf;
+	double width, height;
+	int mipLevel, wrapSetting, colorSpace;
+
+	const auto& arrObj = doc[1];
+	const auto& assetData = arrObj["TextureCompilerData"];
+	hf = assetData["HoriztonalFlip"].GetBool();
+	vf=assetData["VerticalFlip"].GetBool();
+	width = assetData["Width"].GetDouble();
+	height = assetData["Height"].GetDouble();
+	mipLevel = assetData["MipLevels"].GetInt();
+	wrapSetting = assetData["Wrap"].GetInt();
+	colorSpace = assetData["ColorSpace"].GetInt();
+
+	std::cout << "Horizontal Flip " << hf << std::endl;
+	std::cout << "Vertical Flip " << vf << std::endl;
+	std::cout << "Width " << width << std::endl;
+	std::cout << "Height " << height << std::endl;
+	std::cout << "mipLevel " << mipLevel << std::endl;
+	std::cout << "wrapSetting " << wrapSetting << std::endl;
+	std::cout << "colorSpace " << colorSpace << std::endl;
+
+	std::string srgbSetting;
+	switch (colorSpace) {
+	case 0:
+		srgbSetting = "-srgb ";
+		break;;
+	case 1:
+		srgbSetting = "-srgbi ";
+		break;;
+	case 2:
+		srgbSetting = "-srgbo ";
+		break;;
+	}
+	std::stringstream flags{};
+	flags<<"\" -ft DDS -f BC3_UNORM ";
+	if(hf)flags << "-hflip ";
+	if (vf)flags << "-vflip ";
+	if(width)flags << "-w " << width << " ";
+	if(height)flags << "-h " << height << " ";
+	flags << "-m " << mipLevel << " ";
+	flags << srgbSetting << " ";
+	if (wrapSetting) {
+		flags <<"-mirror " << " ";
+	}
+	//End flag
+	flags << "-y -o \"";
+	std::cout << "FLAGS " << flags.str()<<'\n';
 	// Run the batch file
 	std::string exePath = std::filesystem::absolute(".\\Kos Editor\\Compilers\\Executable\\Texture Compiler\\texconv.exe").string();
-	std::string command = "\"\"" + exePath + "\" -ft DDS -f BC3_UNORM -y -o \"" + outputFilePath + "\" \"" + texturePath + "\"\"";
+	std::string command = "\"\"" + exePath + flags.str() + outputFilePath + "\" \"" + texturePath + "\"\"";
 	/*command += outputFilePath + "\" \"" + texturePath + "\"";*/
 	std::cout <<"COMMAND: " << command << '\n';
 	int result = std::system(command.c_str());

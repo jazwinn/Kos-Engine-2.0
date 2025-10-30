@@ -7,15 +7,14 @@
 #include "Inputs/Input.h"
 #include "Inputs/Keycodes.h"
 #include "Scene/SceneManager.h"
+#include "Physics/PhysicsManager.h"
 
-
-class TemplateSC :public ecs::Component,  public ScriptClass {
+class TemplateSC :public ecs::Component, public ScriptClass {
 public:
 	//use raw, shared ptr will destruct exe ecs
 	static ecs::ECS* ecsPtr;
 	static Input::InputSystem* Input;
 	static scenes::SceneManager* Scenes;
+	static physics::PhysicsManager* physicsPtr;
 private:
 };
-
-
