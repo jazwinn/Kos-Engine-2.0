@@ -244,7 +244,6 @@ struct LoadComponent {
 	}
 
 	void operator()(bool& _args, const rapidjson::Value& value) {
-
 		if (value.HasMember(m_Array[count].c_str()) && value[m_Array[count].c_str()].IsBool()) {
 			_args = value[m_Array[count].c_str()].GetBool();
 		}

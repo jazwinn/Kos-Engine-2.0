@@ -67,7 +67,6 @@ namespace ecs {
             if (!transform || !nameComp || !audioComp) continue;
 
             //Scene layer visbility filter
-            if (transform->scene != scene) continue;
             if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer)) continue;
             if (nameComp->hide) continue;
 

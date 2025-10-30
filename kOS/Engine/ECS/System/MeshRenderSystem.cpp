@@ -52,7 +52,7 @@ namespace ecs {
             MeshFilterComponent* meshFilter = ecs->GetComponent<MeshFilterComponent>(id);
 
             // Skip entities not in this scene or hidden
-            if ((matRenderer->scene != scene) || !ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
+            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
                 continue;
 
             // Only send data if there is a mesh to render, this is probably redundant, the ECS already forces it

@@ -48,10 +48,10 @@ namespace ecs {
             CanvasRendererComponent* canvas = ecs->GetComponent<CanvasRendererComponent>(id);
 
             // Skip entities not in this scene or hidden
-            if ((canvas->scene != scene) || !ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
+            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
                 continue;
 
-            std::optional<std::vector<EntityID>> childEntities = Hierachy::m_GetChild(id);
+            std::optional<std::vector<EntityID>> childEntities = hierachy::m_GetChild(id);
             if (!childEntities.has_value()) continue;
 
             for (EntityID childID : childEntities.value())

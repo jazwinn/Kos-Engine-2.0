@@ -38,74 +38,63 @@ namespace gui {
     }
 	
     void ImGuiHandler::DrawPlayPauseBar() {
-        static bool pause = true;
+  //      static bool pause = true;
         ecs::ECS* ecs = ecs::ECS::GetInstance();
-        if (ecs->GetState() == ecs::WAIT) {
-            pause = true;
-        }
+
+
+  //      if(ecs->GetState() == ecs::STOP) {
+  //          pause = true;
+  //      }
+		//else
+
+
+  //      if (ecs->GetState() == ecs::WAIT) {
+  //          pause = true;
+  //      }
 
         
         if (ImGui::BeginMenuBar()) {
-            if (pause && ImGui::Button("Play")) {
-                pause = false;
-                ecs::AudioSystem::SetPaused(false);
-
-                ecs->SetState((ecs->GetState() == ecs::STOP) ? ecs::START : ecs::RUNNING);
-                if (ecs->GetNextState() == ecs::START) {
-
-           
 
 
+            if (ecs->GetState() == ecs::STOP || ecs->GetState() == ecs::WAIT) {
 
+                if(ImGui::Button("Play")) {
+                    ecs->SetState(ecs::START);
+                    ecs::AudioSystem::SetPaused(false);
+				}
 
+            }
 
-
+            if (ecs->GetState() == ecs::RUNNING){
+                if (ImGui::Button("Pause")) {
+                    ecs->SetState(ecs::WAIT);
+                    ecs::AudioSystem::SetPaused(true);
                 }
-            }
-            else if (!pause && ImGui::Button("Pause")) {
-
-                pause = true;
-                ecs->SetState(ecs::WAIT);
-                ecs::AudioSystem::SetPaused(true);
-
 
             }
 
-            if ((ecs->GetState() == ecs::RUNNING || ecs->GetState() == ecs::WAIT)&& ImGui::Button("stop")) {
-                if (ecs->GetState() != ecs::STOP) {
+            if (ecs->GetState() == ecs::WAIT || ecs->GetState() == ecs::RUNNING) {
+                if (ImGui::Button("Stop")) {
                     ecs->SetState(ecs::STOP);
-                    pause = true;
-
                     ecs::AudioSystem::StopAll();
                     ecs::AudioSystem::SetPaused(false);
-
                     //stop all scene states
                     std::unordered_map<std::string, bool> saveStateScene;
-
                     for (const auto& scene : ecs->sceneMap) {
                         saveStateScene[scene.first] = scene.second.isActive;
                     }
-
                     //TODO load back scene
                     scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
                     scenemanager->ReloadScene();
                     m_clickedEntityId = -1;
-
                     //set back all scene to its active/inactive state
                     for (auto& scene : ecs->sceneMap) {
                         const auto& saveState = saveStateScene.find(scene.first);
                         if (saveState == saveStateScene.end())continue;
-
                         scene.second.isActive = saveState->second;
                     }
-
-                    
-
-                    //assetmanager::AssetManager::GetInstance()->m_audioManager.m_StopAllSounds();
                 }
-
             }
-
         }
         ImGui::EndMenuBar();
     }
