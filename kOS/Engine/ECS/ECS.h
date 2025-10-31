@@ -332,8 +332,10 @@ namespace ecs {
 	template <typename T>
 	void ECS::ResetComponent(EntityID ID)
 	{
-		m_combinedComponentPool.at(T::classname())->Delete(ID);
-		std::static_pointer_cast<SparseSet<T>>(m_combinedComponentPool.at(T::classname()))->Set(ID, T());
+		T* Component = GetComponent<T>(ID);
+		T EmptyComponent;
+		DeepCopyComponents<T> duplicator;
+		Component->ApplyFunctionPairwise(duplicator, EmptyComponent);
 	}
 
 	template <typename T>
