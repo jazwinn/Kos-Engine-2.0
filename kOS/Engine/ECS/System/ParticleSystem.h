@@ -17,7 +17,7 @@ namespace ecs {
     public:
 
         void Init() override;
-        void Update(const std::string&) override;
+        void Update() override;
 
         // Spawn a new particle
         void EmitParticle(EntityID entityId, const glm::vec3& particle_position,
