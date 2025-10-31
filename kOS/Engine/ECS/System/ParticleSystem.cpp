@@ -187,7 +187,7 @@ namespace ecs {
             });
     }
 
-    void ParticleSystem::Update(const std::string& scene) {
+    void ParticleSystem::Update() {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
         float dt = ecs->m_GetDeltaTime();

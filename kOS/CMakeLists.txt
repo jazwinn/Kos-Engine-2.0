@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(Kos_Solution)
+project(Kos_Solution LANGUAGES CXX)
 
 set(CMAKE_PDB_OUTPUT_DIRECTORY     "${CMAKE_SOURCE_DIR}/bin/$<CONFIG>")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/$<CONFIG>")
