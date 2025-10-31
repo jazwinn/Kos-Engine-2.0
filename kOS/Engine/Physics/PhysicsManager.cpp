@@ -67,9 +67,19 @@ namespace physics {
 	}
 
 	void PhysicsManager::Shutdown() {
+		if (m_eventCallback) {
+			m_eventCallback->m_activeCollisions.clear();
+			m_eventCallback->m_activeTriggers.clear();
+		}
+
 		if (m_controllerManager) {
 			m_controllerManager->release();
 			m_controllerManager = nullptr;
+		}
+
+		if (m_defaultMaterial) {
+			m_defaultMaterial->release();
+			m_defaultMaterial = nullptr;
 		}
 
 		if (m_scene) {

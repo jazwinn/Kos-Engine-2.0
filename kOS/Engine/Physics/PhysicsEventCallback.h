@@ -13,6 +13,7 @@ namespace physics {
         float impulse{ 0.0f };
         float separation{ 0.0f }; 
     };
+
     struct Collision {
         unsigned int thisEntityID;
         unsigned int otherEntityID;
@@ -74,7 +75,7 @@ namespace physics {
         std::unordered_set<TriggerPair, TriggerPairHash> m_activeTriggers;
     private:
         glm::vec3 GetLinearVelocity(PxActor* actor) {
-            if (auto rb = actor->is<PxRigidBody>()) {
+            if (auto rb = actor->is<PxRigidDynamic>()) {
                 PxVec3 v = rb->getLinearVelocity();
                 return glm::vec3{ v.x, v.y, v.z };
             }
