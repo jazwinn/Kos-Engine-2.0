@@ -30,7 +30,7 @@ namespace ecs {
     class AudioSystem : public ISystem {
     public:
         void Init() override;
-        void Update(const std::string&) override;
+        void Update() override;
 
         static void SetPaused(bool paused);
         static void StopAll(); 

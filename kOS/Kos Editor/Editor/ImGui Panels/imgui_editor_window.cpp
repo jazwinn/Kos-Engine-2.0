@@ -110,7 +110,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         ImVec2(0, 1), ImVec2(1, 0));
     //Get mouse position
     ImVec2 mousePos = ImGui::GetIO().MousePos;
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)&& ImGui::IsWindowHovered()) {
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver()) {
         // Mouse click relative to image
         float relX = (mousePos.x - pos.x) / (pMax.x - pos.x);
         float relY = (mousePos.y - pos.y) / (pMax.y - pos.y);
@@ -120,7 +120,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
 
         int pixelX = static_cast<int>(relX * fbAdd->width);
         int pixelY = -(static_cast<int>(relY * fbAdd->height) - fbAdd->height);
-        
+
         //Get texture data
         GLuint fbo;
         glGenFramebuffers(1, &fbo);
@@ -208,13 +208,13 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
     static ImVec2 lastMousePos = ImVec2(0, 0);
     static bool firstMouseInput = true;
 
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+    if ((ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) && ImGui::IsWindowHovered())
     {
         mouseCon = true;
         firstMouseInput = true;
         lastMousePos = ImGui::GetMousePos();
     }
-    else if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+    else if ((ImGui::IsMouseReleased(ImGuiMouseButton_Right) || ImGui::IsMouseReleased(ImGuiMouseButton_Middle)))
     {
         mouseCon = false;
     }
@@ -222,25 +222,25 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
     if (mouseCon)
     {
         ImVec2 currentMousePos = ImGui::GetMousePos();
-        const float cameraSpeed = 0.05f; // adjust accordingly
+        const float cameraSpeed = 0.1; // adjust accordingly
         float sprintMultiplier = 1.f;
         if (ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
             sprintMultiplier = 2.5f;
         }
         else {
             sprintMultiplier = 1.f;
-
         }
+
         if (ImGui::IsKeyDown(ImGuiKey_W)) {
-            if (EditorCamera::editorCamera.orbitMode)EditorCamera::editorCamera.SwitchMode(false);
-            EditorCamera::editorCamera.position += sprintMultiplier*cameraSpeed * EditorCamera::editorCamera.direction;
+            if (EditorCamera::editorCamera.orbitMode) EditorCamera::editorCamera.SwitchMode(false);
+            EditorCamera::editorCamera.position += sprintMultiplier * cameraSpeed * EditorCamera::editorCamera.direction;
         }
         if (ImGui::IsKeyDown(ImGuiKey_S)) {
-            if (EditorCamera::editorCamera.orbitMode)EditorCamera::editorCamera.SwitchMode(false);
+            if (EditorCamera::editorCamera.orbitMode) EditorCamera::editorCamera.SwitchMode(false);
             EditorCamera::editorCamera.position -= sprintMultiplier * cameraSpeed * EditorCamera::editorCamera.direction;
         }
         if (ImGui::IsKeyDown(ImGuiKey_A)) {
-            if (EditorCamera::editorCamera.orbitMode)EditorCamera::editorCamera.SwitchMode(false);
+            if (EditorCamera::editorCamera.orbitMode) EditorCamera::editorCamera.SwitchMode(false);
             EditorCamera::editorCamera.position -= sprintMultiplier * cameraSpeed * glm::normalize(glm::cross(EditorCamera::editorCamera.direction, glm::vec3{ 0.0f, 1.0f, 0.0f }));
         }
         if (ImGui::IsKeyDown(ImGuiKey_D)) {
@@ -253,7 +253,17 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
             float deltaY = currentMousePos.y - lastMousePos.y;
 
             // Call your camera function with the delta
-            EditorCamera::editorCamera.onCursor(deltaX, deltaY);
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+                EditorCamera::editorCamera.onCursor(deltaX, deltaY);
+            }
+            else if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) { // Needs to be fixed
+                if (std::abs(deltaX) > 0.1f && std::abs(deltaY) > 0.1f) {
+                    if (EditorCamera::editorCamera.orbitMode) EditorCamera::editorCamera.SwitchMode(false);
+                    glm::vec3 right = glm::normalize(glm::cross(EditorCamera::editorCamera.direction, EditorCamera::editorCamera.up));
+                    glm::vec3 up = glm::normalize(glm::cross(right, EditorCamera::editorCamera.direction));
+                    EditorCamera::editorCamera.position += (deltaX * right - deltaY * up) * cameraSpeed;
+                }
+            }
         }
 
         lastMousePos = currentMousePos;

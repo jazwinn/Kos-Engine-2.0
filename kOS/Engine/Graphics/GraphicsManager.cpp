@@ -65,9 +65,9 @@ void GraphicsManager::gm_Initialize(float width, float height) {
 
 	DebugGraphics::cubeMap.LoadCubeModel();
 	DebugGraphics::cubeMap.LoadCubeTextureDDS(
-		{ "Resource/R_Texture/9bf58179-dd3f-5e5e-6b9b-bdf9c91d302e.dds", "Resource/R_Texture/e5dc8795-343f-5d23-24ec-b3f49d015de8.dds",
-		  "Resource/R_Texture/5d8311c4-da53-b0cc-ebec-376730e44ab4.dds", "Resource/R_Texture/099a08b9-935e-d6b8-cbdd-1f2acf398fc8.dds",
-		  "Resource/R_Texture/8fee6749-a54c-3071-9cd2-018187d80c78.dds", "Resource/R_Texture/fbc7a73b-7fe4-f273-c5c2-73b9f0e08796.dds" });
+		{ "Resource/9bf58179-dd3f-5e5e-6b9b-bdf9c91d302e.dds", "Resource/e5dc8795-343f-5d23-24ec-b3f49d015de8.dds",
+		  "Resource/5d8311c4-da53-b0cc-ebec-376730e44ab4.dds", "Resource/099a08b9-935e-d6b8-cbdd-1f2acf398fc8.dds",
+		  "Resource/8fee6749-a54c-3071-9cd2-018187d80c78.dds", "Resource/fbc7a73b-7fe4-f273-c5c2-73b9f0e08796.dds" });
 
 }
 

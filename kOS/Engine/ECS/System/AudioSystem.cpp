@@ -54,7 +54,7 @@ namespace ecs {
         }
 
     }
-    void AudioSystem::Update(const std::string& scene) {
+    void AudioSystem::Update() {
         auto rm = ResourceManager::GetInstance();
         ECS* ecs = ECS::GetInstance();
        

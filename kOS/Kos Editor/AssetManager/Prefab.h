@@ -29,6 +29,7 @@ namespace prefab {
 	void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB);
 	void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
 	void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+	void LoadPrefab(const std::filesystem::path& filepath);
 	void LoadAllPrefabs();
 	ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
 	void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);

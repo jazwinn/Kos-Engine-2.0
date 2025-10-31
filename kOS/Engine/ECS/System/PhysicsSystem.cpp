@@ -10,7 +10,7 @@ namespace ecs {
         pm->Init();
     }
 
-    void PhysicsSystem::Update(const std::string& scene) {
+    void PhysicsSystem::Update() {
         auto pm = PhysicsManager::GetInstance();
         ECS* ecs = ECS::GetInstance();
 
@@ -47,11 +47,8 @@ namespace ecs {
             if (actor && !rb->isKinematic) {
                 PxTransform pxTrans = actor->getGlobalPose();
                 TransformSystem::SetImmediateWorldPosition(trans, glm::vec3{ pxTrans.p.x,pxTrans.p.y,pxTrans.p.z });
-                //trans->LocalTransformation.position = glm::vec3{ pxTrans.p.x, pxTrans.p.y, pxTrans.p.z };
                 glm::quat q{ pxTrans.q.w, pxTrans.q.x, pxTrans.q.y, pxTrans.q.z };
-                //trans->LocalTransformation.rotation = glm::degrees(glm::eulerAngles(q));
                 TransformSystem::SetImmediateWorldRotation(trans, glm::degrees(glm::eulerAngles(q)));
-
             }
         }
     }

@@ -12,7 +12,7 @@ namespace ecs {
         // Initialize static mesh rendering resources if needed
     }
 
-    void CubeRenderSystem::Update(const std::string& scene)
+    void CubeRenderSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();

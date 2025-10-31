@@ -16,6 +16,11 @@ public:
 
 	Watcher(const std::string& path, std::chrono::milliseconds delay)
 		: m_path(path), m_delay(delay), m_running(false) {
+
+
+		//
+
+
 	}
 
 	~Watcher() {
@@ -23,6 +28,38 @@ public:
 	}
 
 	void Start() {
+		// initialize initial files
+		auto isIgnored = [&](const std::string& path) -> bool {
+
+			if (m_IgnoreDirectory && std::filesystem::is_directory(path)) {
+				return true;
+			}
+
+
+			std::filesystem::path fsPath(path);
+			std::string ext = fsPath.extension().string(); // includes the dot, e.g. ".txt"
+
+			return std::find(m_ignoredExtensions.begin(),
+				m_ignoredExtensions.end(),
+				ext) != m_ignoredExtensions.end();
+			};
+
+
+		for (auto& file : std::filesystem::recursive_directory_iterator(m_path)) {
+			const auto& path = file.path();
+			const std::string pathStr = file.path().string();
+			if (isIgnored(pathStr))
+				continue;
+
+			auto currentFileTime = std::filesystem::last_write_time(path);
+			if (!m_files.contains(pathStr)) {
+				m_files[pathStr] = currentFileTime;
+			}
+
+		}
+
+
+
 		m_running = true;
 		m_thread = std::thread([this]() { Run(); });
 	}
@@ -97,12 +134,12 @@ private:
 
 		// Check for added or modified files
 		for (auto& file : std::filesystem::recursive_directory_iterator(m_path)) {
-			auto currentFileTime = std::filesystem::last_write_time(file);
+			const auto& path = file.path();
 			const std::string pathStr = file.path().string();
-
 			if (isIgnored(pathStr))
 				continue;
 
+			auto currentFileTime = std::filesystem::last_write_time(path);
 			if (!m_files.contains(pathStr)) {
 				m_files[pathStr] = currentFileTime;
 				Notify(ADDED, pathStr);

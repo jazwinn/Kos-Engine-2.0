@@ -139,7 +139,7 @@ namespace prefab
         /*******************************SERIALIZATION END******************************************/
 
         // load prefab
-        scenes::SceneManager::m_GetInstance()->LoadScene(path);
+        LoadPrefab(path);
     }
 
     void OverwriteScenePrefab(ecs::EntityID id) {
@@ -156,9 +156,6 @@ namespace prefab
 
             DeepUpdatePrefab(id, prefabID);
         }
-        
-
-
     }
 
     void UpdateAllPrefab(const std::string& prefabSceneName) {
@@ -312,8 +309,32 @@ namespace prefab
         action->RemoveComponent(entityID);
     }
 
-    void LoadAllPrefabs() {
+    void LoadPrefab(const std::filesystem::path& filepath) {
         auto* sm = scenes::SceneManager::m_GetInstance();
+        ecs::ECS* ecs = ecs::ECS::GetInstance();
+
+        auto scenename = filepath.filename();
+
+        
+        sm->ImmediateLoadScene(filepath);
+        auto& prefabData = ecs->sceneMap.at(scenename.string());
+        prefabData.isPrefab = true;
+        sm->SetSceneActive(scenename.string(), false);
+
+        //find the prefab root entity id
+        for (auto& id : prefabData.sceneIDs) {
+            ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
+            if (!tc->m_haveParent) {
+                ecs->sceneMap.find(scenename.string())->second.prefabID = id;
+                ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
+                nc->prefabName = scenename.string();
+                break;
+            }
+        }
+    }
+
+    void LoadAllPrefabs() {
+        
         ecs::ECS* ecs = ecs::ECS::GetInstance();
 
         std::string prefabPath = AssetManager::GetInstance()->GetAssetManagerDirectory() + "/Prefabs/"; // Should have a better way to get file directories
@@ -322,22 +343,10 @@ namespace prefab
 			auto scenename = entry.path().filename();
 
             if (scenename.extension().string() == ".prefab") {
-                sm->ImmediateLoadScene(entry.path());
-                auto& prefabData = ecs->sceneMap.at(scenename.string());
-                prefabData.isPrefab = true;
-				sm->SetSceneActive(scenename.string(), false);
+                LoadPrefab(entry.path());
 
 
-				//find the prefab root entity id
-                for (auto& id : prefabData.sceneIDs) {
-                    ecs::TransformComponent* tc = ecs->GetComponent<ecs::TransformComponent>(id);
-                    if (!tc->m_haveParent) {
-                        ecs->sceneMap.find(scenename.string())->second.prefabID = id;
-                        ecs::NameComponent* nc = ecs->GetComponent<ecs::NameComponent>(id);
-						nc->prefabName = scenename.string();
-                        break;
-                    }
-                }
+
             }
         }
     }

@@ -55,7 +55,7 @@ void gui::ImGuiHandler::DrawBakedWindow() {
 			//Add and load asset and assign it to light component
 			//Need to change entity itself
 			ecs->GetComponent<ecs::LightComponent>(lcComp)->depthMapGUID=AssetManager::AssetManager::GetInstance()->RegisterAsset(filepath);
-			AssetManager::AssetManager::GetInstance()->Compilefile(filepath, ".dcm");
+			AssetManager::AssetManager::GetInstance()->Compilefile(filepath);
 			//Retrieve GUID from file path
 			i++;
 		}

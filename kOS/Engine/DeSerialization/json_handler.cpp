@@ -69,10 +69,8 @@ namespace Serialization {
 		checkFile.close();
 	}
 
-	void LoadScene(const std::filesystem::path& jsonFilePath)
+	void LoadScene(const std::filesystem::path& jsonFilePath, const std::string sceneName)
 	{
-
-
 		// Open the JSON file for reading
 		std::ifstream inputFile(jsonFilePath.string());
 
@@ -88,10 +86,7 @@ namespace Serialization {
 		rapidjson::Document doc;
 		doc.Parse(fileContent.c_str());
 
-		std::string scenename = jsonFilePath.filename().string();
-
-		
-		
+		std::string scenename = sceneName.empty() ? jsonFilePath.filename().string() : sceneName;
 
 		/*******************INSERT INTO FUNCTION*****************************/
 
@@ -111,15 +106,13 @@ namespace Serialization {
 			}
 		}
 
-
-
 		LOGGING_INFO("Load Json Successful");
 	}
 
-	void SaveScene(const std::filesystem::path& scene)
+	void SaveScene(const std::filesystem::path& scene, const std::filesystem::path& targetFilePath)
 	{
 		auto* ecs = ecs::ECS::GetInstance();
-		std::string jsonFilePath = scene.string();
+		std::string jsonFilePath = targetFilePath.empty() ? scene.string() : targetFilePath.string();
 		JsonFileValidation(jsonFilePath);
 
 		// Create JSON object to hold the updated values

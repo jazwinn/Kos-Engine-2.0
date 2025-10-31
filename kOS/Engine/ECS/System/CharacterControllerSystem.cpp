@@ -44,7 +44,7 @@ namespace ecs {
         });
     }
 
-	void CharacterControllerSystem::Update(const std::string& scene) {
+	void CharacterControllerSystem::Update() {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 

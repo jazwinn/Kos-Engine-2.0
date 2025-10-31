@@ -10,15 +10,6 @@
             }
           ]
         },
-        "animationCompiler": {
-          "path": "Kos Editor/Compilers/Executable/Mesh Compiler/MeshCompiler.exe",
-          "outputExtension": ".ani",
-          "inputExtensions": [
-            {
-              "inputExtensions": ".fbx"
-            }
-          ]
-        },
         "textureCompiler": {
           "path": "Kos Editor/Compilers/Executable/Texture Compiler/TextureWrapper.exe",
           "outputExtension": ".dds",

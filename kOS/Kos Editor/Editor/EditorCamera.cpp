@@ -45,6 +45,7 @@ void EditorCamera::SwitchMode(bool orbMode) {
         direction = glm::normalize(target - position);
         rotation.y = glm::degrees(atan2(direction.z, direction.x)) ;
         rotation.x = glm::degrees(asin(direction.y));
+        up = glm::normalize(rotation * glm::vec3(0.f, 1.f, 0.f));
         return;;
     }
     r = 5.0f;
@@ -81,8 +82,7 @@ void EditorCamera::onCursor(double xoffset, double yoffset) {
     rotation.x -= static_cast<float>(yoffset) * sensitivityY;
     rotation.x = glm::clamp(rotation.x, -89.f, 89.f);
 
-
-
+    up = glm::normalize(rotation * glm::vec3(0.f, 1.f, 0.f));
 }
 
 void EditorCamera::onScroll(double xoffset, double yoffset) {
