@@ -68,7 +68,7 @@ namespace ecs {
         });
     }
 
-    void RigidbodySystem::Update(const std::string& scene) {
+    void RigidbodySystem::Update() {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 

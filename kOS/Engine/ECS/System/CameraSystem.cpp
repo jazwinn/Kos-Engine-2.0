@@ -29,7 +29,7 @@ namespace ecs {
 
 	}
 
-	void CameraSystem::Update(const std::string& scene) {
+	void CameraSystem::Update() {
 
 		ECS* ecs = ECS::GetInstance();
 

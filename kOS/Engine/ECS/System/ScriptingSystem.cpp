@@ -17,7 +17,7 @@ namespace ecs {
 		//Use The DLL
 	}
 
-	void ScriptingSystem::Update(const std::string& scene)
+	void ScriptingSystem::Update()
 	{
 		
 		ECS* ecs = ECS::GetInstance();

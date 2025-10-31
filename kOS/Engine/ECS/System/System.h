@@ -56,7 +56,7 @@ namespace ecs {
 		}
 
 		virtual void Init() = 0;
-		virtual void Update(const std::string&) = 0;
+		virtual void Update() = 0;
 
 		Delegate<EntityID> onRegister;
 		Delegate<EntityID> onDeregister;

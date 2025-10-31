@@ -38,7 +38,7 @@ namespace ecs {
         // Initialize static mesh rendering resources if needed
     }
 
-    void MeshRenderSystem::Update(const std::string& scene)
+    void MeshRenderSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
