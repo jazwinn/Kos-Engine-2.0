@@ -273,3 +273,57 @@ void DepthCubeMap::FillMap(glm::vec3& lightPos) {
     shadowTransforms[4] = (shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
     shadowTransforms[5] = (shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 }
+
+void DepthCubeMap::SaveDepthCubeMap(std::string outputPath) {
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    //Save depth cube map to the specified output path
+    std::ofstream file(outputPath, std::ios::binary);
+    for (int i = 0; i < 6; ++i)
+    {
+        std::vector<unsigned char> data(1024 * 1024 * 4); // 4 for RGBA
+        glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data.data());
+        file.write(reinterpret_cast<char*>(data.data()), data.size());
+    }
+
+    file.close();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+}
+
+void DepthCubeMap::LoadDepthCubeMap(std::string inputPath) {
+    std::ifstream file(inputPath, std::ios::binary);
+    if (!file.is_open())
+    {
+        std::cerr << "Error: Could not open file for writing: " << inputPath << std::endl;
+        return;
+    }
+    //Generate cube map fbo
+    glGenFramebuffers(1, &this->VBO);
+
+    //Initialize depth cube map
+    glGenTextures(1, &this->texID);
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, this->texID);
+    for (int i = 0; i < 6; ++i)
+    {
+        std::vector<unsigned char> data(SHADOW_WIDTH * SHADOW_HEIGHT * 4);
+        file.read(reinterpret_cast<char*>(data.data()), data.size());
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+            SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data.data());
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, this->VBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->texID, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    std::cout << "LOADED DEPTH MAP DATA\n";
+    file.close();
+}

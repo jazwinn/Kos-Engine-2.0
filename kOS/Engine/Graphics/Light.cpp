@@ -65,7 +65,9 @@ void PointLightData::SetUniform(Shader* shader,size_t number) {
     s.str("");
     s << "light[" << number << "].shadowCon";
     shader->SetBool(s.str(), this->shadowCon);
-
+    s.str("");
+    s << "light[" << number << "].bakedCon";
+    shader->SetBool(s.str(), this->bakedCon);
     s.str("");
     s << "light[" << number << "].radius";
     shader->SetFloat(s.str(), CaluclateRadius(this->color,linear,quadratic));

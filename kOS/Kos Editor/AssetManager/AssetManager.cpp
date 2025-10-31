@@ -124,13 +124,13 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
 
 
 
-void AssetManager::RegisterAsset(const std::filesystem::path& filePath)
+std::string AssetManager::RegisterAsset(const std::filesystem::path& filePath)
 {
 	std::string inputExtension = filePath.extension().string();
 	//check if compiler have been registered 
 	if (m_compilerMap.find(inputExtension) == m_compilerMap.end()) {
 		//LOGGING_WARN("RegisterAsset: " + inputExtension + " not found");
-		return;
+        return std::string{};
 	}
     
     const std::string& type = m_compilerMap.at(inputExtension).front().type;
@@ -138,6 +138,7 @@ void AssetManager::RegisterAsset(const std::filesystem::path& filePath)
     std::string GUID = m_dataBase.ImportAsset(filePath, type);
 
     m_GUIDtoFilePath[GUID] = filePath;
+    return GUID;;
 }
 
 std::future<void> AssetManager::Compilefile(const std::filesystem::path& filePath)

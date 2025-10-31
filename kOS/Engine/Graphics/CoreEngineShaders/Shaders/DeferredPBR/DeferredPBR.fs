@@ -27,6 +27,7 @@ struct Light
     float radius;
     float intensity;
     bool shadowCon;
+    bool bakedCon;
 };
 struct SpotLight 
 {
@@ -73,7 +74,7 @@ float specularColor;
 float shadow=0.f;
 
 //Point light lighting
-layout(binding=7) uniform samplerCube depthMap[16];
+uniform samplerCube depthMap[16];
 uniform float far_plane;
 float pointShadow=0.f;
 //Lighting
@@ -361,10 +362,13 @@ void main()
     vec3 oldPos=positionMap;
     positionMap=vec3(view * vec4(positionMap, 1.0));
 
-    for(int i=0;i<pointLightNo;i++){
-        if(light[i].shadowCon==true){
-            pointShadow=ShadowCalculationPoint(vec4(oldPos, 1.0).xyz-light[i].position,oldPos,positionMap,i);        
+   for(int i=0;i<pointLightNo;i++){
+        if(light[i].shadowCon==true||light[i].bakedCon==true){
+            pointShadow+=ShadowCalculationPoint(vec4(oldPos, 1.0).xyz-light[i].position,oldPos,positionMap,i);        
         }
+    }
+    pointShadow = clamp(pointShadow, 0.0, 1.0);
+    for(int i=0;i<pointLightNo;i++){
         newLight+=microfacetModel(positionMap, normalMap,diffuseColor,newMat.g,i);
     }
     for(int i=0;i<spotLightNo;i++){
