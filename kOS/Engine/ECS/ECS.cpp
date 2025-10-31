@@ -116,10 +116,7 @@ namespace ecs{
 				for (const auto& sceneName : keys) {
 					
 
-					system->Update(sceneName);
-
-
-
+					system->Update();
 
 				}
 

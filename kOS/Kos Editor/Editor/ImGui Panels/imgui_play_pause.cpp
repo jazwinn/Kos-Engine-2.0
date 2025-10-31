@@ -61,6 +61,7 @@ namespace gui {
                 if(ImGui::Button("Play")) {
                     ecs->SetState(ecs::START);
                     ecs::AudioSystem::SetPaused(false);
+                    scenes::SceneManager::m_GetInstance()->CacheCurrentScene();
 				}
 
             }

@@ -32,7 +32,7 @@ namespace ecs {
 		
 	}
 
-	void RenderSystem::Update(const std::string& scene)
+	void RenderSystem::Update()
 	{
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();

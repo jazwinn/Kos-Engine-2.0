@@ -31,7 +31,7 @@ namespace ecs {
 	class CharacterControllerSystem : public ISystem {
 	public:
 		void Init() override;
-		void Update(const std::string&) override;
+		void Update() override;
 		REFLECTABLE(CharacterControllerSystem)
 	};
 }

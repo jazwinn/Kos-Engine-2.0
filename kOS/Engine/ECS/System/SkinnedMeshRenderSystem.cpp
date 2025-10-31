@@ -36,7 +36,7 @@ namespace ecs {
         // Initialize skinned mesh rendering resources if needed
     }
 
-    void SkinnedMeshRenderSystem::Update(const std::string& scene)
+    void SkinnedMeshRenderSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();

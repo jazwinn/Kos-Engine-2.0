@@ -89,7 +89,7 @@ namespace ecs {
         });
     }
 
-	void ColliderSystem::Update(const std::string& scene) {
+	void ColliderSystem::Update() {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
@@ -188,6 +188,7 @@ namespace ecs {
 
                 if (!actor) {
                     actor = pm->GetPhysics()->createRigidStatic(pxTrans);
+                    actor->userData = reinterpret_cast<void*>(static_cast<uintptr_t>(id));
                     pm->GetScene()->addActor(*actor);
 
                     if (box) { box->actor = actor; }

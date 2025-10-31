@@ -53,7 +53,8 @@ public:
     static EditorCamera editorCamera;
     static bool m_editorMode;
     bool orbitMode{ false };
-    glm::vec3 direction{0.f};
+    glm::vec3 direction{ 0.f };
+    glm::vec3 up{ 0.f };
     void SwitchMode(bool orbMode);
     void onCursor(double xoffset, double yoffset) override;
     void onScroll(double xoffset, double yoffset) override;

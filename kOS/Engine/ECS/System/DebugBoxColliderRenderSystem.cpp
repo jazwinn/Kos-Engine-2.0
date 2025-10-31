@@ -33,7 +33,7 @@ namespace ecs {
         // Initialize static mesh rendering resources if needed
     }
 
-    void DebugBoxColliderRenderSystem::Update(const std::string& scene)
+    void DebugBoxColliderRenderSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();

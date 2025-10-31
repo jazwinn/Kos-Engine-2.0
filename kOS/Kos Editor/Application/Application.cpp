@@ -74,13 +74,6 @@ namespace Application {
         LOGGING_INFO("Load Window Successful");
 
         /*--------------------------------------------------------------
-          INITIALIZE GRAPHICS PIPE
-        --------------------------------------------------------------*/
-        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
-        LOGGING_INFO("Load Graphic Pipeline Successful");
-
-
-        /*--------------------------------------------------------------
            INITIALIZE ECS
         --------------------------------------------------------------*/
         ecs->Load();
@@ -94,6 +87,12 @@ namespace Application {
 		AssetManager::GetInstance()->Init(configpath::assetFilePath, configpath::resourceFilePath);
         LOGGING_INFO("Load Resource Successful");
         
+        /*--------------------------------------------------------------
+          INITIALIZE GRAPHICS PIPE
+        --------------------------------------------------------------*/
+                GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
+                LOGGING_INFO("Load Graphic Pipeline Successful");
+
         /*--------------------------------------------------------------
            INITIALIZE Resource Manager
         --------------------------------------------------------------*/
