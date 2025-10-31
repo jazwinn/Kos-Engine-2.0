@@ -84,6 +84,10 @@ public:
 	//Accessors
 	inline const FrameBuffer& gm_GetEditorBuffer() const { return framebufferManager.editorBuffer; };
 	inline const FrameBuffer& gm_GetGameBuffer() const { return framebufferManager.gameBuffer; };
+	void gm_FillDepthCube(const CameraData&, int);
+
+	//I want my DCMs
+	LightRenderer lightRenderer;
 
 private:
 	//One and only active GraphicsManager object
@@ -113,7 +117,6 @@ private:
 	SpriteRenderer spriteRenderer;
 	MeshRenderer meshRenderer;
 	SkinnedMeshRenderer skinnedMeshRenderer;
-	LightRenderer lightRenderer;
 	DebugRenderer debugRenderer;
 	CubeRenderer cubeRenderer;
 	//Managers

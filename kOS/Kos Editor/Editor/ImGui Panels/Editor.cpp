@@ -228,6 +228,7 @@ namespace gui {
 				DrawAudioMixerWindow();
 				DrawAssetInspector();
 				DrawMaterialWindow();
+				DrawBakedWindow();
 			}
 
 		}

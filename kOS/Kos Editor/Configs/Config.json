@@ -66,6 +66,15 @@
               "inputExtensions": ".mat"
             }
           ]
+        },
+        "dmcCompiler": {
+          "path": "null",
+          "outputExtension": ".dcm",
+          "inputExtensions": [
+            {
+              "inputExtensions": ".dcm"
+            }
+          ]
         }
       }
     },

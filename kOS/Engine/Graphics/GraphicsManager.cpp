@@ -133,8 +133,10 @@ void GraphicsManager::gm_InitializeMeshes()
 void GraphicsManager::gm_RenderToEditorFrameBuffer()
 {
 	gm_FillDataBuffers(editorCamera);
+	lightRenderer.dcm[0]=lightRenderer.testDCM;
 
 	framebufferManager.sceneBuffer.BindForDrawing();
+
 
 	gm_RenderCubeMap(editorCamera);
 	gm_RenderDeferredObjects(editorCamera);
@@ -234,9 +236,6 @@ void GraphicsManager::gm_FillDepthBuffer(const CameraData& camera)
 
 void GraphicsManager::gm_FillDepthCube(const CameraData& camera) {
 	
-	//WALLAHI
-	Shader* pointLightShadow{ &shaderManager.engineShaders.find("DepthMapShader")->second };
-
 	//glCullFace(GL_FRONT);
 	//for (int i{ 0 }; i < lightRenderer.pointLightsToDraw.size(); i++) {
 	//	if (!lightRenderer.pointLightsToDraw[i].shadowCon)continue;;
@@ -277,10 +276,10 @@ void GraphicsManager::gm_FillDepthCube(const CameraData& camera) {
 	for (int i{ 0 }; i < lightRenderer.pointLightsToDraw.size(); i++) {
 		if (!lightRenderer.pointLightsToDraw[i].shadowCon)continue;;
 		glViewport(0, 0, 1024.f, 1024.f);
-		glBindFramebuffer(GL_FRAMEBUFFER, lightRenderer.dcm[0].GetFBO());
+		glBindFramebuffer(GL_FRAMEBUFFER, lightRenderer.dcm[i].GetFBO());
 		glClear(GL_DEPTH_BUFFER_BIT);
 		pointShadowShader->Use();
-		lightRenderer.dcm[0].FillMap(lightRenderer.pointLightsToDraw[0].position);
+		lightRenderer.dcm[i].FillMap(lightRenderer.pointLightsToDraw[i].position);
 		for (unsigned int j = 0; j < 6; ++j) {
 			pointShadowShader->SetMat4("shadowMatrices[" + std::to_string(j) + "]", lightRenderer.dcm[i].shadowTransforms[j]);
 		}
@@ -298,11 +297,44 @@ void GraphicsManager::gm_FillDepthCube(const CameraData& camera) {
 		}
 		cubeRenderer.Render(camera, *pointShadowShader, &this->cube);
 
-		pointLightShadow->Disuse();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+	pointShadowShader->Disuse();
 	glCullFace(GL_BACK);
 
+}
+
+void GraphicsManager::gm_FillDepthCube(const CameraData& camera, int index) {
+	Shader* pointShadowShader{ &shaderManager.engineShaders.find("PointShadowShader")->second };
+	glCullFace(GL_FRONT);
+
+	glViewport(0, 0, 1024.f, 1024.f);
+	glBindFramebuffer(GL_FRAMEBUFFER, lightRenderer.dcm[index].GetFBO());
+	glClear(GL_DEPTH_BUFFER_BIT);
+	pointShadowShader->Use();
+	lightRenderer.dcm[index].FillMap(lightRenderer.pointLightsToDraw[index].position);
+	for (unsigned int j = 0; j < 6; ++j) {
+		pointShadowShader->SetMat4("shadowMatrices[" + std::to_string(j) + "]", lightRenderer.dcm[index].shadowTransforms[j]);
+	}
+	pointShadowShader->SetFloat("far_plane", lightRenderer.dcm[index].far_plane);
+	pointShadowShader->SetVec3("lightPos", lightRenderer.pointLightsToDraw[index].position);
+	for (MeshData& md : meshRenderer.meshesToDraw) {
+		pointShadowShader->SetTrans("model", md.transformation);
+		md.meshToUse->PBRDraw(*pointShadowShader, md.meshMaterial);
+
+	}
+	for (SkinnedMeshData& md : skinnedMeshRenderer.skinnedMeshesToDraw) {
+		pointShadowShader->SetTrans("model", md.transformation);
+		md.meshToUse->PBRDraw(*pointShadowShader, md.meshMaterial);
+
+	}
+	cubeRenderer.Render(camera, *pointShadowShader, &this->cube);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	pointShadowShader->Disuse();
+	glCullFace(GL_BACK);
 }
 void GraphicsManager::gm_DrawMaterial(const PBRMaterial& md,FrameBuffer& fb) {
 
@@ -388,6 +420,7 @@ void GraphicsManager::gm_RenderCubeMap(const CameraData& camera)
 
 void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 {
+
 	Shader* deferredPBRShader{ &shaderManager.engineShaders.find("DeferredPBRShader")->second };
 
 
@@ -410,18 +443,26 @@ void GraphicsManager::gm_RenderDeferredObjects(const CameraData& camera)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, DebugGraphics::cubeMap.RetrieveID());
 	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D, framebufferManager.depthBuffer.RetrieveBuffer());
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, lightRenderer.dcm[0].RetrieveID());
-	deferredPBRShader->SetInt("depthMap", 7);
-	deferredPBRShader->SetFloat("far_plane", lightRenderer.dcm[0].far_plane);
+
 	//Fill point shadow stuff
 	for (int i = 0; i < lightRenderer.pointLightsToDraw.size(); i++) {
-		if (!lightRenderer.pointLightsToDraw[i].shadowCon)continue;;
+		if (lightRenderer.pointLightsToDraw[i].bakedCon&& lightRenderer.pointLightsToDraw[i].bakedmapGUID.size()) {
+			std::shared_ptr<R_DepthMapCube> dmc = ResourceManager::GetInstance()->GetResource<R_DepthMapCube>(lightRenderer.pointLightsToDraw[i].bakedmapGUID);
+			glActiveTexture(GL_TEXTURE7 + i);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, dmc->dcm.RetrieveID());
+			deferredPBRShader->SetFloat("far_plane", dmc->dcm.far_plane);
+		}
+		if (!lightRenderer.pointLightsToDraw[i].shadowCon&&!lightRenderer.pointLightsToDraw[i].bakedCon)continue;;
 		glActiveTexture(GL_TEXTURE7 + i);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, lightRenderer.dcm[i].RetrieveID());
 		deferredPBRShader->SetFloat("far_plane", lightRenderer.dcm[i].far_plane);
-	}
 
+	}
+	GLint samplerUnits[16];
+	for (int i = 0; i < 16; i++) {
+		samplerUnits[i] = 7 + i; // Texture units starting from 7
+	}
+	deferredPBRShader->SetIntArray("depthMap", samplerUnits, 16);
 
 	glUniform1i(glGetUniformLocation(deferredPBRShader->ID, "gPosition"), 0);  // Bind to GL_TEXTURE0
 	glUniform1i(glGetUniformLocation(deferredPBRShader->ID, "gNormal"), 1);    // Bind to GL_TEXTURE1

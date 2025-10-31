@@ -60,10 +60,11 @@ namespace ecs {
         float intesnity{ 1.f };
         //STRICTLY FOR POINT LIGHTS ONLY
         bool shadowCast;
-        //bool bakedLighting;
+        bool bakedLighting;
+        std::string depthMapGUID;
         //std::string bakedMap;
         REFLECTABLE(LightComponent, lightType, color, diffuseStrength, specularStrength, linear,
-            quadratic, direction, cutOff, outerCutOff, intesnity,shadowCast);
+            quadratic, direction, cutOff, outerCutOff, intesnity,shadowCast,bakedLighting, depthMapGUID);
     };
 
 }

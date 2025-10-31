@@ -54,7 +54,7 @@ namespace ecs {
 			{
 			case LightComponent::LightType::POINTLIGHT:
 				gm->gm_PushPointLightData(PointLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
-														light->specularStrength,light->linear,light->quadratic,light->intesnity,light->shadowCast });
+														light->specularStrength,light->linear,light->quadratic,light->intesnity,light->shadowCast,light->bakedLighting,light->depthMapGUID});
 				break;
 			case LightComponent::LightType::DIRECTIONAL:
 				gm->gm_PushDirectionalLightData(DirectionalLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,

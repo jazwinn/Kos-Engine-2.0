@@ -22,7 +22,7 @@ public:
 
     void Init(const std::string& assetDirectory, const std::string& resourceDirectory);
 
-    void RegisterAsset(const std::filesystem::path& filepath);
+    std::string RegisterAsset(const std::filesystem::path& filepath);
 
     void Compilefile(const std::filesystem::path& filepath, const std::string& outputExtension);
 

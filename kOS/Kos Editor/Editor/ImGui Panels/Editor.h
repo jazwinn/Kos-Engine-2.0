@@ -137,7 +137,7 @@ namespace gui {
         void DrawContentBrowser();
         void DrawAssetInspector();
 		void DrawMaterialWindow();
-
+        void DrawBakedWindow();
 
         void m_UpdateOnPrefabMode();
         void openAndLoadSceneDialog();
