@@ -23,3 +23,4 @@
 #include "CharacterControllerComponent.h"
 
 #include "OctreeGeneratorComponent.h"
+#include "ParticleComponent.h"
