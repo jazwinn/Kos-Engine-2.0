@@ -27,6 +27,7 @@ endif()
 add_subdirectory(Engine)
 add_subdirectory(ScriptingDLL)
 add_subdirectory("Kos Editor")
+add_subdirectory("Alchemication")
 add_subdirectory(Test)
 
 #add_subdirectory(ScriptingDLL)

@@ -23,85 +23,99 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 
 #include "Application.h"
-#include "Graphics/GraphicsPipe.h"
-#include "Asset Manager/AssetManager.h"
-#include "Asset Manager/SceneManager.h"
-#include "Events/EventsEventHandler.h"
-#include "Actions/ActionManager.h"
+#include "ApplicationData.h"
+#include "Resources/ResourceManager.h"
+#include "Scene/SceneManager.h"
 #include "Inputs/Input.h"
-
+#include "Graphics/GraphicsManager.h"
+#include "Configs/ConfigPath.h"
+#include "Debugging/Performance.h"
+#include "Scripting/ScriptManager.h"
+#include "Physics/PhysicsManager.h"
 
 namespace Application {
+
+	
 
     /*--------------------------------------------------------------
       GLOBAL VARAIBLE
     --------------------------------------------------------------*/
-    graphicpipe::GraphicsPipe* pipe;
-    assetmanager::AssetManager* resManager;
-    std::vector<std::string> filePath;
+    auto ecs = ecs::ECS::GetInstance();
+    auto scenemanager = scenes::SceneManager::m_GetInstance();
+    auto peformance = Peformance::GetInstance();
+    auto input = Input::InputSystem::GetInstance();
+    auto resourceManager = ResourceManager::GetInstance();
+
 
     int Application::Init() {
         
-        filePath = Serialization::Serialize::LoadFilePath("../configs");
+        /*--------------------------------------------------------------
+          Read Config File
+       --------------------------------------------------------------*/
+        std::filesystem::path exePath = std::filesystem::current_path();
+        std::filesystem::path root = exePath.parent_path().parent_path(); // up two levels
+        std::filesystem::current_path(root);
+        
+		WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
 
         /*--------------------------------------------------------------
         INITIALIZE LOGGING SYSTEM
         --------------------------------------------------------------*/
-        LOGGING_INIT_LOGS(filePath[0]);
+        LOGGING_INIT_LOGS(configpath::logFilePath);
         LOGGING_INFO("Application Start");
         LOGGING_INFO("Load Log Successful");
-        logs.m_Setup_Abort_Handler();
-        std::signal(SIGABRT, logging::Logger::m_Abort_Handler);
-
-        /*--------------------------------------------------------------
-          INITIALIZE WINDOW WIDTH & HEIGHT
-       --------------------------------------------------------------*/
-        Serialization::Serialize::LoadConfig("../configs");
-        LOGGING_INFO("Load Config Successful");
 
        /*--------------------------------------------------------------
           INITIALIZE OPENGL WINDOW
        --------------------------------------------------------------*/
-        lvWindow.init();
+        lvWindow.init(windowData.windowWidth, windowData.windowHeight);
         LOGGING_INFO("Load Window Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE ECS
         --------------------------------------------------------------*/
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
         ecs->Load();
         ecs->Init();
         LOGGING_INFO("Load ECS Successful");
 
+        
         /*--------------------------------------------------------------
-           INITIALIZE Asset Manager
+          INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
-        resManager = assetmanager::AssetManager::GetInstance();
-        resManager->Init(filePath[1]);
-        scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
-        scenemanager->LoadScene(Helper::Helpers::GetInstance()->startScene);
-        LOGGING_INFO("Load Asset Successful");
+        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
+        LOGGING_INFO("Load Graphic Pipeline Successful");
 
+        /*--------------------------------------------------------------
+           INITIALIZE Resource Manager
+        --------------------------------------------------------------*/
+        auto resourceManager = ResourceManager::GetInstance();
+        resourceManager->Init(configpath::resourceFilePath);
+
+        /*--------------------------------------------------------------
+        INITIALIZE SCIRPT
+        --------------------------------------------------------------*/
+        ScriptManager::m_GetInstance()->Init(exePath.string());
+
+        /*--------------------------------------------------------------
+           INITIALIZE Start Scene
+        --------------------------------------------------------------*/
+        resourceManager->GetResource<R_Scene>(windowData.startScene);
+        LOGGING_INFO("Load Asset Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
-        pipe = graphicpipe::GraphicsPipe::m_funcGetInstance();
-        pipe->m_funcInit();
-        LOGGING_INFO("Load Graphic Pipline Successful");
+        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.windowWidth), static_cast<float>(windowData.windowHeight));
+        LOGGING_INFO("Load Graphic Pipeline Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE Input
         --------------------------------------------------------------*/
         //call back must happen before imgui
-        Input.SetCallBack(lvWindow.window);
+        input->SetCallBack(lvWindow.window);
         LOGGING_INFO("Set Input Call Back Successful");
 
-        
-
-        pipe->m_gameMode = true;
-        ecs->m_nextState = ecs::START;
-        
+   
 
         LOGGING_INFO("Application Init Successful");
         return 0;
@@ -110,18 +124,15 @@ namespace Application {
 
 
     int Application::Run() {
-        Helper::Helpers *help = Helper::Helpers::GetInstance();
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
-        actions::ActionManager::m_GetManagerInstance();
+
+
         //float FPSCapTime = 1.f / help->m_fpsCap;
         double lastFrameTime = glfwGetTime();
         const double fixedDeltaTime = 1.0 / 60.0;
-        help->fixedDeltaTime = static_cast<float>(fixedDeltaTime);
-        ecs->deltaTime = static_cast<float>(fixedDeltaTime);
-        help->accumulatedTime = 0.0;
+        float accumulatedTime = 0.0;
 
-        
-
+        std::shared_ptr<GraphicsManager> graphicsManager = GraphicsManager::GetInstance();
+       // ScriptManager::m_GetInstance()->RunDLL();
         /*--------------------------------------------------------------
             GAME LOOP
         --------------------------------------------------------------*/
@@ -135,54 +146,62 @@ namespace Application {
                 //    Calculate time
                 // --------------------------------------------------------------*/
                 double currentFrameTime = glfwGetTime();
-                help->deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
+                float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
                 lastFrameTime = currentFrameTime;
-                help->accumulatedTime += (help->deltaTime * help->timeScale);
-                Helper::Helpers::GetInstance()->currentNumberOfSteps = 0;
-                while (help->accumulatedTime >= (fixedDeltaTime  )) {
-                    help->accumulatedTime -= static_cast<float>(fixedDeltaTime);
-                    ++help->currentNumberOfSteps;
+                accumulatedTime += (deltaTime);
+
+                peformance->SetDeltaTime(deltaTime);
+
+                int currentNumberOfSteps = 0;
+                while( accumulatedTime >= fixedDeltaTime) {
+                    accumulatedTime -= static_cast<float>(fixedDeltaTime);
+                    ++currentNumberOfSteps;
                 }
+                /*--------------------------------------------------------------
+                    Update SceneManager // STAY THE FIRST ON TOP
+                --------------------------------------------------------------*/
+                scenemanager->Update();
                 
                 /*--------------------------------------------------------------
                     UPDATE INPUT
                 --------------------------------------------------------------*/
-                Input.m_inputUpdate();
 
+                input->InputUpdate(deltaTime);
                 /*--------------------------------------------------------------
                     UPDATE ECS
                 --------------------------------------------------------------*/
-                //ecs->m_Update(help->m_fixedDeltaTime * help->m_timeScale); 
-                ecs->Update(help->fixedDeltaTime * help->timeScale);
-                //ecs->m_Update(Helper::Helpers::GetInstance()->m_deltaTime);
-
-
+                ecs->Update(static_cast<float>(fixedDeltaTime));
+                
                 /*--------------------------------------------------------------
                     UPDATE Render Pipeline
                 --------------------------------------------------------------*/
-                pipe->m_funcUpdate();
-
+                graphicsManager->gm_Update();
 
                 /*--------------------------------------------------------------
-                    DRAWING/RENDERING Window
+                    Execute Render Pipeline
+                --------------------------------------------------------------*/
+                graphicsManager->gm_Render();
+                
+                /*--------------------------------------------------------------
+                    Update IMGUI FRAME
                 --------------------------------------------------------------*/
                 lvWindow.Draw();
 
 
+                /*--------------------------------------------------------------
+                   Reset Framebuffer
+                --------------------------------------------------------------*/
+                graphicsManager->gm_ResetFrameBuffer();
 
                 /*--------------------------------------------------------------
-                   Render Game Scene
+                 DRAWING/RENDERING Window
                 --------------------------------------------------------------*/
-                pipe->m_funcRenderGameScene();
-           
+                lvWindow.Draw();
 
-              
 
-                help->fps = 1.f / help->deltaTime;
-                
+                graphicsManager->gm_ClearGBuffer();
 
                 glfwSwapBuffers(lvWindow.window);
-
             }
             catch (const std::exception& e) {
                 LOGGING_ERROR("Exception in game loop: {}", e.what());
@@ -191,13 +210,13 @@ namespace Application {
         return 0;
     }
 
-
-
 	int Application::m_Cleanup() {
-        ecs::ECS::GetInstance()->Unload();
 
+        ecs::ECS::GetInstance()->Unload();
+        physics::PhysicsManager::GetInstance()->Shutdown();
         lvWindow.CleanUp();
         glfwTerminate();
+
         LOGGING_INFO("Application Closed");
 
         return 0;

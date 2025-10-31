@@ -17,8 +17,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Application.h"
 
 
-
-int WINAPI WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
+    int main()
     {
         
         // Enable run-time memory check for debug builds.

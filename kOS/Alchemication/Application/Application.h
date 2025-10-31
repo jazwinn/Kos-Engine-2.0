@@ -19,14 +19,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Debugging/Logging.h"
 #include "ECS/ECS.h"
 #include "Inputs/Input.h"
-#include "Helper/Helper.h"
 #include "Window.h"
-
-
-#include "C#Mono/mono_handler.h"
-#include "Events/EventsEventHandler.h"
-
-
+#include "Reflection/Reflection.h"
 /******************************************************************/
 /*!
 \class     Application
@@ -36,45 +30,25 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /******************************************************************/
 namespace Application {
 
-
-
 	class Application {
 
+		
+
 	public:
+		Application() :lvWindow() {}
+		~Application() = default;
 
-		/******************************************************************/
-		/*!
-		\fn        Init()
-		\brief     Initialzie all systems, managers and pipeline
-		*/
-		/******************************************************************/
 		int Init();
-
-		/******************************************************************/
-		/*!
-		\fn        Run()
-		\brief     Contains the main update loop, calls onto all the programs
-				   update functions.
-		*/
-		/******************************************************************/
 		int Run();
-		/******************************************************************/
-		/*!
-		\fn        m_Cleanup()
-		\brief     Calls upon the closing of the application. Calls the cleanup
-				   functions of all the other systems.
-		*/
-		/******************************************************************/
 		int m_Cleanup();
 
 
 	private:
 
 		AppWindow lvWindow;
-		Input::InputSystem Input;
-		
 		logging::Logger logs;
 	};
+
 }
 
 
