@@ -4,5 +4,55 @@
             "skyBoxGUID": [],
             "ambientIntensity": 1.0
         }
+    },
+    {
+        "CubeRendererComponent": {},
+        "MeshFilterComponent": {
+            "meshGUID": ""
+        },
+        "NameComponent": {
+            "entityName": "GameObject",
+            "Layer": 0,
+            "entityTag": "Default",
+            "isPrefab": false,
+            "prefabName": "",
+            "hide": false
+        },
+        "TransformComponent": {
+            "WorldTransformation": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": -0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "LocalTransformation": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            }
+        }
     }
 ]

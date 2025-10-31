@@ -419,9 +419,7 @@ namespace gui {
             if (ImGui::MenuItem("Duplicate Entity")) {
                 ecs::EntityID newid = ecs->DuplicateEntity(id);
 
-                if (m_prefabSceneMode) {
-
-                    
+                if (m_prefabSceneMode) {              
                     const auto& parent = hierachy::GetParent(id);
                     //if id does not have parent, make it the parent
                     if (!parent.has_value()) {
@@ -429,9 +427,7 @@ namespace gui {
                     }
                     else {
                         hierachy::m_SetParent(parent.value(), newid);
-                    }
-
-                   
+                    }           
                 }
 
                 ImGui::EndPopup();

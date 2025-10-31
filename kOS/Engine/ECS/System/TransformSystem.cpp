@@ -76,6 +76,14 @@ namespace ecs {
 										glm::scale(identity, transformComp->LocalTransformation.scale);
 	}
 
+	void TransformSystem::CalculateWorldTransformMtx(TransformComponent* transformComp) {
+		if (!transformComp) return;
+		constexpr glm::mat4 identity(1.0f);
+		transformComp->transformation = glm::translate(identity, transformComp->WorldTransformation.position) *
+										glm::mat4_cast(glm::quat(glm::radians(transformComp->WorldTransformation.rotation))) *
+										glm::scale(identity, transformComp->WorldTransformation.scale);
+	}
+
 	void TransformSystem::SetImmediateWorldPosition(TransformComponent* transformComp, glm::vec3&& pos){
 		if (!transformComp) return;
 		constexpr glm::mat4 identity(1.0f);

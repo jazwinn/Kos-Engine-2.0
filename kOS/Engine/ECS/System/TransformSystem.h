@@ -26,6 +26,7 @@ namespace ecs {
         void Update() override;
         static void CalculateAllTransform(TransformComponent* transComp, const glm::mat4& parentWorldMtx = glm::mat4(1.0f));
         static void CalculateLocalTransformMtx(TransformComponent* transformComp);
+        static void CalculateWorldTransformMtx(TransformComponent* transformComp);
         static void SetImmediateWorldPosition(TransformComponent* transformComp, glm::vec3&& pos);
         static void SetImmediateWorldRotation(TransformComponent* transformComp, glm::vec3&& rot);
         static void SetImmediateWorldScale(TransformComponent* transformComp, glm::vec3&& scale);

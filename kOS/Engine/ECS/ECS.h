@@ -58,6 +58,7 @@ namespace ecs {
 		void Unload();
 
 		EntityID CreateEntity(std::string scene);
+		// Note: Duplicating Transform Components will require you to call TransformMtx Calculation since it doesnt copy transform mtx
 		EntityID DuplicateEntity(EntityID, std::string scene = {});
 		bool DeleteEntity(EntityID);
 
