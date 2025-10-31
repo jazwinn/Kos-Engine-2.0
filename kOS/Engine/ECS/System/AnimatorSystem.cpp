@@ -11,7 +11,7 @@ namespace ecs {
         // Initialize animation playback resources if needed
     }
 
-    void AnimatorSystem::Update(const std::string& scene)
+    void AnimatorSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();

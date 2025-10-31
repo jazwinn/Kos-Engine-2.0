@@ -10,7 +10,7 @@ namespace ecs {
         pm->Init();
     }
 
-    void PhysicsSystem::Update(const std::string& scene) {
+    void PhysicsSystem::Update() {
         auto pm = PhysicsManager::GetInstance();
         ECS* ecs = ECS::GetInstance();
 

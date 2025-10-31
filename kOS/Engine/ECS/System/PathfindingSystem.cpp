@@ -35,7 +35,7 @@ namespace ecs {
 		
 	}
 
-	void PathfindingSystem::Update(const std::string& scene) {
+	void PathfindingSystem::Update() {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 		for (EntityID id : entities) {

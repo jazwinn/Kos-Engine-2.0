@@ -38,7 +38,7 @@ namespace ecs {
 
 	}
 
-	void TransformSystem::Update(const std::string& scene) {
+	void TransformSystem::Update() {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 		for (const EntityID id : entities) {

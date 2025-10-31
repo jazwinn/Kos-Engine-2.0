@@ -36,7 +36,7 @@ namespace ecs {
 
 	}
 
-	void LightingSystem::Update(const std::string& scene)
+	void LightingSystem::Update()
 	{
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();

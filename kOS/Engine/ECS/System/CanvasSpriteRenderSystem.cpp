@@ -37,7 +37,7 @@ namespace ecs {
         // Initialize UI rendering resources if needed
     }
 
-    void CanvasSpriteRenderSystem::Update(const std::string& scene)
+    void CanvasSpriteRenderSystem::Update()
     {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();

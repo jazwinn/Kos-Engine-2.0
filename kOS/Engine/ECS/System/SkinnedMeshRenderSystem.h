@@ -32,7 +32,7 @@ namespace ecs {
     public:
 
         void Init() override;
-        void Update(const std::string&) override;
+        void Update() override;
 
         REFLECTABLE(SkinnedMeshRenderSystem)
     };

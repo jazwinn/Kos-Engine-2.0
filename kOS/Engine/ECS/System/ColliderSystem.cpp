@@ -89,7 +89,7 @@ namespace ecs {
         });
     }
 
-	void ColliderSystem::Update(const std::string& scene) {
+	void ColliderSystem::Update() {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
