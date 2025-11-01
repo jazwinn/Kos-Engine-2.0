@@ -76,6 +76,7 @@ namespace Application {
         --------------------------------------------------------------*/
         ecs->Load();
         ecs->Init();
+		ecs->SetState(ecs::GAMESTATE::START);
         LOGGING_INFO("Load ECS Successful");
 
         
