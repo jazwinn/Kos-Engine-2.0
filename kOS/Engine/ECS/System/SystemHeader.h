@@ -18,3 +18,4 @@
 #include "PathfindingSystem.h"
 #include "CubeRenderSystem.h"
 #include "PhysicsSystem.h"
+#include "ParticleSystem.h"
