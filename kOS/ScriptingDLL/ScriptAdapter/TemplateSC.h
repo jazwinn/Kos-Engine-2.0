@@ -8,6 +8,7 @@
 #include "Inputs/Keycodes.h"
 #include "Scene/SceneManager.h"
 #include "Physics/PhysicsManager.h"
+#include "Resources/ResourceManager.h"
 
 class TemplateSC :public ecs::Component, public ScriptClass {
 public:
@@ -16,5 +17,6 @@ public:
 	static Input::InputSystem* Input;
 	static scenes::SceneManager* Scenes;
 	static physics::PhysicsManager* physicsPtr;
+	static ResourceManager* resource;
 private:
 };

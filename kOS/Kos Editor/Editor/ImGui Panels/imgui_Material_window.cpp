@@ -27,7 +27,7 @@ void gui::ImGuiHandler::DrawMaterialWindow() {
     ImGui::Begin("Material");
     float windowWidth = ImGui::GetContentRegionAvail().x; // Available width inside window
 
-    std::shared_ptr<ResourceManager> rm = ResourceManager::GetInstance();
+     ResourceManager* rm = ResourceManager::GetInstance();
     std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(materialData.data.diffuseMaterialGUID);
     std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(materialData.data.specularMaterialGUID);
     std::shared_ptr<R_Texture> norm = rm->GetResource<R_Texture>(materialData.data.normalMaterialGUID);

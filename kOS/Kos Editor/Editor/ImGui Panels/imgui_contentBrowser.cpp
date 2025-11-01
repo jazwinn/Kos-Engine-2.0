@@ -81,7 +81,7 @@ namespace gui {
 
 		AssetManager* assetmanager = AssetManager::GetInstance();
 		scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
+		ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
 		static std::filesystem::path assetDirectory = assetmanager->GetAssetManagerDirectory(); // TO change
 		static std::filesystem::path currentDirectory = assetDirectory;

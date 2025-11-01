@@ -34,19 +34,13 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Debugging/Performance.h"
 #include "Scripting/ScriptManager.h"
 #include "Physics/PhysicsManager.h"
+#include "Config/ComponentRegistry.h"
 
 namespace Application {
 
 	
 
-    /*--------------------------------------------------------------
-      GLOBAL VARAIBLE
-    --------------------------------------------------------------*/
-    auto ecs = ecs::ECS::GetInstance();
-    auto scenemanager = scenes::SceneManager::m_GetInstance();
-    auto peformance = Peformance::GetInstance();
-    auto input = Input::InputSystem::GetInstance();
-    auto resourceManager = ResourceManager::GetInstance();
+
 
 
     int Application::Init() {
@@ -57,7 +51,21 @@ namespace Application {
         std::filesystem::path exePath = std::filesystem::current_path();
         std::filesystem::path root = exePath.parent_path().parent_path(); // up two levels
         std::filesystem::current_path(root);
+
+        /*--------------------------------------------------------------
+		  Set main Component Registry - TODO remove and go to dependency injection
+        --------------------------------------------------------------*/
+        auto ecs = ecs::ECS::GetInstance();
+        ComponentRegistry::SetECSInstance(ecs);
+        auto scenemanager = scenes::SceneManager::m_GetInstance();
+        ComponentRegistry::SetSceneInstance(scenemanager);
+        auto input = Input::InputSystem::GetInstance();
+        ComponentRegistry::SetInputInstance(input);
+		
         
+		
+
+
 		WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
 
         /*--------------------------------------------------------------
@@ -90,8 +98,8 @@ namespace Application {
         /*--------------------------------------------------------------
           INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
-                GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
-                LOGGING_INFO("Load Graphic Pipeline Successful");
+        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
+        LOGGING_INFO("Load Graphic Pipeline Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE Resource Manager
@@ -156,6 +164,10 @@ namespace Application {
         float accumulatedTime = 0.0;
 
         std::shared_ptr<GraphicsManager> graphicsManager = GraphicsManager::GetInstance();
+        auto peformance = Peformance::GetInstance();
+        auto ecs = ecs::ECS::GetInstance();
+        auto scenemanager = scenes::SceneManager::m_GetInstance();
+        auto input = Input::InputSystem::GetInstance();
        // ScriptManager::m_GetInstance()->RunDLL();
         /*--------------------------------------------------------------
             GAME LOOP

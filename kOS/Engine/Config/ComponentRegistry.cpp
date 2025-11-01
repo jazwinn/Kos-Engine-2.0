@@ -5,3 +5,4 @@ FieldSingleton *ComponentRegistry::s_fieldSingleton;
 Input::InputSystem *ComponentRegistry::s_inputSystem;
 scenes::SceneManager *ComponentRegistry::s_sceneSingleton;
 physics::PhysicsManager *ComponentRegistry::s_physicsSingleton;
+ResourceManager* ComponentRegistry::s_resourceManager;

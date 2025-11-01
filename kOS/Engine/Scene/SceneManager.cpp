@@ -34,6 +34,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <RAPIDJSON/stringbuffer.h>
 #include "ECS/Hierachy.h"
 #include "Resources/ResourceManager.h"
+#include "Config/ComponentRegistry.h"
 
 
 namespace scenes {
@@ -41,7 +42,7 @@ namespace scenes {
 
     SceneManager::SceneManager()
     {
-        m_ecs = ecs::ECS::GetInstance();
+        m_ecs = ComponentRegistry::GetECSInstance();
 	}
 
     bool SceneManager::CreateNewScene(const std::filesystem::path& scene)
@@ -266,7 +267,6 @@ namespace scenes {
 
 	void SceneManager::ImmediateClearScene(const std::string& scene)
 	{
-		ecs::ECS* m_ecs = ecs::ECS::GetInstance();
 
 		size_t numberOfEntityInScene = m_ecs->sceneMap.find(scene)->second.sceneIDs.size();
 		for (int n{}; n < numberOfEntityInScene; n++) {
@@ -285,7 +285,6 @@ namespace scenes {
 
 	void SceneManager::SwapScenes(const std::string& oldscene, const std::string& newscene, ecs::EntityID id)
     {
-        ecs::ECS* m_ecs = ecs::ECS::GetInstance();
         std::vector<ecs::EntityID>& vectorenityid = m_ecs->sceneMap.find(oldscene)->second.sceneIDs;
         std::vector<ecs::EntityID>::iterator it = std::find(vectorenityid.begin(), vectorenityid.end(), id);
         if (it == vectorenityid.end()) {
@@ -324,10 +323,10 @@ namespace scenes {
 
     // Files will be cached in the same location with added "filename[Cached].json" label
     void SceneManager::CacheCurrentScene(){
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+
         for (auto [fileName, path] : loadScenePath) {
-            auto iter = ecs->sceneMap.find(fileName);
-            if (iter != ecs->sceneMap.end()) {
+            auto iter = m_ecs->sceneMap.find(fileName);
+            if (iter != m_ecs->sceneMap.end()) {
                 if (iter->second.isPrefab) continue;
                 std::string newPath = path.parent_path().string() + '\\' + path.stem().string() + "[Cached]" + path.extension().string();
                 cacheScenePath.push_back(newPath);
@@ -344,10 +343,21 @@ namespace scenes {
         }
     }
 
+    void SceneManager::LoadSceneToCurrent(const std::string& currentScene, const std::filesystem::path& filepath) {
+        //check if scene is loaded and file path exist
+
+        if(m_ecs->sceneMap.find(currentScene) == m_ecs->sceneMap.end() || !std::filesystem::exists(filepath)){
+            LOGGING_WARN("Scene not loaded or FilePath does not exist");
+            return;
+		}
+
+        Serialization::LoadScene(filepath, currentScene);
+    }
+
   
     //void SceneManager::AssignEntityNewScene(const std::string& scene, m_ecs::EntityID id)
     //{
-    //    m_ecs::ECS* m_ecs = m_ecs::ECS::GetInstance();
+    //    m_ecs::ECS* m_ecs = m_ecs::ComponentRegistry::GetECSInstance();
     //    //assign all of entity's scene component into new scene
     //    const auto& componentKey = m_ecs->GetComponentKeyData();
     //    for (const auto& [componentName, key] : componentKey) {

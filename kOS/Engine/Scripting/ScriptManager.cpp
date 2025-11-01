@@ -18,9 +18,10 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 //Systems to be shared with DLL
 #include "Debugging/Logging.h"
-#include "ComponentRegistry.h"
+#include "Config/ComponentRegistry.h"
 #include "ECS/ECS.h"
 #include "Inputs/Input.h"
+#include "Resources/ResourceManager.h"
 
 std::shared_ptr<ScriptManager> ScriptManager::m_ScriptManagerPtr{ new ScriptManager{} };
 
@@ -106,6 +107,7 @@ void ScriptManager::RunDLL() {
 		svm.input = Input::InputSystem::GetInstance();
 		svm.scene = scenes::SceneManager::m_GetInstance();
 		svm.physics = physics::PhysicsManager::GetInstance();
+		svm.resource = ResourceManager::GetInstance();
 		svm.scriptNames = &scriptList;
 		DLLUpdateStatic updateFunc = (DLLUpdateStatic)GetProcAddress(hInstDLL, "UpdateStatic");
 		updateFunc(&svm);

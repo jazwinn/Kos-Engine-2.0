@@ -52,7 +52,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigned int windowHeight)
 {
-    ecs::ECS* ecs = ecs::ECS::GetInstance();
+    ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_MenuBar;
@@ -356,7 +356,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
     ImGui::Dummy(renderWindowSize);
     if (ImGui::BeginDragDropTarget()) {
         //if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("file")) {
-        //    ecs::ECS* ecs = ecs::ECS::GetInstance();
+        //    ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
         //    IM_ASSERT(payload->DataSize == sizeof(std::filesystem::path));
         //    std::filesystem::path* filename = static_cast<std::filesystem::path*>(payload->Data);

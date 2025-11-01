@@ -1,7 +1,6 @@
 [
     {
         "SceneData": {
-            "collisionData": "",
             "skyBoxGUID": [],
             "ambientIntensity": 1.0
         }
@@ -36,7 +35,7 @@
             "Layer": 0,
             "entityTag": "Default",
             "isPrefab": true,
-            "prefabName": "",
+            "prefabName": "BackpackTest.prefab",
             "hide": false
         },
         "PlayerScript": {

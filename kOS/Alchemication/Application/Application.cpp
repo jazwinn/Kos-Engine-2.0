@@ -7,9 +7,9 @@
 \brief     This file contains the main update loop of the engine.
            It initializes the various major systems and call upon
            them in the update loop. When the window is closed,
-           the applciations cleanup function is called to 
+           the applciations cleanup function is called to
            call the major systems to clean their program.
-           
+
 
 
 Copyright (C) 2024 DigiPen Institute of Technology.
@@ -32,31 +32,36 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Debugging/Performance.h"
 #include "Scripting/ScriptManager.h"
 #include "Physics/PhysicsManager.h"
+#include "Config/ComponentRegistry.h"
 
 namespace Application {
 
-	
 
-    /*--------------------------------------------------------------
-      GLOBAL VARAIBLE
-    --------------------------------------------------------------*/
-    auto ecs = ecs::ECS::GetInstance();
-    auto scenemanager = scenes::SceneManager::m_GetInstance();
-    auto peformance = Peformance::GetInstance();
-    auto input = Input::InputSystem::GetInstance();
-    auto resourceManager = ResourceManager::GetInstance();
+
+
 
 
     int Application::Init() {
-        
+
         /*--------------------------------------------------------------
           Read Config File
        --------------------------------------------------------------*/
         std::filesystem::path exePath = std::filesystem::current_path();
         std::filesystem::path root = exePath.parent_path().parent_path(); // up two levels
         std::filesystem::current_path(root);
-        
-		WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
+
+        /*--------------------------------------------------------------
+          Set main Component Registry - TODO remove and go to dependency injection
+        --------------------------------------------------------------*/
+        auto ecs = ecs::ECS::GetInstance();
+        ComponentRegistry::SetECSInstance(ecs);
+        auto scenemanager = scenes::SceneManager::m_GetInstance();
+        ComponentRegistry::SetSceneInstance(scenemanager);
+        auto input = Input::InputSystem::GetInstance();
+        ComponentRegistry::SetInputInstance(input);
+
+
+        WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
 
         /*--------------------------------------------------------------
         INITIALIZE LOGGING SYSTEM
@@ -65,9 +70,9 @@ namespace Application {
         LOGGING_INFO("Application Start");
         LOGGING_INFO("Load Log Successful");
 
-       /*--------------------------------------------------------------
-          INITIALIZE OPENGL WINDOW
-       --------------------------------------------------------------*/
+        /*--------------------------------------------------------------
+           INITIALIZE OPENGL WINDOW
+        --------------------------------------------------------------*/
         lvWindow.init(windowData.windowWidth, windowData.windowHeight);
         LOGGING_INFO("Load Window Successful");
 
@@ -76,10 +81,10 @@ namespace Application {
         --------------------------------------------------------------*/
         ecs->Load();
         ecs->Init();
-		ecs->SetState(ecs::GAMESTATE::START);
+		ecs->SetState(ecs::START);
         LOGGING_INFO("Load ECS Successful");
 
-        
+
         /*--------------------------------------------------------------
           INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
@@ -100,7 +105,8 @@ namespace Application {
         /*--------------------------------------------------------------
            INITIALIZE Start Scene
         --------------------------------------------------------------*/
-        resourceManager->GetResource<R_Scene>(windowData.startScene);
+        //for game only
+        //resourceManager->GetResource<R_Scene>(windowData.startScene);
         LOGGING_INFO("Load Asset Successful");
 
         /*--------------------------------------------------------------
@@ -116,11 +122,20 @@ namespace Application {
         input->SetCallBack(lvWindow.window);
         LOGGING_INFO("Set Input Call Back Successful");
 
-   
+
+
+
+
+
 
         LOGGING_INFO("Application Init Successful");
+
+
+
+        //Sean use this to test animationn serialization
+        //ResourceManager::GetInstance()->GetResource<R_Animation>("bf8a061d-e1b2-8f34-ec30-a655db0af661");
         return 0;
-	}
+    }
 
 
 
@@ -133,10 +148,14 @@ namespace Application {
         float accumulatedTime = 0.0;
 
         std::shared_ptr<GraphicsManager> graphicsManager = GraphicsManager::GetInstance();
-       // ScriptManager::m_GetInstance()->RunDLL();
-        /*--------------------------------------------------------------
-            GAME LOOP
-        --------------------------------------------------------------*/
+        auto peformance = Peformance::GetInstance();
+        auto ecs = ecs::ECS::GetInstance();
+        auto scenemanager = scenes::SceneManager::m_GetInstance();
+        auto input = Input::InputSystem::GetInstance();
+        // ScriptManager::m_GetInstance()->RunDLL();
+         /*--------------------------------------------------------------
+             GAME LOOP
+         --------------------------------------------------------------*/
         while (!glfwWindowShouldClose(lvWindow.window))
         {
             try {
@@ -154,7 +173,7 @@ namespace Application {
                 peformance->SetDeltaTime(deltaTime);
 
                 int currentNumberOfSteps = 0;
-                while( accumulatedTime >= fixedDeltaTime) {
+                while (accumulatedTime >= fixedDeltaTime) {
                     accumulatedTime -= static_cast<float>(fixedDeltaTime);
                     ++currentNumberOfSteps;
                 }
@@ -162,7 +181,7 @@ namespace Application {
                     Update SceneManager // STAY THE FIRST ON TOP
                 --------------------------------------------------------------*/
                 scenemanager->Update();
-                
+
                 /*--------------------------------------------------------------
                     UPDATE INPUT
                 --------------------------------------------------------------*/
@@ -172,7 +191,9 @@ namespace Application {
                     UPDATE ECS
                 --------------------------------------------------------------*/
                 ecs->Update(static_cast<float>(fixedDeltaTime));
-                
+
+
+
                 /*--------------------------------------------------------------
                     UPDATE Render Pipeline
                 --------------------------------------------------------------*/
@@ -182,9 +203,9 @@ namespace Application {
                     Execute Render Pipeline
                 --------------------------------------------------------------*/
                 graphicsManager->gm_Render();
-                
+
                 /*--------------------------------------------------------------
-                    Update IMGUI FRAME
+
                 --------------------------------------------------------------*/
                 lvWindow.Draw();
 
@@ -211,7 +232,7 @@ namespace Application {
         return 0;
     }
 
-	int Application::m_Cleanup() {
+    int Application::m_Cleanup() {
 
         ecs::ECS::GetInstance()->Unload();
         physics::PhysicsManager::GetInstance()->Shutdown();
@@ -221,6 +242,6 @@ namespace Application {
         LOGGING_INFO("Application Closed");
 
         return 0;
-	}
+    }
 
 }

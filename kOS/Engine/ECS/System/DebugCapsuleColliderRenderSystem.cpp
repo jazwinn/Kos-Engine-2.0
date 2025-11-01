@@ -17,7 +17,7 @@ namespace ecs {
     {
         ECS* ecs = ECS::GetInstance();
         std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-        std::shared_ptr<ResourceManager> rm = ResourceManager::GetInstance();
+        ResourceManager* rm = ResourceManager::GetInstance();
         const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
