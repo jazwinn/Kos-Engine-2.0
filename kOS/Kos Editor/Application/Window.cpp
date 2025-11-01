@@ -29,7 +29,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ECS/ECS.h"
 #include "Inputs/Input.h"
 #include "Resources/ResourceManager.h"
-
+#include "Config/ComponentRegistry.h"
 
 
 
@@ -65,7 +65,7 @@ namespace Application {
     static void windowedFocusCallback([[maybe_unused]] GLFWwindow* window, int focused)
     {
 
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
         if (!focused) {
 
            
@@ -95,7 +95,7 @@ namespace Application {
         static int oldWidth = static_cast<int>(AppWindow::windowWidth);
         static int oldHeight = static_cast<int>(AppWindow::windowHeight);
         //auto& audioManager = assetmanager::AssetManager::GetInstance()->m_audioManager;
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
         if (!focused) {
             oldWidth = static_cast<int>(AppWindow::windowWidth);
             oldHeight = static_cast<int>(AppWindow::windowHeight);
@@ -131,7 +131,7 @@ namespace Application {
     static void iconifyCallback([[maybe_unused]]GLFWwindow* window, int iconified)
     {
        // auto& audioManager = assetmanager::AssetManager::GetInstance()->m_audioManager;
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
         if (iconified == GLFW_TRUE)
         {
             

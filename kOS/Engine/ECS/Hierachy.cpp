@@ -3,12 +3,13 @@
 #include "Hierachy.h"
 #include "Scene/SceneManager.h"
 #include "Utility/MathUtility.h"
+#include "Config/ComponentRegistry.h"
 
 namespace hierachy {
 
 	void m_SetParent(EntityID parent, EntityID child, bool updateTransform) {
 
-		ECS* ecs = ECS::GetInstance();
+		ECS* ecs = ComponentRegistry::GetECSInstance();
 
 		m_RemoveParent(child);
 

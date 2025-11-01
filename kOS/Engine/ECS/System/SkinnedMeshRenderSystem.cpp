@@ -41,7 +41,7 @@ namespace ecs {
         ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
         std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-        std::shared_ptr<ResourceManager> rm = ResourceManager::GetInstance();
+         ResourceManager* rm = ResourceManager::GetInstance();
 
         for (const EntityID id : entities) {
             TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);

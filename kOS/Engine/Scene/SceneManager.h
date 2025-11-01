@@ -73,6 +73,8 @@ namespace scenes {
 		void DeleteAllCacheScenes();
 		bool LoadCacheSceneImmediate(const std::filesystem::path& scene, std::string originalName);
 
+		void LoadSceneToCurrent(const std::string& currentScene, const std::filesystem::path& filepath);
+
 		//void AssignEntityNewScene(const std::string& scene, ecs::EntityID id);
 		//EVENTS
 

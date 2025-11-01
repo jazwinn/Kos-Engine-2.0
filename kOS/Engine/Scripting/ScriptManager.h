@@ -23,6 +23,7 @@ struct StaticVariableManager {
 	void* input;
 	void* scene;
 	void* physics;
+	void* resource;
 	std::vector<std::string>* scriptNames;
 };
 

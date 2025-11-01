@@ -53,7 +53,7 @@ TEST(Scene, CreateScene) {
 
 
 TEST(Entity, SpawnMaxEntities) {
-	auto* ecs = ecs::ECS::GetInstance();
+	auto* ecs =ComponentRegistry::GetECSInstance();
 	ecs->RegisterComponent<TransformComponent>();
 	ecs->RegisterComponent<NameComponent>();
 

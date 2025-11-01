@@ -39,7 +39,7 @@ namespace gui {
 	
     void ImGuiHandler::DrawPlayPauseBar() {
   //      static bool pause = true;
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
 
   //      if(ecs->GetState() == ecs::STOP) {

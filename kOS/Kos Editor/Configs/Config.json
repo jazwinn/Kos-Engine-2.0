@@ -40,6 +40,15 @@
             }
           ]
         },
+        "prefabCompiler": {
+          "path": "null",
+          "outputExtension": ".prefab",
+          "inputExtensions": [
+            {
+              "inputExtensions": ".prefab"
+            }
+          ]
+        },
         "audioCompiler": {
           "path": "null",
           "outputExtension": ".wav",

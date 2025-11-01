@@ -26,7 +26,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Editor/EditorReflection.h"
 #include "Application/Window.h"
 #include "AssetManager/AssetDatabase.h"
-
+#include "Config/ComponentRegistry.h"
 
 
 namespace gui {

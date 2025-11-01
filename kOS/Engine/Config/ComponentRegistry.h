@@ -18,6 +18,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Inputs/Input.h"
 #include "Scene/SceneManager.h"
 #include "Physics/PhysicsManager.h"
+#include "Resources/ResourceManager.h"
 
 class ComponentRegistry
 {
@@ -27,6 +28,7 @@ private:
     static Input::InputSystem *s_inputSystem;
     static scenes::SceneManager *s_sceneSingleton;
     static physics::PhysicsManager *s_physicsSingleton;
+	static ResourceManager* s_resourceManager;
 
 public:
     static void SetECSInstance(ecs::ECS *ecs) { s_ecsInstance = ecs; }
@@ -43,4 +45,7 @@ public:
 
     static void SetFieldInstance(FieldSingleton *field) { s_fieldSingleton = field; }
     static FieldSingleton *GetFieldInstance() { return s_fieldSingleton; }
+
+	static void SetResourceManagerInstance(ResourceManager* resourceManager) { s_resourceManager = resourceManager; }
+	static ResourceManager* GetResourceManagerInstance() { return s_resourceManager; }
 };

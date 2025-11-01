@@ -34,7 +34,7 @@ namespace gui {
     unsigned int ImGuiHandler::DrawHierachyWindow()
     {
         //fetch ecs
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
         scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
         //assetmanager::AssetManager* assetmanager = assetmanager::AssetManager::m_funcGetInstance();
         // Custom window with example widgets
@@ -318,7 +318,7 @@ namespace gui {
 
 
     bool ImGuiHandler::DrawEntityNode(ecs::EntityID id) {
-        ecs::ECS* ecs = ecs::ECS::GetInstance();
+        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
         
         ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
         if (transCom == NULL) return false;
