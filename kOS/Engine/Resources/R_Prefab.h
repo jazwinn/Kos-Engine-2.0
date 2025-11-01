@@ -26,7 +26,7 @@ public:
 
 	void Unload() override;
 
-	void DuplicatePrefabIntoScene(const std::string& scene);
+	int DuplicatePrefabIntoScene(const std::string& scene);
 
 	REFLECTABLE(R_Prefab);
 
