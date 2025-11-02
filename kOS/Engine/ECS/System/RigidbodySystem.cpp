@@ -143,16 +143,16 @@ namespace ecs {
                 PxRigidBodyExt::updateMassAndInertia(*actor, rb->mass);
                 actor->userData = reinterpret_cast<void*>(static_cast<uintptr_t>(id));
                 pm->GetScene()->addActor(*actor);
-            } else {
-                actor->setMass(rb->mass);
-                actor->setLinearDamping(rb->drag);
-                actor->setAngularDamping(rb->angularDrag);
-                actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, rb->isKinematic);
-                actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !rb->useGravity);
-                ToPhysXContraints(actor, rb->constraints);
-                ToPhysxCollisionDetectionMode(actor, rb->collisionDetection);
-                ToPhysxInterpolation(actor, rb->interpolation);
             }
+
+            actor->setMass(rb->mass);
+            actor->setLinearDamping(rb->drag);
+            actor->setAngularDamping(rb->angularDrag);
+            actor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, rb->isKinematic);
+            actor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !rb->useGravity);
+            ToPhysXContraints(actor, rb->constraints);
+            ToPhysxCollisionDetectionMode(actor, rb->collisionDetection);
+            ToPhysxInterpolation(actor, rb->interpolation);
         }
     }
 }

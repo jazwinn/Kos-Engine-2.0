@@ -46,9 +46,9 @@ namespace Input {
 			
 		glfwGetWindowSize(window, &width, &height);
 		ypos = static_cast<double>(height - ypos);
-	
-		InputSystem::GetInstance()->mousePos.x = static_cast<float>(xpos);
-		InputSystem::GetInstance()->mousePos.y = static_cast<float>(ypos);
+
+		InputSystem::GetInstance()->currentMousePos.x = static_cast<float>(xpos);
+		InputSystem::GetInstance()->currentMousePos.y = static_cast<float>(ypos);
 	}		
 	
 	void DropCallback([[maybe_unused]] GLFWwindow* window, int count, const char** paths) {
@@ -122,6 +122,10 @@ namespace Input {
 		}
 	}
 
+	void InputSystem::InputExitFrame(float deltaTime) {
+		InputSystem::GetInstance()->prevMousePos = InputSystem::GetInstance()->currentMousePos;
+	}
+
 	bool InputSystem::IsKeyTriggered(const keyCode key) {
 		if (keysRegistered[key].currKeyState == KeyState::TRIGGERED) {
 			return true;
@@ -147,6 +151,21 @@ namespace Input {
 	}
 	
 	glm::vec2 InputSystem::GetMousePos() {
-		return InputSystem::mousePos;
+		return InputSystem::currentMousePos;
 	}	
+
+	float InputSystem::GetAxisRaw(std::string axisType) {
+		if (axisType == "Mouse X") {
+			//std::cout << currentMousePos.x << ", " << currentMousePos.y << std::endl;
+			//std::cout << prevMousePos.x << ", " << prevMousePos.y << std::endl;
+			glm::vec2 delta = currentMousePos - prevMousePos;
+			delta.x = glm::length2(delta) <= 0.01f ? 0.f : delta.x;
+			return (delta.x * 0.1f);
+		}
+		else if (axisType == "Mouse Y") {
+			glm::vec2 delta = currentMousePos - prevMousePos;
+			delta.y = glm::length2(delta) <= 0.01f ? 0.f : delta.y;
+			return (delta.y * 0.1f);
+		}
+	}
 }

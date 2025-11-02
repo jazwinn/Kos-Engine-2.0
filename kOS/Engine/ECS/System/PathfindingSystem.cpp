@@ -28,8 +28,14 @@ namespace ecs {
 	bool testing = true;
 	bool testing2 = false;
 
-	float maxTimer = 1.f;
+	bool test = true;
+
+	float maxTimer = 5.f;
 	float currentTimer = 0.f;
+
+	// REMOVE THIS AFTER M2
+	int currentPathCount = 0;
+	float proximityCheck = 0.1f;
 
 	void PathfindingSystem::Init() {
 		
@@ -38,75 +44,99 @@ namespace ecs {
 	void PathfindingSystem::Update() {
 		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
+
+		if (currentTimer < maxTimer) {
+			currentTimer += ecs->m_GetDeltaTime();
+			//std::cout << "TIMER: " << currentTimer << std::endl;
+		}
+
 		for (EntityID id : entities) {
 			TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
 			NameComponent* name = ecs->GetComponent<NameComponent>(id);
-			OctreeGeneratorComponent* oct = ecs->GetComponent<OctreeGeneratorComponent>(id);
+			//OctreeGeneratorComponent* oct = ecs->GetComponent<OctreeGeneratorComponent>(id);
 
 			if (name->hide) { continue; }
 
-			if (oct->drawWireframe) {
-				if (testing) {
-					testing = false;
-					octree = Octrees::Octree(2.f, waypoints);
+			// Move all pathfinders
+			const auto& otherEntities = m_entities.Data();
+			for (EntityID otherId : otherEntities) {
+				if (ecs->GetState() != GAMESTATE::RUNNING) {
+					continue;
 				}
-				//octree = Octrees::Octree(1.f, waypoints);
-				octree.root.DrawNode();
-				// DRAWING TAKES A LOT OF LATENCY
-				octree.graph.DrawGraph();
+
+				auto* pathfinderTarget = ecs->GetComponent<PathfinderTargetComponent>(otherId);
+				auto* pathfinderComp = ecs->GetComponent<PathfinderComponent>(id);
+				auto* pathfinderTrans = ecs->GetComponent<TransformComponent>(id);
+				auto* pathfinderTargetTrans = ecs->GetComponent<TransformComponent>(otherId);
+
+				if (!pathfinderTarget || !pathfinderComp || !pathfinderTrans || !pathfinderTargetTrans || !pathfinderComp->chase) {
+					continue;
+				}
+
+				if (currentTimer >= maxTimer) {
+					//octree = Octrees::Octree(1.f, waypoints);
+
+					Octrees::OctreeNode closestNodeFrom = octree.FindClosestNode(pathfinderTrans->LocalTransformation.position);
+					Octrees::OctreeNode closestNodeTarget = octree.FindClosestNode(pathfinderTargetTrans->LocalTransformation.position);
+					octree.graph.AStar(&closestNodeFrom, &closestNodeTarget);
+					currentPathCount = 0;
+
+					for (int i = 0; i < octree.graph.pathList.size(); ++i) {
+						std::cout << "PATH " << i << ": " << octree.graph.pathList[i].octreeNode.bounds.center.x << ", " <<
+							octree.graph.pathList[i].octreeNode.bounds.center.y << ", " <<
+							octree.graph.pathList[i].octreeNode.bounds.center.z << std::endl;
+					}
+
+					currentTimer = 0.f;
+				}
+				
+
+
+				if (octree.graph.pathList.size() > 0 && currentPathCount >= octree.graph.pathList.size()) {
+					break;
+				}
+
+				if (std::abs(pathfinderTrans->LocalTransformation.position.x - pathfinderTargetTrans->LocalTransformation.position.x) >= proximityCheck ||
+					std::abs(pathfinderTrans->LocalTransformation.position.y - pathfinderTargetTrans->LocalTransformation.position.y) >= proximityCheck ||
+					std::abs(pathfinderTrans->LocalTransformation.position.z - pathfinderTargetTrans->LocalTransformation.position.z) >= proximityCheck) {
+					glm::vec3 directionToMove;
+
+					if (!octree.graph.pathList.size() || currentPathCount == octree.graph.pathList.size() - 1) {
+						directionToMove = pathfinderTargetTrans->LocalTransformation.position - pathfinderTrans->LocalTransformation.position;
+					}
+					else {
+						directionToMove = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->LocalTransformation.position;
+					}
+
+
+					pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * ecs->m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
+
+					if (!octree.graph.pathList.size()) {
+						break;
+					}
+
+					if (std::abs(pathfinderTrans->LocalTransformation.position.x - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.x) < proximityCheck &&
+						std::abs(pathfinderTrans->LocalTransformation.position.y - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.y) < proximityCheck &&
+						std::abs(pathfinderTrans->LocalTransformation.position.z - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.z) < proximityCheck) {
+						++currentPathCount;
+					}
+				}
+
+				break;
 			}
-			else {
-				testing = true;
+
+			if (auto* oct = ecs->GetComponent<OctreeGeneratorComponent>(id)) {
+				if (testing) {
+					octree = Octrees::Octree(2.f, waypoints);
+					testing = false;
+				}
+
+				if (oct->drawWireframe) {
+					octree.root.DrawNode();
+					octree.graph.DrawGraph();
+				}
 			}
+
 		}
-
-		// THIS IS CAUSING A LOT OF LAG AND IDK WHY
-		//Octrees::OctreeNode currentNodePos = octree.GetClosestNode({ 0.f, 0.f, 0.f });
-
-		//std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-		//glm::mat4 model{ 1.f };
-		//model = glm::translate(model, currentNodePos.bounds.center) * glm::scale(model, { 0.3f, 0.3f, 0.3f });
-		//BasicDebugData basicDebug;
-		//basicDebug.worldTransform = model;
-		//gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug });
-
-		if (!testing2) {
-			//octree.graph.AStar(currentNodePos, octree.graph.nodes[0].octreeNode);
-
-			//std::cout << std::endl << "TEST1: \n";
-			//octree.graph.AStar(&octree.graph.nodes[0].octreeNode, &octree.graph.nodes[1].octreeNode);
-			//std::cout << std::endl << "TEST2: ";
-			//octree.graph.AStar(&octree.graph.nodes[1].octreeNode, &octree.graph.nodes[2].octreeNode);
-			//std::cout << std::endl << "TEST3: ";
-			//octree.graph.AStar(&octree.graph.nodes[1].octreeNode, &octree.graph.nodes[3].octreeNode);
-			//std::cout << std::endl << "TEST4: ";
-			//octree.graph.AStar(&octree.graph.nodes[1].octreeNode, &octree.graph.nodes[4].octreeNode);
-			//std::cout << std::endl << "TEST5: ";
-			//octree.graph.AStar(&octree.graph.nodes[1].octreeNode, &octree.graph.nodes[5].octreeNode);
-
-			//std::cout << octree.graph.pathList.size() << std::endl;
-			//for (int i = 0; i < octree.graph.pathList.size(); ++i) {
-			//	std::cout << "PATH LIST " << i << ": " << octree.graph.pathList[i].octreeNode.bounds.center.x << ", " << octree.graph.pathList[i].octreeNode.bounds.center.y << ", " << octree.graph.pathList[i].octreeNode.bounds.center.z << std::endl;
-			//}
-			//for (Octrees::Node no : octree.graph.nodes) {
-			//	std::cout << "EDGES: " << no.edges.size() << std::endl;
-			//}
-			testing2 = true;
-		}
-
-		//if (testing2) {
-		//	std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-		//	glm::mat4 model{ 1.f };
-		//	model = glm::translate(model, octree.graph.nodes[0].octreeNode.bounds.center) * glm::scale(model, {0.5f, 0.5f, 0.5f});
-		//	BasicDebugData basicDebug;
-		//	basicDebug.worldTransform = model;
-		//	gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug });
-
-		//	glm::mat4 model2{ 1.f };
-		//	model2 = glm::translate(model2, octree.graph.nodes[1].octreeNode.bounds.center) * glm::scale(model2, { 0.25f, 0.25f, 0.25f });
-		//	BasicDebugData basicDebug2;
-		//	basicDebug2.worldTransform = model2;
-		//	gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug2 });
-		//}
 	}
 }

@@ -44,10 +44,11 @@ namespace Octrees {
 		bounds.max.y = _bounds.max.y;
 		bounds.max.z = _bounds.max.z;
 
-
 		minNodeSize = _minNodeSize;
 		glm::vec3 newSize = bounds.size * 0.5f;
 		glm::vec3 centerOffset = bounds.size * 0.25f;
+		//glm::vec3 newSize = bounds.size;
+		//glm::vec3 centerOffset = bounds.size * 0.5f;
 		glm::vec3 parentCenter = bounds.center;
 
 		for (int i = 0; i < 8; ++i) {
@@ -105,7 +106,9 @@ namespace Octrees {
 		glm::mat4 model{ 1.f };
 		model = glm::translate(model, bounds.center) * glm::scale(model, bounds.size * 2.f);
 		BasicDebugData basicDebug;
+		//basicDebug.color = { 1.f, 0.f, 0.f };
 		basicDebug.worldTransform = model;
+		basicDebug.color = { 1.f, 0.f, 0.f };
 		gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug });
 
 		if (!children.empty()) {

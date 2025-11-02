@@ -49,6 +49,7 @@ namespace Octrees {
 		void AddObject(OctreeObject octreeObject);
 		void DrawNode();
 
+		//OctreeNode& operator=(const OctreeNode& other);
 		bool operator==(const OctreeNode& other) const;
 	};
 }

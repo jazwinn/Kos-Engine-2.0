@@ -42,9 +42,8 @@ namespace Octrees {
 		void CalculateBounds();
 		void GetEdges();
 
-		//OctreeNode FindClosestNode(glm::vec3 position);
-		//OctreeNode FindClosestNode(OctreeNode node, glm::vec3 position);
-		OctreeNode GetClosestNode(glm::vec3 position);
+		OctreeNode FindClosestNode(glm::vec3 position);
+		OctreeNode FindClosestNode(OctreeNode node, glm::vec3 position);
 	};
 }
 

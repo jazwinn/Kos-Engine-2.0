@@ -28,7 +28,7 @@ void gui::ImGuiHandler::DrawInputWindow() {
 	bool open = true;
 	ImGui::Begin("Inputs", &open);
 
-	std::string mousePos = "Mouse Position: (" + std::to_string(static_cast<int>(Input::InputSystem::GetInstance()->mousePos.x)) + " , " + std::to_string(static_cast<int>(Input::InputSystem::GetInstance()->mousePos.y)) + ")";
+	std::string mousePos = "Mouse Position: (" + std::to_string(static_cast<int>(Input::InputSystem::GetInstance()->currentMousePos.x)) + " , " + std::to_string(static_cast<int>(Input::InputSystem::GetInstance()->currentMousePos.y)) + ")";
 	ImGui::Text(mousePos.c_str());
 	
 	std::string clickedID = "Clicked ID: (" + std::to_string(m_clickedEntityId) + ")";

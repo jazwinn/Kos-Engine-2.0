@@ -49,14 +49,19 @@ namespace Octrees {
 	};
 
 	struct Edge {
+		//Node a, b;
 		Node* a, *b;
 
+		//Edge& operator=(Edge const& other);
 		bool operator==(Edge const& other) const;
+
+		//~Edge();
 	};
 
 	struct Graph {
-		std::vector<Node> nodes;
 		std::vector<Edge> edges;
+		std::vector<Node> nodes;
+		
 
 		std::vector<Node> pathList;
 
@@ -64,7 +69,8 @@ namespace Octrees {
 		OctreeNode GetPathNode(int index);
 
 		bool AStar(OctreeNode* startNode, OctreeNode* endNode);
-		void ReconstructPath(Node* current);
+		bool AStarGround(OctreeNode* startNode, OctreeNode* endNode);
+		void ReconstructPath(Node current);
 		float Heuristic(Node a, Node b);
 
 		void AddNode(OctreeNode _octreeNode);

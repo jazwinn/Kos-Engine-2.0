@@ -23,4 +23,6 @@
 #include "CharacterControllerComponent.h"
 
 #include "OctreeGeneratorComponent.h"
+#include "PathfinderComponent.h"
+#include "PathfinderTargetComponent.h"
 #include "ParticleComponent.h"

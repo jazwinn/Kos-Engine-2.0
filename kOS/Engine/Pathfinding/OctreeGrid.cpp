@@ -25,27 +25,20 @@ namespace Octrees {
 	Octree::Octree(float minNodeSize, Graph _graph) {
 		graph = _graph;
 
+		graph.nodes.reserve(1000);
+
 		CalculateBounds();
 		CreateTree(minNodeSize);
-		auto start2 = std::chrono::high_resolution_clock::now();
 		GetEmptyLeaves(&root);
-		auto end2 = std::chrono::high_resolution_clock::now();
-		auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2);
-		//std::cout << "Elapsed time FOR GETTING LEAVES: " << duration2.count() << " microseconds\n";
-		GetEdges();
-		//std::cout << "EDGES: " << graph.edges.size() << std::endl;
 
-		//for (Edge edge : graph.edges) {
-		//	std::cout << "EDGE A: " << edge.a->octreeNode.bounds.center.x << ", " << edge.a->octreeNode.bounds.center.y << ", " << edge.a->octreeNode.bounds.center.z << std::endl;
-		//	std::cout << "EDGE B: " << edge.b->octreeNode.bounds.center.x << ", " << edge.b->octreeNode.bounds.center.y << ", " << edge.b->octreeNode.bounds.center.z << std::endl;
-		//}
+		GetEdges();
 	}
 
 	void Octree::GetEmptyLeaves(OctreeNode* node) {
-
 		if (node->IsLeaf() && !node->objects.size()) {
 			emptyLeaves.push_back(*node);
 			graph.AddNode(*node);
+
 			return;
 		}
 
@@ -63,8 +56,6 @@ namespace Octrees {
 					continue;
 
 				graph.AddEdge(&node->children[i], &node->children[j]);
-				//std::cout << "EDGE A: " << graph.edges.back().a->octreeNode.bounds.center.x << ", " << graph.edges.back().a->octreeNode.bounds.center.y << ", " << graph.edges.back().a->octreeNode.bounds.center.z << std::endl;
-				//std::cout << "EDGE B: " << graph.edges.back().b->octreeNode.bounds.center.x << ", " << graph.edges.back().b->octreeNode.bounds.center.y << ", " << graph.edges.back().b->octreeNode.bounds.center.z << std::endl;
 			}
 		}
 	}
@@ -76,6 +67,9 @@ namespace Octrees {
 			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
 
 			if (!boxCollider)
+				continue;
+
+			if (ecs->GetComponent<ecs::PathfinderComponent>(id.first) || ecs->GetComponent<ecs::PathfinderTargetComponent>(id.first))
 				continue;
 
 			root.Divide(id.first);
@@ -93,7 +87,7 @@ namespace Octrees {
 			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
 			ecs::TransformComponent* transform = ecs->GetComponent<ecs::TransformComponent>(id.first);
 
-			if (!boxCollider)
+			if (!boxCollider || !transform)
 				continue;
 
 			if (boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x < minBound.x) {
@@ -124,6 +118,7 @@ namespace Octrees {
 
 		bounds.center = boundCenter;
 		bounds.size = boundSize;
+		bounds.SetMinMax(boundMin, boundMax);
 	}
 
 	void Octree::GetEdges() {
@@ -132,40 +127,33 @@ namespace Octrees {
 				if (leaf == otherLeaf)
 					continue;
 
-				if (leaf.bounds.Intersects(otherLeaf.bounds)) {
+				Bounds otherBounds = otherLeaf.bounds;
+				otherBounds.size *= 1.1f;
+					if (leaf.bounds.Intersects(otherBounds)) {
 					graph.AddEdge(&leaf, &otherLeaf);
 				}
 			}
 		}
 	}
 
-	//OctreeNode Octree::FindClosestNode(glm::vec3 position) {
-	//	FindClosestNode(root, position);
-	//}
+	OctreeNode Octree::FindClosestNode(glm::vec3 position) {
+		return FindClosestNode(root, position);
+	}
 
-	//OctreeNode Octree::FindClosestNode(OctreeNode node, glm::vec3 position) {
-	//	Octree found;
+	OctreeNode Octree::FindClosestNode(OctreeNode node, glm::vec3 position) {
+		OctreeNode foundNode;
 
-	//	for (int i = 0; i < node.children.size(); ++i) {
-	//		if(node.children[i].bounds)
-	//	}
-	//}
+		for (int i = 0; i < node.children.size(); ++i) {
+			if (node.children[i].bounds.Contains(position)) {
+				if (node.children[i].IsLeaf()) {
+					foundNode = node.children[i];
+					break;
+				}
 
-	OctreeNode Octree::GetClosestNode(glm::vec3 position) {
-		OctreeNode closestNode;
-
-		float closestDistanceSqr = std::numeric_limits<float>().max();
-
-		for (Node node : graph.nodes) {
-			OctreeNode octreeNode = node.octreeNode;
-			float distanceSqr = glm::length2(octreeNode.bounds.center - position);
-
-			if (distanceSqr < closestDistanceSqr) {
-				closestDistanceSqr = distanceSqr;
-				closestNode = octreeNode;
+				foundNode = FindClosestNode(node.children[i], position);
 			}
 		}
 
-		return closestNode;
+		return foundNode;
 	}
 }

@@ -23,7 +23,7 @@ file(GLOB_RECURSE ENGINE_SOURCE
 )
 
 
-add_library(Kos_Engine STATIC ${ENGINE_SOURCE})
+add_library(Kos_Engine STATIC ${ENGINE_SOURCE} "ECS/Component/PathfinderComponent.h" "ECS/Component/PathfinderTargetComponent.h" "ECS/System/PathfinderSystem.cpp")
 
 # Debug libs
 file(GLOB ENGINE_LIBS_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/DebugLibs/*.lib")

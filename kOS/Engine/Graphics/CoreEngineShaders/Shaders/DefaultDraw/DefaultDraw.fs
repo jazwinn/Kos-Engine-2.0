@@ -13,6 +13,8 @@ layout(binding=4)   uniform sampler2D gMaterial;
 layout(binding=5)   uniform samplerCube cubeTexture;
 layout(binding=6)   uniform sampler2D shadowMap;
 
+uniform vec3 color;
+
 void main()
 {   
         //Albedo value

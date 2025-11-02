@@ -40,6 +40,8 @@ namespace ecs{
 		RegisterComponent<CharacterControllerComponent>();
 		//RegisterComponent<ScriptComponent>();
 		RegisterComponent<OctreeGeneratorComponent>();
+		RegisterComponent<PathfinderComponent>();
+		RegisterComponent<PathfinderTargetComponent>();
 		RegisterComponent<CubeRendererComponent>();
 		RegisterComponent<ParticleComponent>();
 
@@ -47,7 +49,7 @@ namespace ecs{
 		RegisterSystem<ScriptingSystem>(RUNNING);
 		RegisterSystem<TransformSystem, TransformComponent>();
 		RegisterSystem<CharacterControllerSystem, TransformComponent, CharacterControllerComponent>(RUNNING);
-		RegisterSystem<ColliderSystem, TransformComponent>(RUNNING);
+		RegisterSystem<ColliderSystem, TransformComponent>();
 		RegisterSystem<RigidbodySystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<PhysicsSystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<CameraSystem, TransformComponent, CameraComponent>();
@@ -60,8 +62,10 @@ namespace ecs{
 		RegisterSystem<AnimatorSystem, TransformComponent, AnimatorComponent>();
 		RegisterSystem<LightingSystem, TransformComponent, LightComponent>();
 		RegisterSystem<DebugBoxColliderRenderSystem, TransformComponent, BoxColliderComponent>();
+		RegisterSystem<DebugCapsuleColliderRenderSystem, TransformComponent, CapsuleColliderComponent>();
+		RegisterSystem<DebugSphereColliderRenderSystem, TransformComponent, SphereColliderComponent>();
 		RegisterSystem<AudioSystem, TransformComponent, AudioComponent>();
-		RegisterSystem<PathfindingSystem, TransformComponent, OctreeGeneratorComponent>();
+		RegisterSystem<PathfindingSystem, TransformComponent>();
 		RegisterSystem<ParticleSystem, TransformComponent, ParticleComponent>();
 
 
@@ -197,13 +201,13 @@ namespace ecs{
 		if (scene.empty()) {
 			const auto& result = GetSceneByEntityID(DuplicatesID);
 			if (result.empty()) {
-				LOGGING_ASSERT_WITH_MSG("Scene does not exits");
+				LOGGING_ERROR("Scene does not exits");
 			}
 			scene = result;
 		}
 		else {
 			if (sceneMap.find(scene) == sceneMap.end()) {
-				LOGGING_ASSERT_WITH_MSG("Scene does not exits");
+				LOGGING_ERROR("Scene does not exits");
 			}
 		}
 

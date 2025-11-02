@@ -47,7 +47,8 @@ namespace Input {
 			return m_InstancePtr.get();
 		}
 
-		glm::vec2 mousePos;
+		glm::vec2 currentMousePos;
+		glm::vec2 prevMousePos;
 		std::vector<std::string> droppedFiles;
 		GLFWwindow* inputWindow;
 
@@ -57,8 +58,11 @@ namespace Input {
 		bool IsKeyPressed(const keyCode key);
 		bool IsKeyReleased(const keyCode key);
 		glm::vec2 GetMousePos();
+		float GetAxisRaw(std::string axisType);
+
 		void InputInit(GLFWwindow* window);
 		void InputUpdate(float deltaTime);
+		void InputExitFrame(float deltaTime);
 	private:
 		std::unordered_map<int, Key> keysRegistered;
 
