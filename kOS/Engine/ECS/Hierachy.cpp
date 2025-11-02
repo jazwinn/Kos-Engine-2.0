@@ -69,7 +69,7 @@ namespace hierachy {
 		//Updating Transformation Mtxs
 		if (updateTransform) {
 			childTransform->localTransform = childTransform->transformation;
-			math::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
+			utility::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
 		}
 	}
 

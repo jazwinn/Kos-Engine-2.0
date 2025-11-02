@@ -19,8 +19,19 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Config/pch.h"
 #include "Resource.h"
 #include <FMOD/fmod.hpp>
+#include <FMOD/fmod_studio.hpp>
 
-namespace FMOD { class System; class Sound; }
+namespace FMOD {
+    class System;
+    class Sound;
+
+    namespace Studio {
+        class System;
+        class Bank;
+        class EventDescription;
+        class EventInstance;
+    }
+}
 
 class R_Audio : public Resource {
 public:
@@ -30,19 +41,32 @@ public:
     void Unload() override;
 
     ~R_Audio() override { Unload(); }
-
+    
+    //Core
     FMOD::Sound* GetSound()  const { return m_sound; }
-    FMOD::System* GetSystem() const { return m_system ? m_system : s_globalSystem; }
-
+    FMOD::System* GetSystem() const { return m_system ? m_system : s_globalCore; }
     void SetSystem(FMOD::System* sys) { m_system = sys; }
-    static void SetGlobalSystem(FMOD::System* sys) { s_globalSystem = sys; }
+    static void SetGlobalSystem(FMOD::System* sys) { s_globalCore = sys; }
 
+    // studio
+    static void SetGlobalStudio(FMOD::Studio::System* sys) { s_globalStudio = sys; }
+    static FMOD::Studio::System* GetStudioSystem() { return s_globalStudio; }
+
+    // studio audio bank
+    FMOD::Studio::Bank* GetBank() const { return m_bank; }
+    FMOD::Studio::EventDescription* GetEventDescription(const std::string& eventPath);
+    FMOD::Studio::EventInstance* CreateEventInstance(const std::string& eventPath);
 
     REFLECTABLE(R_Audio);
 
 private:
-    FMOD::System* m_system = nullptr;        
-    FMOD::Sound* m_sound = nullptr;       
+    // Core
+    FMOD::System* m_system = nullptr;
+    FMOD::Sound* m_sound = nullptr;
     unsigned int  m_createFlags = 0;
-    static FMOD::System* s_globalSystem;     
+    static FMOD::System* s_globalCore;
+
+    // Studio
+    FMOD::Studio::Bank* m_bank = nullptr;
+    static FMOD::Studio::System* s_globalStudio;
 };
