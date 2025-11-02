@@ -161,7 +161,7 @@ namespace ecs {
         else {
             s_fmod->set3DSettings(1.0f, 1.0f, 1.0f); // 1 unit = 1m
         }
-
+        s_coreForControls = s_fmod;            
         R_Audio::SetGlobalSystem(s_fmod);
 
     }
