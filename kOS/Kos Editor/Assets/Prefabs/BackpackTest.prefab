@@ -6,6 +6,7 @@
         }
     },
     {
+        "entityGUID": "fceb06c9-78fe-0076-e813-3a263630e3be",
         "AudioComponent": {
             "audioFiles": [
                 {
@@ -39,15 +40,17 @@
             "hide": false
         },
         "PlayerScript": {
-            "health": 50,
-            "shield": 10,
+            "health": 1,
+            "shield": 50,
             "healthbool": false,
-            "shield2": ""
+            "shield2": "",
+            "Targetguid": "00000000-0000-0000-0000-000000000000",
+            "prefabGUID": "00000000-0000-0000-0000-000000000000"
         },
         "TransformComponent": {
             "WorldTransformation": {
                 "position": {
-                    "x": 12.817800521850586,
+                    "x": 16.49788475036621,
                     "y": 0.8654597997665405,
                     "z": -31.58481788635254
                 },
@@ -64,7 +67,7 @@
             },
             "LocalTransformation": {
                 "position": {
-                    "x": 12.817800521850586,
+                    "x": 16.49788475036621,
                     "y": 0.8654597997665405,
                     "z": -31.58481788635254
                 },

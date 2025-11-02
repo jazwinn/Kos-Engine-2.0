@@ -37,13 +37,7 @@
           "inputExtensions": [
             {
               "inputExtensions": ".json"
-            }
-          ]
-        },
-        "prefabCompiler": {
-          "path": "null",
-          "outputExtension": ".prefab",
-          "inputExtensions": [
+            },
             {
               "inputExtensions": ".prefab"
             }
