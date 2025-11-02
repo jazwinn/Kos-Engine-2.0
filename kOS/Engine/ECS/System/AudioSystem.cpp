@@ -23,24 +23,18 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 namespace ecs {
 
-    //CORE
-    FMOD::System* AudioSystem::s_fmod = nullptr;
-    bool AudioSystem::s_paused = false;
+    ////CORE
+    //FMOD::System* AudioSystem::s_fmod = nullptr;
+    //bool AudioSystem::s_paused = false;
 
-    // STUDIO
-    FMOD::Studio::System* AudioSystem::s_studio = nullptr;
-    bool AudioSystem::s_studioReady = false;
+    //// STUDIO
+    //FMOD::Studio::System* AudioSystem::s_studio = nullptr;
+    //bool AudioSystem::s_studioReady = false;
+    FMOD::System* AudioSystem::s_coreForControls = nullptr;
 
     void AudioSystem::Init() {
-        if (!s_fmod) {
-            FMOD_RESULT r = FMOD::System_Create(&s_fmod);
-
-            //Intialize fmod
-            if (r == FMOD_OK && s_fmod) {
-                s_fmod->init(64, FMOD_INIT_NORMAL, nullptr);
-                R_Audio::SetGlobalSystem(s_fmod);
-            }
-        }
+        InitCore_();
+        InitStudioIfBanksExist_();
     }
 
     void AudioSystem::Update() {
@@ -50,6 +44,7 @@ namespace ecs {
         UpdateListener_();
 
         const auto& entities = m_entities.Data();
+
         for (const EntityID id : entities) {
             auto* transform = ecs->GetComponent<TransformComponent>(id);
             auto* nameComp = ecs->GetComponent<NameComponent>(id);
@@ -114,7 +109,7 @@ namespace ecs {
                     af.channelPtr = ch;
                 }
 
-                af.requestPlay = false;   
+                af.requestPlay = false;
             }
 
         }
@@ -146,12 +141,15 @@ namespace ecs {
     }
 
     void AudioSystem::InitCore_() {
-        if (s_fmod) return;
+        if (s_fmod) {
+            return;
+        }
 
         FMOD_RESULT r = FMOD::System_Create(&s_fmod);
         if (r != FMOD_OK || !s_fmod) {
             std::cout << "[FMOD Core] Failed to create system: " << r << "\n";
             s_fmod = nullptr;
+
             return;
         }
 
@@ -165,6 +163,7 @@ namespace ecs {
         }
 
         R_Audio::SetGlobalSystem(s_fmod);
+
     }
 
     void AudioSystem::InitStudioIfBanksExist_() {
@@ -218,19 +217,18 @@ namespace ecs {
 
     // pause/unpause
     void AudioSystem::SetPaused(bool paused) {
-        s_paused = paused;
-        if (!s_fmod) return;
+        FMOD::System* core = s_coreForControls;
         FMOD::ChannelGroup* master = nullptr;
-        if (s_fmod->getMasterChannelGroup(&master) == FMOD_OK && master) {
+        if (core->getMasterChannelGroup(&master) == FMOD_OK && master) {
             master->setPaused(paused);
         }
     }
 
     // stop all
     void AudioSystem::StopAll() {
-        if (!s_fmod) return;
+        FMOD::System* core = s_coreForControls;
         FMOD::ChannelGroup* master = nullptr;
-        if (s_fmod->getMasterChannelGroup(&master) == FMOD_OK && master) {
+        if (core->getMasterChannelGroup(&master) == FMOD_OK && master) {
             master->stop();
         }
     }

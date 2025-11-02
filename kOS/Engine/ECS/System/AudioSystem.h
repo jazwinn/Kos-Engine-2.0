@@ -7,7 +7,7 @@
 \brief     This file contains the declaration of the AudioSystem
            class. It handles the logic behind the Audio played in
            the engine and works with the Audio Manager interface.
-            
+
 
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -39,30 +39,30 @@ namespace ecs {
         static void SetPaused(bool paused);
         static void StopAll();
 
-        static void SetListenerFromCamera(const glm::vec3& pos,
+        void SetListenerFromCamera(const glm::vec3& pos,
             const glm::vec3& fwd,
             const glm::vec3& up);
 
         //DEBUG
-        static glm::vec3 GetCachedCamPos() { return s_camPos; }
-        static glm::vec3 GetCachedCamFwd() { return s_camFwd; }
-        static glm::vec3 GetCachedCamUp() { return s_camUp; }
+        glm::vec3 GetCachedCamPos() { return s_camPos; }
+        glm::vec3 GetCachedCamFwd() { return s_camFwd; }
+        glm::vec3 GetCachedCamUp() { return s_camUp; }
 
         // Fmod Studio Stuff
-        static FMOD::Studio::System* GetStudioSystem() { return s_studio; }
-        static FMOD::System* GetCoreSystem() { return s_fmod; }
-        static bool IsStudioReady() { return s_studioReady; }
+        FMOD::Studio::System* GetStudioSystem() { return s_studio; }
+        FMOD::System* GetCoreSystem() { return s_fmod; }
+        bool IsStudioReady() { return s_studioReady; }
 
         REFLECTABLE(AudioSystem)
 
     private:
         // Core
-        static FMOD::System* s_fmod;
-        static bool          s_paused;
+        FMOD::System* s_fmod;
+        bool          s_paused;
 
         // Studio
-        static FMOD::Studio::System* s_studio;
-        static bool s_studioReady;   // true when Studio and bank initializaed 
+        FMOD::Studio::System* s_studio;
+        bool s_studioReady;   // true when Studio and bank initializaed 
 
         void InitCore_();
         void InitStudioIfBanksExist_();
@@ -73,8 +73,9 @@ namespace ecs {
         static inline glm::vec3 s_camUp{ 0,1,0 };
         static inline bool      s_camValid{ false };
 
+        static FMOD::System* s_coreForControls;
+
     };
 }
 
 #endif // AUDIOSYS_H
-
