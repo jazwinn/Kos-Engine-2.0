@@ -71,7 +71,8 @@ namespace ecs{
 		RegisterSystem<AudioSystem, TransformComponent, AudioComponent>();
 		RegisterSystem<PathfindingSystem, TransformComponent>();
 		RegisterSystem<ParticleSystem, TransformComponent, ParticleComponent>();
-
+		RegisterSystem<EventSystem>();
+	
 
 	}
 

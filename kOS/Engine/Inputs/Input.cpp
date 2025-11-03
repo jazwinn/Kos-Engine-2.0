@@ -18,6 +18,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Config/pch.h"
 #include "Input.h"
+#include "Events/EventHandler.h"  
+#include "Events/InputEvents.h" 
 
 namespace Input {
 	/*--------------------------------------------------------------
@@ -34,23 +36,81 @@ namespace Input {
 	int test2 = 10;
 	int* test1 = &test2;
 
-	void KeyCallback([[maybe_unused]] GLFWwindow* window, [[maybe_unused]] int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+	// UPDATED: KeyCallback now emits events
+	void KeyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+		auto* eventHandler = Event::EventHandler::GetInstance();
+
+		if (action == GLFW_PRESS) {
+			eventHandler->GetBus().Emit(ecs::KeyPressedEvent(key, false));
+		}
+		else if (action == GLFW_RELEASE) {
+			eventHandler->GetBus().Emit(ecs::KeyReleasedEvent(key));
+		}
+		else if (action == GLFW_REPEAT) {
+			eventHandler->GetBus().Emit(ecs::KeyPressedEvent(key, true));
+		}
 	}
-	
-	
-	void MouseButtonCallback([[maybe_unused]] GLFWwindow* pwin, [[maybe_unused]] int button, [[maybe_unused]] int action, [[maybe_unused]] int mod) {
+
+
+	void MouseButtonCallback([[maybe_unused]] GLFWwindow* pwin, int button, int action, [[maybe_unused]] int mod) {
+		auto* eventHandler = Event::EventHandler::GetInstance();
+
+		// Get current mouse position
+		glm::vec2 mousePos = InputSystem::GetInstance()->GetMousePos();
+
+		if (action == GLFW_PRESS) {
+			eventHandler->GetBus().Emit(
+				ecs::MouseButtonPressedEvent(button, mousePos.x, mousePos.y)
+			);
+		}
+		else if (action == GLFW_RELEASE) {
+			eventHandler->GetBus().Emit(
+				ecs::MouseButtonReleasedEvent(button, mousePos.x, mousePos.y)
+			);
+		}
 	}
-	
+
 	void CursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 		int width{}, height{};
-			
+
 		glfwGetWindowSize(window, &width, &height);
 		ypos = static_cast<double>(height - ypos);
 
+		// Get old position before updating
+		glm::vec2 oldPos = InputSystem::GetInstance()->currentMousePos;
+
+		// Update current position
 		InputSystem::GetInstance()->currentMousePos.x = static_cast<float>(xpos);
 		InputSystem::GetInstance()->currentMousePos.y = static_cast<float>(ypos);
-	}		
-	
+
+		// Calculate delta
+		float deltaX = static_cast<float>(xpos) - oldPos.x;
+		float deltaY = static_cast<float>(ypos) - oldPos.y;
+
+		// Emit mouse moved event
+		auto* eventHandler = Event::EventHandler::GetInstance();
+		eventHandler->GetBus().Emit(
+			ecs::MouseMovedEvent(
+				static_cast<float>(xpos),
+				static_cast<float>(ypos),
+				deltaX,
+				deltaY
+			)
+		);
+	}
+
+	void WindowResizeCallback(GLFWwindow* window, int width, int height) {
+		auto* eventHandler = Event::EventHandler::GetInstance();
+		eventHandler->GetBus().Emit(ecs::WindowResizedEvent(width, height));
+	}
+
+	void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+		auto* eventHandler = Event::EventHandler::GetInstance();
+		eventHandler->GetBus().Emit(
+			ecs::MouseScrolledEvent(static_cast<float>(xoffset), static_cast<float>(yoffset))
+		);
+	}
+
 	void DropCallback([[maybe_unused]] GLFWwindow* window, int count, const char** paths) {
 		InputSystem::GetInstance()->droppedFiles.clear();
 
@@ -58,14 +118,16 @@ namespace Input {
 			InputSystem::GetInstance()->droppedFiles.emplace_back(paths[i]);
 		}
 	}
-	
+
 	void InputSystem::SetCallBack(GLFWwindow* window) {
 		glfwSetKeyCallback(window, KeyCallback);
 		glfwSetDropCallback(window, DropCallback);
 		glfwSetMouseButtonCallback(window, MouseButtonCallback);
 		glfwSetCursorPosCallback(window, CursorPosCallback);
+		glfwSetWindowSizeCallback(window, WindowResizeCallback);  
+		glfwSetScrollCallback(window, ScrollCallback);          
 	}
-	
+
 	void InputSystem::HideCursor(bool check) {
 		if (check) {
 			glfwSetInputMode(inputWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -73,15 +135,16 @@ namespace Input {
 		else {
 			glfwSetInputMode(inputWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-	
+
 	}
-	
+
 	void InputSystem::InputInit(GLFWwindow* window) {
 		InputSystem::GetInstance()->inputWindow = window;
 	}
 
 	void InputSystem::InputUpdate(float deltaTime) {
-		
+		auto* eventHandler = Event::EventHandler::GetInstance();
+
 		for (std::pair<const int, Key>& key : keysRegistered) {
 			int state;
 
@@ -98,9 +161,11 @@ namespace Input {
 
 			// Current checks
 			if (state == GLFW_PRESS) {
- 				if (key.second.prevKeyState == KeyState::UNUSED) {
+				if (key.second.prevKeyState == KeyState::UNUSED) {
 					if (!key.second.currPressedTimer) {
 						key.second.currKeyState = KeyState::TRIGGERED;
+						// EMIT KEY PRESSED EVENT
+						eventHandler->GetBus().Emit(ecs::KeyPressedEvent(key.first, false));
 					}
 					else {
 						key.second.currKeyState = KeyState::WAITING;
@@ -109,13 +174,16 @@ namespace Input {
 					key.second.currPressedTimer += deltaTime;
 				}
 
-				if(key.second.currPressedTimer >= secondsBeforePressed) {
+				if (key.second.currPressedTimer >= secondsBeforePressed) {
 					key.second.currKeyState = KeyState::PRESSED;
+					// Could emit a "key held" event here if needed
 				}
 			}
 			else if (state == GLFW_RELEASE) {
 				if (key.second.currPressedTimer) {
 					key.second.currKeyState = KeyState::RELEASED;
+					// EMIT KEY RELEASED EVENT
+					eventHandler->GetBus().Emit(ecs::KeyReleasedEvent(key.first));
 					key.second.currPressedTimer = 0;
 				}
 			}
@@ -149,10 +217,10 @@ namespace Input {
 
 		return false;
 	}
-	
+
 	glm::vec2 InputSystem::GetMousePos() {
 		return InputSystem::currentMousePos;
-	}	
+	}
 
 	float InputSystem::GetAxisRaw(std::string axisType) {
 		if (axisType == "Mouse X") {
