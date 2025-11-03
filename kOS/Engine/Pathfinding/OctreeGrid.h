@@ -23,11 +23,22 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Config/pch.h"
 #include "ECS/ECS.h"
 
-#include "../../Graphics/GraphicsManager.h"
+#include "Graphics/GraphicsManager.h"
+#include "OctreeNode.h"
 #include "Graph.h"
 
+
+
 namespace Octrees {
+	struct OctreeNode;
+
 	struct Octree {
+	private:
+		ecs::ECS* m_ecs;
+	public:
+		
+
+
 		OctreeNode root;
 		Bounds bounds;
 		Graph graph;
@@ -35,7 +46,12 @@ namespace Octrees {
 		std::vector<OctreeNode> emptyLeaves;
 
 		Octree();
-		Octree(float minNodeSize, Graph _graph);
+		Octree(float minNodeSize, Graph _graph, ecs::ECS* ecs);
+
+		void InjectDependency(ecs::ECS* ecs) {
+			m_ecs = ecs;
+		}
+
 		//void GetEmptyLeaves(OctreeNode node);
 		void GetEmptyLeaves(OctreeNode* node);
 		void CreateTree(float minNodeSize);

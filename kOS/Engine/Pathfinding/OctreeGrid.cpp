@@ -16,13 +16,15 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /********************************************************************/
 
 #include "OctreeGrid.h"
+#include "ECS/ECS.h"
 
 namespace Octrees {
 	Octree::Octree() {
 
 	}
 
-	Octree::Octree(float minNodeSize, Graph _graph) {
+	Octree::Octree(float minNodeSize, Graph _graph, ecs::ECS* ecs) {
+		m_ecs = ecs;
 		graph = _graph;
 
 		graph.nodes.reserve(1000);
@@ -61,32 +63,32 @@ namespace Octrees {
 	}
 
 	void Octree::CreateTree(float minNodeSize) {
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
 		root = OctreeNode(bounds, minNodeSize);
-		for (const auto& id : ecs->GetEntitySignatureData()) {
-			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
+		for (const auto& id : m_ecs->GetEntitySignatureData()) {
+			ecs::BoxColliderComponent* boxCollider = m_ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
 
 			if (!boxCollider)
 				continue;
 
-			if (ecs->GetComponent<ecs::PathfinderComponent>(id.first) || ecs->GetComponent<ecs::PathfinderTargetComponent>(id.first))
+			if (m_ecs->GetComponent<ecs::PathfinderComponent>(id.first) || m_ecs->GetComponent<ecs::PathfinderTargetComponent>(id.first))
 				continue;
 
-			root.Divide(id.first);
+			auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(id.first);
+
+			root.Divide(tc, boxCollider);
 		}
 	}
 
 	void Octree::CalculateBounds() {
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
 		glm::vec3 minBound(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()),
 			maxBound(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 
 		glm::vec3 boundCenter(0.f, 0.f, 0.f);
 
-		for (const auto& id : ecs->GetEntitySignatureData()) {
-			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
-			ecs::TransformComponent* transform = ecs->GetComponent<ecs::TransformComponent>(id.first);
-			ecs::NameComponent* name = ecs->GetComponent<ecs::NameComponent>(id.first);
+		for (const auto& id : m_ecs.GetEntitySignatureData()) {
+			ecs::BoxColliderComponent* boxCollider = m_ecs.GetComponent<ecs::BoxColliderComponent>(id.first);
+			ecs::TransformComponent* transform = m_ecs.GetComponent<ecs::TransformComponent>(id.first);
+			ecs::NameComponent* name = m_ecs.GetComponent<ecs::NameComponent>(id.first);
 
 			if (!boxCollider || !transform || !name || name->entityTag != "Obstacle")
 				continue;

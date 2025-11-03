@@ -16,25 +16,25 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "OctreeObject.h"
 
+
 namespace Octrees {
-	OctreeObject::OctreeObject(ecs::EntityID entityID) {
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
+	OctreeObject::OctreeObject(const ecs::TransformComponent* tc, const ecs::BoxColliderComponent* bc) {
 
-		bounds.center.x = ecs->GetComponent<ecs::TransformComponent>(entityID)->WorldTransformation.position.x;
-		bounds.center.y = ecs->GetComponent<ecs::TransformComponent>(entityID)->WorldTransformation.position.y;
-		bounds.center.z = ecs->GetComponent<ecs::TransformComponent>(entityID)->WorldTransformation.position.z;
-		bounds.max.x = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.x;
-		bounds.max.y = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.y;
-		bounds.max.z = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.z;
-		bounds.min.x = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.x;
-		bounds.min.y = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.y;
-		bounds.min.z = ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.z;
-
+		bounds.center.x = tc->WorldTransformation.position.x;
+		bounds.center.y = tc->WorldTransformation.position.y;
+		bounds.center.z = tc->WorldTransformation.position.z;
+		bounds.max.x = bc->box.bounds.max.x;
+		bounds.max.y = bc->box.bounds.max.y;
+		bounds.max.z = bc->box.bounds.max.z;
+		bounds.min.x = bc->box.bounds.min.x;
+		bounds.min.y = bc->box.bounds.min.y;
+		bounds.min.z = bc->box.bounds.min.z;
 
 
-		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * std::max(std::max(ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.x - ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.x,
-			ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.y - ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.y),
-			ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.max.z - ecs->GetComponent<ecs::BoxColliderComponent>(entityID)->box.bounds.min.z) * 0.5f;
+
+		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * std::max(std::max(bc->box.bounds.max.x - bc->box.bounds.min.x,
+			bc->box.bounds.max.y - bc->box.bounds.min.y),
+			bc->box.bounds.max.z - bc->box.bounds.min.z) * 0.5f;
 
 		bounds.size.x = boundSize.x;
 		bounds.size.y = boundSize.y;

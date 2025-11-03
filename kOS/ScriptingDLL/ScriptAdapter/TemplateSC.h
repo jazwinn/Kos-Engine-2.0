@@ -20,3 +20,32 @@ public:
 	static ResourceManager* resource;
 private:
 };
+
+
+template <typename T>
+int DuplicatePrefabIntoScene(const std::string& scene, const utility::GUID guid) {
+
+	std::string path = TemplateSC::resource->GetResourcePath<T>(guid);
+
+	if (path.empty() || scene.empty()) {
+		LOGGING_ERROR("Prefab file path is empty, cannot duplicate prefab into scene.");
+		return -1;
+	}
+
+	auto* sm = TemplateSC::Scenes;
+	sm->LoadSceneToCurrent(scene, path);
+	auto* ecs = TemplateSC::ecsPtr;
+	const auto& sceneData = ecs->GetSceneData(scene);
+	ecs::EntityID newID;
+
+	//retrieve the new id that just spawned (the one without parent) - TODO: improve this later
+	for (auto it = sceneData.sceneIDs.rbegin(); it != sceneData.sceneIDs.rend(); ++it) {
+		const auto& entityID = *it;
+		auto* tc = ecs->GetComponent<ecs::TransformComponent>(entityID);
+		if (tc->m_haveParent == false) {
+			return static_cast<int>(entityID);
+		}
+	}
+
+	return -1;
+}

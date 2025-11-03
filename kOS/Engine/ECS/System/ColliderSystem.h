@@ -27,6 +27,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace ecs {
 	class ColliderSystem : public ISystem {
 	public:
+		using ISystem::ISystem;
 		void Init() override;
 		void Update() override;
 		REFLECTABLE(ColliderSystem)

@@ -26,10 +26,10 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 void gui::ImGuiHandler::DrawSceneSettingsWindow() 
 {
     ImGui::Begin("Scene Settings", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-    if (m_ecs->sceneMap.find(m_activeScene) != m_ecs->sceneMap.end()) {
+    if (m_ecs.sceneMap.find(m_activeScene) != m_ecs.sceneMap.end()) {
 
-		SceneData& selectedScene = m_ecs->sceneMap.at(m_activeScene);
-        m_ecs->sceneMap.at(m_activeScene).ApplyFunction(DrawComponents{ selectedScene.Names() });
+		SceneData& selectedScene = m_ecs.sceneMap.at(m_activeScene);
+        m_ecs.sceneMap.at(m_activeScene).ApplyFunction(DrawComponents{ selectedScene.Names() });
     }
 
 

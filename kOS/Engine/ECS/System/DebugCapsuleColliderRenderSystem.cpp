@@ -8,15 +8,11 @@ namespace ecs {
     void DebugCapsuleColliderRenderSystem::Init() {}
 
     void DebugCapsuleColliderRenderSystem::Update() {
-        ResourceManager* rm = ResourceManager::GetInstance();
-        std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-
-        ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
-            TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-            CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
+            TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+            CapsuleColliderComponent* capsule = m_ecs.GetComponent<CapsuleColliderComponent>(id);
 
             if (!transform || !capsule) { continue; }
 
@@ -49,7 +45,7 @@ namespace ecs {
             glm::mat4 result{ 1.0f };
             result = glm::translate(glm::mat4{ 1.0f }, center) * rot * rotationMatrix * glm::scale(glm::mat4(1.0f), glm::vec3{ capsule->capsule.radius * radiusScale, capsule->capsule.height * heightScale, capsule->capsule.radius * radiusScale });
 
-            gm->gm_PushCapsuleDebugData(BasicDebugData{ result });
+            m_graphicsManager.gm_PushCapsuleDebugData(BasicDebugData{ result });
         }
     }
 

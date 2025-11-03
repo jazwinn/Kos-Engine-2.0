@@ -31,26 +31,20 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Renderer.h"
 #include "ShaderManager.h"
 #include "FramebufferManager.h"
+#include "Resources/ResourceManager.h"
 
 class GraphicsManager
 {
+	ResourceManager& m_resourceManager;
 public:
 	//Singleton class, remove all copy and assignment operations
-	GraphicsManager() = default;
+	GraphicsManager(ResourceManager& rm):
+		m_resourceManager(rm)
+	{}
 	GraphicsManager(const GraphicsManager&) = delete;
 	GraphicsManager& operator=(const GraphicsManager&) = delete;
 	GraphicsManager(GraphicsManager&&) = delete;
 	GraphicsManager& operator=(GraphicsManager&&) = delete;
-
-	//Accessor to instance
-	static std::shared_ptr<GraphicsManager> GetInstance()
-	{
-		if (!gm)
-		{
-			gm = std::make_shared<GraphicsManager>();
-		}
-		return gm;
-	}
 
 	//Main Functions
 	void gm_Initialize(float width, float height);
@@ -76,6 +70,7 @@ public:
 	inline void gm_PushCapsuleDebugData(BasicDebugData&& data) { debugRenderer.basicDebugCapsules.emplace_back(std::move(data)); }
 	inline void gm_PushSphereDebugData(BasicDebugData&& data) { debugRenderer.basicDebugSpheres.emplace_back(std::move(data)); }
 	inline void gm_PushCubeData(CubeRenderer::CubeData&& data) { cubeRenderer.cubesToDraw.emplace_back(std::move(data)); };
+	inline void gm_PushSphereData(SphereRenderer::SphereData&& data) { sphereRenderer.spheresToDraw.emplace_back(std::move(data)); };
 	void gm_DrawMaterial(const PBRMaterial& md, FrameBuffer& fb);
 	inline void gm_PushSkinnedMeshData(SkinnedMeshData&& skinnedMeshData) {
 		skinnedMeshRenderer.skinnedMeshesToDraw.emplace_back(std::move(skinnedMeshData));
@@ -88,13 +83,12 @@ public:
 	inline const FrameBuffer& gm_GetEditorBuffer() const { return framebufferManager.editorBuffer; };
 	inline const FrameBuffer& gm_GetGameBuffer() const { return framebufferManager.gameBuffer; };
 	void gm_FillDepthCube(const CameraData&, int);
+	void gm_UpdateBuffers(int width, int height);
 	void gm_RenderGameBuffer();
 	//I want my DCMs
 	LightRenderer lightRenderer;
 
 private:
-	//One and only active GraphicsManager object
-	static std::shared_ptr<GraphicsManager> gm;
 
 	//Initialize functions
 	void gm_InitializeMeshes();
@@ -123,6 +117,7 @@ private:
 	SkinnedMeshRenderer skinnedMeshRenderer;
 	DebugRenderer debugRenderer;
 	CubeRenderer cubeRenderer;
+	SphereRenderer sphereRenderer;
 	ParticleRenderer particleRenderer;
 	//Managers
 	ShaderManager shaderManager;

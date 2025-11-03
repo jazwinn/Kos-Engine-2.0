@@ -14,17 +14,52 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /********************************************************************/
 #ifndef SYSTEM_H
 #define SYSTEM_H
-
+#pragma once
 
 #include "ECS/Component/Component.h"
 #include "ECS/SparseSet.h"
 #include "Events/Delegate.h"
 
+
+#include "ECS/ECS.h"
+#include "ECS/Component/ComponentHeader.h"
+#include "Graphics/GraphicsManager.h"
+#include "Resources/ResourceManager.h"
+#include "Inputs/Input.h"
+#include "Physics/PhysicsManager.h"
+#include "Scripting/ScriptManager.h"
+#include "Debugging/Performance.h"
+
+namespace ecs { class ECS; }
+class ScriptManager;  
+class Peformance; 
+
 namespace ecs {
 
+
+
 	class ISystem {
+	protected:
+		ECS& m_ecs;
+		GraphicsManager& m_graphicsManager;
+		ResourceManager& m_resourceManager;
+		Input::InputSystem& m_inputSystem;
+		physics::PhysicsManager& m_physicsManager;
+		ScriptManager& m_scriptManager;
+		Peformance& m_performance;
 
 	public:
+		ISystem(ECS& ecs, GraphicsManager& graphics, ResourceManager& rm, Input::InputSystem& is, physics::PhysicsManager& pm, ScriptManager& sm, Peformance& peformance )
+			: m_ecs(ecs)
+			, m_graphicsManager(graphics)
+			, m_resourceManager(rm)
+			, m_inputSystem(is)
+			, m_physicsManager(pm) 
+			, m_scriptManager(sm)
+			, m_performance(peformance)
+		{
+		}
+
 
 		inline void AssignSignature(ComponentSignature signature) {
 			m_systemSignature = signature;

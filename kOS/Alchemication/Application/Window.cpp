@@ -70,7 +70,7 @@ namespace Application {
 
            
 
-            if (ecs->GetState() == ecs::RUNNING) {
+            if (m_ecs.GetState() == ecs::RUNNING) {
                 //std::cout << "Window minimized!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::WAIT);
                 //Helper::Helpers::GetInstance()->windowMinimise = true;
@@ -80,7 +80,7 @@ namespace Application {
 
           
 
-            if (ecs->GetState() == ecs::WAIT) {
+            if (m_ecs.GetState() == ecs::WAIT) {
                 //std::cout << "Window restored!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::RUNNING);
                 //Helper::Helpers::GetInstance()->windowMinimise = false;
@@ -106,7 +106,7 @@ namespace Application {
 
             //audioManager.m_PauseAllSounds();  // Pause all sounds
 
-            if (ecs->GetState() == ecs::RUNNING) {
+            if (m_ecs.GetState() == ecs::RUNNING) {
                 //std::cout << "Window minimized!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::WAIT);
                 //Helper::Helpers::GetInstance()->windowMinimise = true;
@@ -119,7 +119,7 @@ namespace Application {
 
             //audioManager.m_UnpauseAllSounds();  // Unpause all sounds
 
-            if (ecs->GetState() == ecs::WAIT) {
+            if (m_ecs.GetState() == ecs::WAIT) {
                 //std::cout << "Window restored!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::RUNNING);
                 //Helper::Helpers::GetInstance()->windowMinimise = false;
@@ -137,7 +137,7 @@ namespace Application {
             
             //audioManager.m_PauseAllSounds();  // Pause all sounds
 
-            if (ecs->GetState() == ecs::RUNNING) {
+            if (m_ecs.GetState() == ecs::RUNNING) {
                 //std::cout << "Window minimized!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::WAIT);
                 //Helper::Helpers::GetInstance()->windowMinimise = true;
@@ -148,7 +148,7 @@ namespace Application {
             
            // audioManager.m_UnpauseAllSounds();  // Unpause all sounds
 
-            if (ecs->GetState() == ecs::WAIT) {
+            if (m_ecs.GetState() == ecs::WAIT) {
                 //std::cout << "Window restored!" << std::endl;
                 ecs::ECS::GetInstance()->SetState(ecs::RUNNING);
                 //Helper::Helpers::GetInstance()->windowMinimise = false;

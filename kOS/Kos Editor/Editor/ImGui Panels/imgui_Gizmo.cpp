@@ -2,12 +2,12 @@
 #include "imgui_impl_opengl3.h"
 #include "Editor/EditorCamera.h"
 #include "ECS/ECS.h"
-#include "ECS/Hierachy.h"
+#include "ECS/ecs.h"
 
 namespace gui {
     void ImGuiHandler::DrawGizmo(float renderPosX, float renderPosY, float renderWidth, float renderHeight)
     {
-        ecs::TransformComponent* transComp = m_ecs->GetComponent<ecs::TransformComponent>(m_clickedEntityId);
+        ecs::TransformComponent* transComp = m_ecs.GetComponent<ecs::TransformComponent>(m_clickedEntityId);
         if (m_clickedEntityId < 0 || !transComp) return;
 
         ImGuizmo::SetDrawlist();
@@ -54,9 +54,9 @@ namespace gui {
         if (ImGuizmo::IsUsing()) {
             glm::vec3 newPosition, newRotation, newScale;
             ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformation), glm::value_ptr(newPosition), glm::value_ptr(newRotation), glm::value_ptr(newScale));
-            TransformSystem::SetImmediateWorldPosition(transComp, std::move(newPosition));
-            TransformSystem::SetImmediateWorldRotation(transComp, std::move(newRotation));
-            TransformSystem::SetImmediateWorldScale(transComp, std::move(newScale));
+            TransformSystem::SetImmediateWorldPosition(m_ecs, transComp, std::move(newPosition));
+            TransformSystem::SetImmediateWorldRotation(m_ecs, transComp, std::move(newRotation));
+            TransformSystem::SetImmediateWorldScale(m_ecs, transComp, std::move(newScale));
         }
     }
 }

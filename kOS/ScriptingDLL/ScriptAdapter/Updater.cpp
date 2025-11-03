@@ -1,20 +1,18 @@
 
 #include "Config/pch.h"
 #include "ECS/ECS.h"
-#include "Scripting/ScriptManager.h"
-#include "Config/ComponentRegistry.h"
 #include "Scene/SceneManager.h"
 #include "Scripts/Include/ScriptHeader.h"
 #include "Inputs/Input.h"
 #include "Physics/PhysicsManager.h"
-
+#include "Scripting/ScriptManager.h"
 
 static std::vector<std::string>* scriptNames;
 
 template <typename T>
-void RegisterScript() {
+void RegisterScript(ecs::ECS* ecs) {
 	FieldComponentTypeRegistry::RegisterComponentType<T>();
-	ComponentRegistry::GetECSInstance()->RegisterComponent<T>();
+	ecs->RegisterComponent<T>();
 	scriptNames->push_back(T::classname());
 }
 
@@ -24,23 +22,13 @@ extern "C"  __declspec(dllexport) void UpdateStatic(StaticVariableManager* svm) 
 	//Link the ECS system together
 	//TemplateSC::ecsPtr = std::shared_ptr<ecs::ECS>(reinterpret_cast<ecs::ECS*>(svm->ECSSystem), [](ecs::ECS*) { /* no delete, managed elsewhere */ }).get();
 	scriptNames = svm->scriptNames;
-	ComponentRegistry::SetECSInstance(static_cast<ecs::ECS*>(svm->ECSSystem));
-	ComponentRegistry::SetFieldInstance(static_cast<FieldSingleton*>(svm->field));
-	ComponentRegistry::SetInputInstance(static_cast<Input::InputSystem*>(svm->input));
-	ComponentRegistry::SetSceneInstance(static_cast<scenes::SceneManager*>(svm->scene));
-	ComponentRegistry::SetPhysicsInstance(static_cast<physics::PhysicsManager*>(svm->physics));
-	ComponentRegistry::SetResourceManagerInstance(static_cast<ResourceManager*>(svm->resource));
-
-	TemplateSC::ecsPtr = ComponentRegistry::GetECSInstance();
-	TemplateSC::Input = ComponentRegistry::GetInputInstance();
-	TemplateSC::Scenes = ComponentRegistry::GetSceneInstance();
-	TemplateSC::physicsPtr = ComponentRegistry::GetPhysicsInstance();
-	TemplateSC::resource = ComponentRegistry::GetResourceManagerInstance();
 
 
-	RegisterScript<PlayerScript>();
-	RegisterScript<EnemyScripts>();
-	RegisterScript<AudioScript>();
+	TemplateSC::ecsPtr = static_cast<ecs::ECS*>(svm->ECSSystem);
+	TemplateSC::Input = static_cast<Input::InputSystem*>(svm->input);
+	TemplateSC::Scenes = static_cast<scenes::SceneManager*>(svm->scene);
+	TemplateSC::physicsPtr = static_cast<physics::PhysicsManager*>(svm->physics);
+	TemplateSC::resource = static_cast<ResourceManager*>(svm->resource);
 
 	RegisterScript<BulletLogic>();
 	RegisterScript<EnemyManagerScript>();
@@ -56,5 +44,13 @@ extern "C"  __declspec(dllexport) void UpdateStatic(StaticVariableManager* svm) 
 	RegisterScript<PlayerManagerScript>();
 	RegisterScript<GunScript>();
 
-	FieldComponentTypeRegistry::CreateAllDrawers((static_cast<FieldSingleton*>(svm->field)->GetAction()));
+	RegisterScript<PlayerScript>(TemplateSC::ecsPtr);
+	RegisterScript<EnemyScripts>(TemplateSC::ecsPtr);
+	RegisterScript<AudioScript>(TemplateSC::ecsPtr);
+
+	RegisterScript<BulletLogic>(TemplateSC::ecsPtr);
+	RegisterScript<EnemyManagerScript>(TemplateSC::ecsPtr);
+	RegisterScript<PlayerManagerScript>(TemplateSC::ecsPtr);
+
+	FieldComponentTypeRegistry::CreateAllDrawers(static_cast<Fields*>(svm->field)->GetAction());
 }

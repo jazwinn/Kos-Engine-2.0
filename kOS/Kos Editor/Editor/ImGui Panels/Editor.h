@@ -25,16 +25,39 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ECS/ECS.h"
 #include "Editor/EditorReflection.h"
 #include "Application/Window.h"
-#include "AssetManager/AssetDatabase.h"
-#include "Config/ComponentRegistry.h"
+#include "AssetManager/AssetManager.h"
+#include "Scene/SceneManager.h"
 #include "Editor/Payload.h"
-
+#include "Reflection/Field.h"
+#include "Physics/PhysicsManager.h"
+#include "ECS/Layers.h"
+#include "AssetManager/Prefab.h"
+#include "Resources/ResourceManager.h"
+#include "Scripting/ScriptManager.h"
+#include "Debugging/Performance.h"
 
 namespace gui {
     
 
     class ImGuiHandler
     {
+	private: //dependencies
+
+        ecs::ECS& m_ecs;
+        Application::AppWindow& m_window;
+        AssetManager& m_assetManager;
+        GraphicsManager& m_graphicsManager;
+        scenes::SceneManager& m_sceneManager;
+		serialization::Serialization& m_serialization;
+		Fields& m_reflectionField;
+		Input::InputSystem& m_input;
+		physics::PhysicsManager& m_physicsManager;
+        layer::LayerStack& m_layerManager;
+        prefab::PrefabManager m_prefabManager;
+		ResourceManager& m_resourceManager;
+		ScriptManager& m_scriptManager;
+		Peformance& m_performance;
+
     public:
         /******************************************************************/
         /*!
@@ -43,7 +66,31 @@ namespace gui {
         \details Sets up initial values for ImGui operations and prepares the context for UI rendering.
         */
         /******************************************************************/
-        ImGuiHandler(Application::AppWindow& window);
+        ImGuiHandler(Application::AppWindow& window, AssetManager& am, GraphicsManager& gm, 
+            ecs::ECS& ecs, scenes::SceneManager& sm,  serialization::Serialization& slm, 
+            Fields& field, Input::InputSystem& input, physics::PhysicsManager& pm, 
+            layer::LayerStack& ls, ResourceManager& rm, ScriptManager& scriptm, Peformance& peformance):
+            m_window(window), 
+            m_assetManager(am),
+            m_graphicsManager(gm),
+			m_ecs(ecs),
+			m_sceneManager(sm),
+            m_serialization(slm),
+			m_reflectionField(field),
+			m_input(input),
+			m_physicsManager(pm),
+			m_layerManager(ls),
+			m_prefabManager(ecs, sm, am, m_serialization),
+			m_resourceManager(rm),
+			m_scriptManager(scriptm),
+			m_performance(peformance)
+        {
+
+
+            RegisterCallBack();
+
+
+        } 
 
         /******************************************************************/
         /*!
@@ -52,7 +99,7 @@ namespace gui {
         \details Cleans up and releases any resources used by ImGui, ensuring a proper shutdown.
         */
         /******************************************************************/
-        ~ImGuiHandler();
+        ~ImGuiHandler() = default;
 
 
         /******************************************************************/
@@ -139,7 +186,7 @@ namespace gui {
         void DrawAssetInspector();
 		void DrawMaterialWindow();
         void DrawBakedWindow();
-
+        void DrawFieldComponent(ecs::Component* component, const std::string& ComponentName, ecs::EntityID entityID);
         void m_UpdateOnPrefabMode();
         void openAndLoadSceneDialog();
 
@@ -148,6 +195,8 @@ namespace gui {
 
         void DrawAnimationWindow();
         void DrawAudioMixerWindow();
+
+        void ScriptHotReload();
 
         /***********PreferenceTab*************/
         bool openPreferencesTab = false;
@@ -222,13 +271,6 @@ namespace gui {
             ImGui::LoadIniSettingsFromDisk(m_imgui_layout.c_str());
         }
 
-        
-
-        private:
-
-			ecs::ECS* m_ecs;
-            Application::AppWindow& m_window;
-        
     };
 
 
@@ -238,9 +280,9 @@ namespace gui {
 
     public:
         template <typename T>
-        static void RegisterComponentType() {
-            s_drawerFactories[T::classname()] = []() {
-                return std::make_shared<EditorActionInvoker<T>>();
+        static void RegisterComponentType(ecs::ECS& ecs) {
+            s_drawerFactories[T::classname()] = [&ecs]() {
+                return std::make_shared<EditorActionInvoker<T>>(ecs);
                 };
         }
 
@@ -260,6 +302,6 @@ namespace gui {
     template<typename T>
     inline void ImGuiHandler::RegisterComponent()
     {
-        EditorComponentTypeRegistry::RegisterComponentType<T>();
+        EditorComponentTypeRegistry::RegisterComponentType<T>(m_ecs);
     }
 }

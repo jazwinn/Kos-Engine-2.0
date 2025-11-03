@@ -16,59 +16,47 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Config/pch.h"
 #include "ECS/ECS.h"
-#include "ECS/Hierachy.h"
+#include "ECS/ecs.h"
 #include "TransformSystem.h"
 #include "Utility/MathUtility.h"
 
 namespace ecs {
 	
 	void TransformSystem::Init(){
-		//onRegister.Add([](EntityID id) {
-		//	ECS* ecs = ECS::GetInstance();
-		//	TransformComponent* transformComp = ecs->GetComponent<TransformComponent>(id);
-		//	std::cout << "test add: " << id << std::endl;
 
-		//});
-		//onDeregister.Add([](EntityID id) {
-		//	ECS* ecs = ECS::GetInstance();
-		//	TransformComponent* transformComp = ecs->GetComponent<TransformComponent>(id);
-		//	std::cout << "test add: " << id << std::endl;
-
-		//	});
 
 	}
 
 	void TransformSystem::Update() {
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 		for (const EntityID id : entities) {
-			TransformComponent* transformComp = ecs->GetComponent<TransformComponent>(id);
+			TransformComponent* transformComp = m_ecs.GetComponent<TransformComponent>(id);
 			if (transformComp->m_haveParent) continue;
 
-			NameComponent* NameComp = ecs->GetComponent<NameComponent>(id);
-			if (!ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
+			NameComponent* NameComp = m_ecs.GetComponent<NameComponent>(id);
+			if (NameComp->hide) continue;
 			
-			CalculateAllTransform(transformComp);
+			CalculateAllTransform(m_ecs, transformComp);
 		}
 	}
 
-	void TransformSystem::CalculateAllTransform(TransformComponent* transformComp, const glm::mat4& parentWorldMtx) {
+	void TransformSystem::CalculateAllTransform(ECS& ecs, TransformComponent* transformComp, const glm::mat4& parentWorldMtx) {
 		if (!transformComp) return;
 
-		CalculateLocalTransformMtx(transformComp);
+		CalculateLocalTransformMtx(ecs, transformComp);
 		transformComp->transformation = transformComp->m_haveParent ? parentWorldMtx * transformComp->localTransform : transformComp->localTransform;
 		utility::DecomposeMtxIntoTRS(transformComp->transformation, transformComp->WorldTransformation.position, transformComp->WorldTransformation.rotation, transformComp->WorldTransformation.scale);
 		for (const EntityID childID : transformComp->m_childID) {
-			TransformComponent* child = ECS::GetInstance()->GetComponent<TransformComponent>(childID);
+			TransformComponent* child = ecs.GetComponent<TransformComponent>(childID);
 			if (child) {
-				CalculateAllTransform(child, transformComp->transformation);
+				CalculateAllTransform(ecs, child, transformComp->transformation);
 			}
 		}
 	}
 
 	// Ideally not great to constantly convert to radians, data should be stored in radians but due to the restriction of ImGui might be tough to show data in deg
 	// Unless TransformComponent is customised
-	void TransformSystem::CalculateLocalTransformMtx(TransformComponent* transformComp) {
+	void TransformSystem::CalculateLocalTransformMtx(ECS& ecs, TransformComponent* transformComp) {
 		if (!transformComp) return;
 		constexpr glm::mat4 identity(1.0f);
 		transformComp->localTransform = glm::translate(identity, transformComp->LocalTransformation.position) *
@@ -76,7 +64,7 @@ namespace ecs {
 										glm::scale(identity, transformComp->LocalTransformation.scale);
 	}
 
-	void TransformSystem::SetImmediateWorldPosition(TransformComponent* transformComp, glm::vec3&& pos){
+	void TransformSystem::SetImmediateWorldPosition(ECS& ecs, TransformComponent* transformComp, glm::vec3&& pos){
 		if (!transformComp) return;
 		constexpr glm::mat4 identity(1.0f);
 		transformComp->WorldTransformation.position = pos;
@@ -84,7 +72,7 @@ namespace ecs {
 										glm::mat4_cast(glm::quat(glm::radians(transformComp->WorldTransformation.rotation))) *
 										glm::scale(identity, transformComp->WorldTransformation.scale);
 
-		TransformComponent* parentTrans = ECS::GetInstance()->GetComponent<TransformComponent>(transformComp->m_parentID);
+		TransformComponent* parentTrans = ecs.GetComponent<TransformComponent>(transformComp->m_parentID);
 		if (parentTrans) {
 			transformComp->localTransform = glm::inverse(parentTrans->transformation) * transformComp->transformation;
 			utility::DecomposeMtxIntoTRS(transformComp->localTransform, transformComp->LocalTransformation.position, transformComp->LocalTransformation.rotation, transformComp->LocalTransformation.scale);
@@ -95,7 +83,7 @@ namespace ecs {
 		}
 	}
 
-	void TransformSystem::SetImmediateWorldRotation(TransformComponent* transformComp, glm::vec3&& rot){
+	void TransformSystem::SetImmediateWorldRotation(ECS& ecs, TransformComponent* transformComp, glm::vec3&& rot){
 		if (!transformComp) return;
 		constexpr glm::mat4 identity(1.0f);
 		transformComp->WorldTransformation.rotation = rot;
@@ -103,7 +91,7 @@ namespace ecs {
 										glm::mat4_cast(glm::quat(glm::radians(transformComp->WorldTransformation.rotation))) *
 										glm::scale(identity, transformComp->WorldTransformation.scale);
 
-		TransformComponent* parentTrans = ECS::GetInstance()->GetComponent<TransformComponent>(transformComp->m_parentID);
+		TransformComponent* parentTrans = ecs.GetComponent<TransformComponent>(transformComp->m_parentID);
 		if (parentTrans) {
 			transformComp->localTransform = glm::inverse(parentTrans->transformation) * transformComp->transformation;
 			utility::DecomposeMtxIntoTRS(transformComp->localTransform, transformComp->LocalTransformation.position, transformComp->LocalTransformation.rotation, transformComp->LocalTransformation.scale);
@@ -114,7 +102,7 @@ namespace ecs {
 		}
 	}
 
-	void TransformSystem::SetImmediateWorldScale(TransformComponent* transformComp, glm::vec3&& scale){
+	void TransformSystem::SetImmediateWorldScale(ECS& ecs, TransformComponent* transformComp, glm::vec3&& scale){
 		if (!transformComp) return;
 		constexpr glm::mat4 identity(1.0f);
 		transformComp->WorldTransformation.scale = scale;
@@ -122,7 +110,7 @@ namespace ecs {
 			glm::mat4_cast(glm::quat(glm::radians(transformComp->WorldTransformation.rotation))) *
 			glm::scale(identity, transformComp->WorldTransformation.scale);
 
-		TransformComponent* parentTrans = ECS::GetInstance()->GetComponent<TransformComponent>(transformComp->m_parentID);
+		TransformComponent* parentTrans = ecs.GetComponent<TransformComponent>(transformComp->m_parentID);
 		if (parentTrans) {
 			transformComp->localTransform = glm::inverse(parentTrans->transformation) * transformComp->transformation;
 			utility::DecomposeMtxIntoTRS(transformComp->localTransform, transformComp->LocalTransformation.position, transformComp->LocalTransformation.rotation, transformComp->LocalTransformation.scale);
@@ -133,21 +121,21 @@ namespace ecs {
 		}
 	}
 
-	void TransformSystem::SetImmediateLocalPosition(TransformComponent* transformComp, glm::vec3&& pos){
+	void TransformSystem::SetImmediateLocalPosition(ECS& ecs, TransformComponent* transformComp, glm::vec3&& pos){
 		if (!transformComp) return;
 		transformComp->LocalTransformation.position = pos;
-		CalculateAllTransform(transformComp);
+		CalculateAllTransform(ecs,transformComp);
 	}
 
-	void TransformSystem::SetImmediateLocalRotation(TransformComponent* transformComp, glm::vec3&& rot){
+	void TransformSystem::SetImmediateLocalRotation(ECS& ecs, TransformComponent* transformComp, glm::vec3&& rot){
 		if (!transformComp) return;
 		transformComp->LocalTransformation.rotation = rot;
-		CalculateAllTransform(transformComp);
+		CalculateAllTransform(ecs,transformComp);
 	}
 
-	void TransformSystem::SetImmediateLocalScale(TransformComponent* transformComp, glm::vec3&& scale){
+	void TransformSystem::SetImmediateLocalScale(ECS& ecs, TransformComponent* transformComp, glm::vec3&& scale){
 		if (!transformComp) return;
 		transformComp->LocalTransformation.scale = scale;
-		CalculateAllTransform(transformComp);
+		CalculateAllTransform(ecs, transformComp);
 	}
 }

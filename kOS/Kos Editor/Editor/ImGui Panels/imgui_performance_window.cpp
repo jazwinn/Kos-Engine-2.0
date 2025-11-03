@@ -26,8 +26,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 void gui::ImGuiHandler::DrawPerformanceWindow() {
 
-    static auto performance = Peformance::GetInstance();
-
 
     ImGui::Begin("Performance");
 
@@ -41,7 +39,7 @@ void gui::ImGuiHandler::DrawPerformanceWindow() {
     while (refresh_time < ImGui::GetTime()) // Create data at fixed 60 Hz rate
     {
         static float phase = 0.0f;
-        FpsValues[FpsValues_offset] = performance->GetFPS();
+        FpsValues[FpsValues_offset] = m_performance.GetFPS();
         FpsValues_offset = (FpsValues_offset + 1) % IM_ARRAYSIZE(FpsValues);
         phase += 0.10f * FpsValues_offset;
         refresh_time += 1.0f / 60.0f;
@@ -80,10 +78,10 @@ void gui::ImGuiHandler::DrawPerformanceWindow() {
         static std::unordered_map<std::string, float> systemPeformance;
 
         // Always get fresh data
-        interval += performance->GetDeltaTime();
+        interval += m_performance.GetDeltaTime();
 
         if (interval > 1.0f) { // updates display every 1 second
-            systemPeformance = performance->GetSystemPerformance(); // update map to display
+            systemPeformance = m_performance.GetSystemPerformance(); // update map to display
             interval = 0.0f;
         }
 
@@ -101,10 +99,10 @@ void gui::ImGuiHandler::DrawPerformanceWindow() {
         static std::unordered_map<std::string, float> scriptPeformance;
 
         // Always get fresh data
-        interval += performance->GetDeltaTime();
+        interval += m_performance.GetDeltaTime();
 
         if (interval > 1.0f) { // updates display every 1 second
-            scriptPeformance = performance->GetScriptPerformance(); // update map to display
+            scriptPeformance = m_performance.GetScriptPerformance(); // update map to display
             interval = 0.0f;
         }
 
@@ -112,7 +110,7 @@ void gui::ImGuiHandler::DrawPerformanceWindow() {
         for (const auto& [systemName, duration] : scriptPeformance) {
             ImGui::Text("%s", systemName.c_str());
             ImGui::SameLine(300);
-            if (m_ecs->GetState() != ecs::GAMESTATE::RUNNING) {
+            if (m_ecs.GetState() != ecs::GAMESTATE::RUNNING) {
                 ImGui::Text("0.0000 ms");
 				continue;
             }

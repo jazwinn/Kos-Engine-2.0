@@ -1,10 +1,9 @@
 
 #include "Config/pch.h"
 #include "ECS.h"
+#include "Component/ComponentHeader.h"
 #include "Debugging/Logging.h"
-#include "Hierachy.h"
 #include "Reflection/ReflectionInvoker.h"
-#include "Debugging/Performance.h"
 #include "Reflection/Field.h"
 #include "Scene/SceneManager.h"
 
@@ -12,9 +11,6 @@
 //ECS Varaible
 
 namespace ecs{
-
-
-	std::shared_ptr<ECS> ECS::m_InstancePtr = nullptr;
 	std::unordered_map<std::string, std::function<std::shared_ptr<IActionInvoker>()>> ComponentTypeRegistry::actionFactories;
 
 	void ECS::Load() {
@@ -43,6 +39,8 @@ namespace ecs{
 		RegisterComponent<PathfinderComponent>();
 		RegisterComponent<PathfinderTargetComponent>();
 		RegisterComponent<CubeRendererComponent>();
+		RegisterComponent<SphereRendererComponent>();
+
 		RegisterComponent<ParticleComponent>();
 
 		//Allocate memory to each system
@@ -53,10 +51,11 @@ namespace ecs{
 		RegisterSystem<RigidbodySystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<PhysicsSystem, TransformComponent, RigidbodyComponent>(RUNNING);
 		RegisterSystem<CameraSystem, TransformComponent, CameraComponent>();
-		RegisterSystem<RenderSystem, TransformComponent, SpriteComponent>();
 		RegisterSystem<MeshRenderSystem, TransformComponent, MaterialComponent, MeshFilterComponent>();
 		RegisterSystem<SkinnedMeshRenderSystem, TransformComponent, SkinnedMeshRendererComponent, AnimatorComponent>();
 		RegisterSystem<CubeRenderSystem, TransformComponent, MaterialComponent, CubeRendererComponent>();
+		RegisterSystem<SphereRenderSystem, TransformComponent, MaterialComponent, SphereRendererComponent>();
+
 		RegisterSystem<CanvasTextRenderSystem, TransformComponent, CanvasRendererComponent>();
 		RegisterSystem<CanvasSpriteRenderSystem, TransformComponent, CanvasRendererComponent>();
 		RegisterSystem<AnimatorSystem, TransformComponent, AnimatorComponent>();
@@ -111,7 +110,6 @@ namespace ecs{
 
 
 		//loops through all the system
-		static auto performance = Peformance::GetInstance();
 		for (const auto& [systemName, system] : m_systemMap) {
 	
 			std::chrono::duration<float> systemDuration{};
@@ -128,7 +126,7 @@ namespace ecs{
 			}
 			auto end = std::chrono::steady_clock::now();
 			systemDuration = (end - start);
-			performance->SetSystemValue(systemName, systemDuration.count());
+			m_performance.SetSystemValue(systemName, systemDuration.count());
 		}
 		
 	}
@@ -178,8 +176,6 @@ namespace ecs{
 		// set bitflag to 0
 		m_entityMap[ID] = 0;
 
-		//assign entity to default layer
-		layersStack.m_layerMap[layer::DEFAULT].second.push_back(ID);
 
 		//assign entity to scenes
 		if(sceneMap.find(scene) == sceneMap.end()){
@@ -224,22 +220,22 @@ namespace ecs{
 		m_entityMap.find(NewEntity)->second = DuplicateSignature;
 		RegisterEntity(NewEntity);
 		//checks if duplicates entity has parent and assign it
-		if (hierachy::GetParent(DuplicatesID).has_value()) {
+		if (GetParent(DuplicatesID).has_value()) {
 			//transform->m_childID.push_back(NewEntity);
-			auto parent = hierachy::GetParent(DuplicatesID).value();
-			hierachy::m_SetParent(parent, NewEntity);
+			auto parent = GetParent(DuplicatesID).value();
+			SetParent(parent, NewEntity);
 		}
 
 		//checks if entity has child call recursion
-		if (hierachy::m_GetChild(DuplicatesID).has_value()) {
+		if (GetChild(DuplicatesID).has_value()) {
 			//clear child id of vector for new entity
 			TransformComponent* transform = GetComponent<TransformComponent>(NewEntity);
 			transform->m_childID.clear();
 
-			std::vector<EntityID> childID = hierachy::m_GetChild(DuplicatesID).value();
+			std::vector<EntityID> childID = GetChild(DuplicatesID).value();
 			for (const auto& child : childID) {
 				EntityID dupChild = DuplicateEntity(child, scene);
-				hierachy::m_SetParent(NewEntity, dupChild);
+				SetParent(NewEntity, dupChild);
 			}
 		}
 
@@ -257,8 +253,8 @@ namespace ecs{
 		}
 
 
-		if (hierachy::GetParent(ID).has_value()) {
-			EntityID parent = hierachy::GetParent(ID).value();
+		if (GetParent(ID).has_value()) {
+			EntityID parent = GetParent(ID).value();
 			// if parent id is deleted, no need to remove its child
 			if (m_entityMap.find(parent) != m_entityMap.end()) {
 				TransformComponent* parentTransform = GetComponent<TransformComponent>(parent);
@@ -289,8 +285,8 @@ namespace ecs{
 
 
 		//get child
-		if (hierachy::m_GetChild(ID).has_value()) {
-			std::vector<EntityID> childs = hierachy::m_GetChild(ID).value();
+		if (GetChild(ID).has_value()) {
+			std::vector<EntityID> childs = GetChild(ID).value();
 			for (auto& x : childs) {
 				DeleteEntity(x);
 			}
@@ -341,6 +337,93 @@ namespace ecs{
 			}
 		}
 		return std::string();  // No match found
+	}
+
+
+	void ECS::SetParent(EntityID parent, EntityID child, bool updateTransform) {
+
+
+		RemoveParent(child);
+
+		TransformComponent* parentTransform = GetComponent<TransformComponent>(parent);
+		//checks if child is already in parent
+		if (GetParent(child).has_value()) {
+			return;
+		}
+
+		//checks if parent is getting dragged into its child
+		EntityID id = parent;
+		while (GetParent(id).has_value()) {
+			EntityID checkParentid = GetParent(id).value();
+			if (checkParentid == child) {
+				LOGGING_WARN("Cannot assign parent to its own child");
+				return;
+			}
+			id = checkParentid;
+
+		}
+
+		parentTransform->m_childID.push_back(child);
+
+		TransformComponent* childTransform = GetComponent<TransformComponent>(child);
+		childTransform->m_haveParent = true;
+		childTransform->m_parentID = parent;
+		// Recalculate Local Transform after parenting
+		if (updateTransform) {
+			childTransform->localTransform = glm::inverse(parentTransform->transformation) * childTransform->transformation;
+			utility::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
+		}
+	}
+
+	void ECS::RemoveParent(EntityID child, bool updateTransform) {
+		// removes id from both the child and the parents vector
+
+		if (!GetParent(child).has_value()) {
+			// does not have parrent
+			return;
+		}
+
+		EntityID parent = GetParent(child).value();
+		TransformComponent* parentTransform = GetComponent<TransformComponent>(parent);
+		size_t pos{};
+		for (EntityID& id : parentTransform->m_childID) {
+			if (child == id) {
+				parentTransform->m_childID.erase(parentTransform->m_childID.begin() + pos);
+				break;
+			}
+			pos++;
+		}
+
+		TransformComponent* childTransform = GetComponent<TransformComponent>(child);
+		childTransform->m_haveParent = false;
+		childTransform->m_parentID = 0;
+		//Updating Transformation Mtxs
+		if (updateTransform) {
+			childTransform->localTransform = childTransform->transformation;
+			utility::DecomposeMtxIntoTRS(childTransform->localTransform, childTransform->LocalTransformation.position, childTransform->LocalTransformation.rotation, childTransform->LocalTransformation.scale);
+		}
+	}
+
+	std::optional<EntityID> ECS::GetParent(EntityID child)
+	{
+		TransformComponent* childTransform = GetComponent<TransformComponent>(child);
+		if (!childTransform || !childTransform->m_haveParent) {
+			return std::optional<EntityID>();
+		}
+
+		return childTransform->m_parentID;
+
+	}
+
+	std::optional<std::vector<EntityID>> ECS::GetChild(EntityID parent)
+	{
+		TransformComponent* parentTransform = GetComponent<TransformComponent>(parent);
+		if (parentTransform->m_childID.size() <= 0) {
+			return std::optional<std::vector<EntityID>>();
+		}
+
+		return parentTransform->m_childID;
+
 	}
 
 }

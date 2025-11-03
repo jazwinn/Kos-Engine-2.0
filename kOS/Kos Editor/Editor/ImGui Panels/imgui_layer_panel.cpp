@@ -25,8 +25,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Application/ApplicationData.h"
 
 constexpr int layerCount = layer::MAXLAYER;
-layer::LayerStack layers;
-physicslayer::PhysicsLayer* physicsLayer = physicslayer::PhysicsLayer::m_GetInstance(); // Get the PhysicsLayer instance
 
 void DrawVerticalLabel(const std::string& text, float x, float y)
 {
@@ -49,23 +47,23 @@ void gui::ImGuiHandler::DrawLayerWindow() {
     ImGui::Begin("Layer Panel", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
 
     //static bool flag = false;
-    //for (size_t n{}; n < ecs->layersStack.m_layerMap.size(); n++) {
+    //for (size_t n{}; n < m_layerManager.m_layerMap.size(); n++) {
 
-    //    ImGui::Text(ecs->layersStack.m_layerMap[(layer::LAYERS)n].first.c_str());
+    //    ImGui::Text(m_layerManager.m_layerMap[(layer::LAYERS)n].first.c_str());
     //    ImGui::SameLine();
-    //    std::string title = "##2" +  ecs->layersStack.m_layerMap[(layer::LAYERS)n].first;
+    //    std::string title = "##2" +  m_layerManager.m_layerMap[(layer::LAYERS)n].first;
     //    
-    //    if (ecs->layersStack.m_layerBitSet.test((layer::LAYERS)n)) {
+    //    if (m_layerManager.m_layerBitSet.test((layer::LAYERS)n)) {
     //        flag = true;
     //    }
     //    else flag = false;
 
     //    if (ImGui::Checkbox(title.c_str(), &flag)) {
     //        if (flag == true) {
-    //            ecs->layersStack.m_EnableLayer((layer::LAYERS)n);
+    //            m_layerManager.m_EnableLayer((layer::LAYERS)n);
     //        }
     //        else {
-    //            ecs->layersStack.m_DisableLayer((layer::LAYERS)n);
+    //            m_layerManager.m_DisableLayer((layer::LAYERS)n);
     //        }
     //    }
     //}
@@ -84,9 +82,9 @@ void gui::ImGuiHandler::DrawLayerWindow() {
     for (int col = 0; col < layerCount; ++col)
     {
         ImGui::SetCursorPosX(labelWidth + col * cellWidth); // Position the vertical text over each column
-        auto it = layers.m_layerMap.find(static_cast<layer::LAYERS>(col));
-        if (it != layers.m_layerMap.end()) {
-            DrawVerticalLabel(it->second.first, 0.0f, 0.0f); // Adjust x and y offsets as needed
+        auto it = m_layerManager.m_layerMap.find(static_cast<layer::LAYERS>(col));
+        if (it != m_layerManager.m_layerMap.end()) {
+            DrawVerticalLabel(it->second, 0.0f, 0.0f); // Adjust x and y offsets as needed
         }
         else {
             LOGGING_ERROR_NO_SOURCE_LOCATION("NO SUCH NAME");
@@ -106,7 +104,7 @@ void gui::ImGuiHandler::DrawLayerWindow() {
         ImGui::SetCursorPosX(0.5f);
         // Draw row label with fixed width
 
-        ImGui::Text("%*s", (int)(labelWidth / ImGui::GetFontSize()), (layers.m_layerMap[static_cast<layer::LAYERS>(row)].first).c_str()); // Adjust label width for alignment
+        ImGui::Text("%*s", (int)(labelWidth / ImGui::GetFontSize()), (m_layerManager.m_layerMap[static_cast<layer::LAYERS>(row)]).c_str()); // Adjust label width for alignment
 
         // Draw checkboxes for this row
         for (int col = 0; col < row + 1; ++col)
@@ -116,7 +114,7 @@ void gui::ImGuiHandler::DrawLayerWindow() {
             ImGui::PushID(row * layerCount + col);  // Unique ID for each checkbox
 
             // Get the current value from the collision matrix in PhysicsLayer
-            bool isChecked = physicsLayer->m_GetCollide(row, col);
+            bool isChecked = m_physicsManager.layers.m_GetCollide(row, col);
             if (isChecked) {
                 ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0, 255, 0, 100)); // Green background for checked
                 ImGui::PushStyleColor(ImGuiCol_CheckMark, IM_COL32(0, 255, 0, 255)); // Green checkmark color
@@ -129,7 +127,7 @@ void gui::ImGuiHandler::DrawLayerWindow() {
             if (ImGui::Checkbox("##hidden", &isChecked))
             {
                 // Update the PhysicsLayer collision matrix when the checkbox is toggled
-                physicsLayer->m_SetCollision(row, col, isChecked);
+                m_physicsManager.layers.m_SetCollision(row, col, isChecked);
 
             }
             ImGui::PopStyleColor(2);
@@ -143,7 +141,7 @@ void gui::ImGuiHandler::DrawLayerWindow() {
 
     ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f); // Center horizontally
     if (ImGui::Button("Save", ImVec2(buttonWidth, 0))) {
-		physicsLayer->SaveCollisionLayer();
+        m_physicsManager.layers.SaveCollisionLayer();
     }
     ImGui::End();
 }

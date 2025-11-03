@@ -31,6 +31,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Inputs/Input.h"
+#include "ECS/ECS.h"
+
 
 namespace Application {
 
@@ -42,7 +44,16 @@ namespace Application {
      */
     class AppWindow {
 
+
     public:
+        ecs::ECS& m_ecs;
+        Input::InputSystem& m_inputSystem;
+
+        AppWindow(ecs::ECS& ecs, Input::InputSystem& inputSystem) :
+            m_ecs(ecs),
+            m_inputSystem(inputSystem)
+        {
+        }
 
 
         int init(int windowWidth, int windowHeight);

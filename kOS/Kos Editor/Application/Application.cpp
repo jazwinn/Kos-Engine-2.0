@@ -24,7 +24,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Application.h"
 #include "ApplicationData.h"
-#include "Resources/ResourceManager.h"
 #include "Scene/SceneManager.h"
 #include "Inputs/Input.h"
 #include "Graphics/GraphicsManager.h"
@@ -34,39 +33,12 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Debugging/Performance.h"
 #include "Scripting/ScriptManager.h"
 #include "Physics/PhysicsManager.h"
-#include "Config/ComponentRegistry.h"
 
 namespace Application {
 
-	
-
-
-
-
     int Application::Init() {
         
-        /*--------------------------------------------------------------
-          Read Config File
-       --------------------------------------------------------------*/
-        std::filesystem::path exePath = std::filesystem::current_path();
-        std::filesystem::path root = exePath.parent_path().parent_path(); // up two levels
-        std::filesystem::current_path(root);
-
-        /*--------------------------------------------------------------
-		  Set main Component Registry - TODO remove and go to dependency injection
-        --------------------------------------------------------------*/
-        auto ecs = ecs::ECS::GetInstance();
-        ComponentRegistry::SetECSInstance(ecs);
-        auto scenemanager = scenes::SceneManager::m_GetInstance();
-        ComponentRegistry::SetSceneInstance(scenemanager);
-        auto input = Input::InputSystem::GetInstance();
-        ComponentRegistry::SetInputInstance(input);
-		
-        
-		
-
-
-		WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
+		WindowSettings windowData = serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
 
         /*--------------------------------------------------------------
         INITIALIZE LOGGING SYSTEM
@@ -84,33 +56,32 @@ namespace Application {
         /*--------------------------------------------------------------
            INITIALIZE ECS
         --------------------------------------------------------------*/
-        ecs->Load();
-        ecs->Init();
+        ecs.Load();
+        ecs.Init();
         LOGGING_INFO("Load ECS Successful");
 
 
         /*--------------------------------------------------------------
            INITIALIZE Asset Manager - Editor
         --------------------------------------------------------------*/
-		AssetManager::GetInstance()->Init(configpath::assetFilePath, configpath::resourceFilePath);
+		assetManager.Init(configpath::assetFilePath, configpath::resourceFilePath);
         LOGGING_INFO("Load Resource Successful");
         
         /*--------------------------------------------------------------
           INITIALIZE GRAPHICS PIPE
         --------------------------------------------------------------*/
-        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
+        graphicsManager.gm_Initialize(static_cast<float>(windowData.gameResWidth), static_cast<float>(windowData.gameResHeight));
         LOGGING_INFO("Load Graphic Pipeline Successful");
 
         /*--------------------------------------------------------------
            INITIALIZE Resource Manager
         --------------------------------------------------------------*/
-        auto resourceManager = ResourceManager::GetInstance();
-        resourceManager->Init(configpath::resourceFilePath);
+        resourceManager.Init(configpath::resourceFilePath);
 
         /*--------------------------------------------------------------
         INITIALIZE SCIRPT
         --------------------------------------------------------------*/
-        ScriptManager::m_GetInstance()->Init(exePath.string());
+        scriptManager.Init(exePath.string());
 
         /*--------------------------------------------------------------
            INITIALIZE Start Scene
@@ -120,16 +91,10 @@ namespace Application {
         LOGGING_INFO("Load Asset Successful");
 
         /*--------------------------------------------------------------
-           INITIALIZE GRAPHICS PIPE
-        --------------------------------------------------------------*/
-        GraphicsManager::GetInstance()->gm_Initialize(static_cast<float>(windowData.windowWidth), static_cast<float>(windowData.windowHeight));
-        LOGGING_INFO("Load Graphic Pipeline Successful");
-
-        /*--------------------------------------------------------------
            INITIALIZE Input
         --------------------------------------------------------------*/
         //call back must happen before imgui
-        input->SetCallBack(lvWindow.window);
+        input.SetCallback(lvWindow.window);
         LOGGING_INFO("Set Input Call Back Successful");
 
         
@@ -163,12 +128,6 @@ namespace Application {
         const double fixedDeltaTime = 1.0 / 60.0;
         float accumulatedTime = 0.0;
 
-        std::shared_ptr<GraphicsManager> graphicsManager = GraphicsManager::GetInstance();
-        auto peformance = Peformance::GetInstance();
-        auto ecs = ecs::ECS::GetInstance();
-        auto scenemanager = scenes::SceneManager::m_GetInstance();
-        auto input = Input::InputSystem::GetInstance();
-       // ScriptManager::m_GetInstance()->RunDLL();
         /*--------------------------------------------------------------
             GAME LOOP
         --------------------------------------------------------------*/
@@ -186,7 +145,7 @@ namespace Application {
                 lastFrameTime = currentFrameTime;
                 accumulatedTime += (deltaTime);
 
-                peformance->SetDeltaTime(deltaTime);
+                peformance.SetDeltaTime(deltaTime);
 
                 int currentNumberOfSteps = 0;
                 while( accumulatedTime >= fixedDeltaTime) {
@@ -196,18 +155,18 @@ namespace Application {
                 /*--------------------------------------------------------------
                     Update SceneManager // STAY THE FIRST ON TOP
                 --------------------------------------------------------------*/
-                scenemanager->Update();
+                sceneManager.Update();
                 
                 /*--------------------------------------------------------------
                     UPDATE INPUT
                 --------------------------------------------------------------*/
 
-                input->InputUpdate(deltaTime);
+                input.InputUpdate(deltaTime);
                 Editor.InputUpdate();
                 /*--------------------------------------------------------------
                     UPDATE ECS
                 --------------------------------------------------------------*/
-                ecs->Update(static_cast<float>(fixedDeltaTime));
+                ecs.Update(static_cast<float>(fixedDeltaTime));
 
                 /*--------------------------------------------------------------
                     Update IMGUI FRAME
@@ -218,22 +177,18 @@ namespace Application {
                     UPDATE INPUT FRAME EXIT
                 --------------------------------------------------------------*/
 
-                input->InputExitFrame(deltaTime);
+                input.InputExitFrame(deltaTime);
                 
                 /*--------------------------------------------------------------
                     UPDATE Render Pipeline
                 --------------------------------------------------------------*/
-                graphicsManager->gm_Update();
+                graphicsManager.gm_Update();
 
                 /*--------------------------------------------------------------
                     Execute Render Pipeline
                 --------------------------------------------------------------*/
-                graphicsManager->gm_Render();
+                graphicsManager.gm_Render();
                 
-                /*--------------------------------------------------------------
-                    Update IMGUI FRAME
-                --------------------------------------------------------------*/
-                lvWindow.Draw();
 
                 /*--------------------------------------------------------------
                     Draw IMGUI FRAME
@@ -243,7 +198,7 @@ namespace Application {
                 /*--------------------------------------------------------------
                    Reset Framebuffer
                 --------------------------------------------------------------*/
-                graphicsManager->gm_ResetFrameBuffer();
+                graphicsManager.gm_ResetFrameBuffer();
 
                 /*--------------------------------------------------------------
                  DRAWING/RENDERING Window
@@ -251,7 +206,7 @@ namespace Application {
                 lvWindow.Draw();
 
 
-                graphicsManager->gm_ClearGBuffer();
+                graphicsManager.gm_ClearGBuffer();
 
                 glfwSwapBuffers(lvWindow.window);
             }
@@ -264,8 +219,8 @@ namespace Application {
 
 	int Application::m_Cleanup() {
 
-        ecs::ECS::GetInstance()->Unload();
-        physics::PhysicsManager::GetInstance()->Shutdown();
+        ecs.Unload();
+        physicsManager.Shutdown();
         Editor.Shutdown();
         lvWindow.CleanUp();
         glfwTerminate();

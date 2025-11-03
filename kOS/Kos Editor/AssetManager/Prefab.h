@@ -20,19 +20,46 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define PREFAB_H
 
 #include "ECS/ECSList.h"
+#include "ECS/ECS.h"
+#include "Scene/SceneManager.h"
+#include "AssetManager/AssetManager.h"
+#include "DeSerialization/json_handler.h"
 
 namespace prefab {
-	int m_CreatePrefab(std::string prefabscene, std::string insertscene = {});
-	void m_SaveEntitytoPrefab(ecs::EntityID);
-	void OverwriteScenePrefab(ecs::EntityID id);
-	void UpdateAllPrefab(const std::string& prefabSceneName);
-	void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB);
-	void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
-	void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
-	void LoadPrefab(const std::filesystem::path& filepath);
-	void LoadAllPrefabs();
-	ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
-	void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);
+
+	class PrefabManager {
+
+		ecs::ECS& m_ecs;
+		scenes::SceneManager& m_sceneManager;
+		AssetManager& m_assetManager;
+		serialization::Serialization& m_serialization;
+
+	public:
+		PrefabManager(ecs::ECS& ecs, scenes::SceneManager& sceneManager, AssetManager& am, serialization::Serialization& seri) :
+			m_ecs(ecs),
+			m_sceneManager(sceneManager),
+			m_assetManager(am),
+			m_serialization(seri)
+		{
+		}
+
+		void SetPrefabStatus(ecs::EntityID id, bool status);
+		void AssignPrefabToNameComponent(ecs::EntityID parentid, std::string scenename);
+		int m_CreatePrefab(std::string prefabscene, std::string insertscene = {});
+		void m_SaveEntitytoPrefab(ecs::EntityID);
+		void OverwriteScenePrefab(ecs::EntityID id);
+		void UpdateAllPrefab(const std::string& prefabSceneName);
+		void DeepUpdatePrefab(ecs::EntityID idA, ecs::EntityID idB);
+		void OverwritePrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+		void RevertToPrefab_Component(ecs::EntityID id, const std::string& componentName, const std::string& prefabSceneName);
+		void LoadPrefab(const std::filesystem::path& filepath);
+		void LoadAllPrefabs();
+		ecs::ComponentSignature ComparePrefabWithInstance(ecs::EntityID id);
+		void RefreshComponentDifferenceList(std::vector<std::string>& diffComp, ecs::EntityID entityID);
+
+	};
+
+
 }
 #endif PREFAB_H
 

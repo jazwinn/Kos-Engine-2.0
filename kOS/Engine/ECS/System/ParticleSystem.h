@@ -15,7 +15,7 @@ namespace ecs {
     };
     class ParticleSystem : public ISystem {
     public:
-
+        using ISystem::ISystem;
         void Init() override;
         void Update() override;
 

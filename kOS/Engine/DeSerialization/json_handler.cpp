@@ -36,7 +36,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /********************************************************************/
 #include "Config/pch.h"
 #include "json_handler.h"
-#include "Config/ComponentRegistry.h"
 
 #include <RAPIDJSON/filewritestream.h>
 #include <RAPIDJSON/istreamwrapper.h>
@@ -46,31 +45,16 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "ECS/ECS.h"
 #include "Debugging/Logging.h"
-#include "ECS/Hierachy.h"
+#include "ECS/ecs.h"
 
 
 #include "Physics/PhysicsLayer.h"
 
-namespace Serialization {
 
 
+namespace serialization{
 
-	std::string configFilePath;
-
-	void JsonFileValidation(const std::string& filePath) {
-
-		std::ifstream checkFile(filePath);
-
-		if (!checkFile) {
-			std::ofstream createFile(filePath);
-			createFile << "[]";  // Initialize empty JSON array
-			createFile.close();
-		}
-
-		checkFile.close();
-	}
-
-	void LoadScene(const std::filesystem::path& jsonFilePath, const std::string sceneName)
+	void  Serialization::LoadScene(const std::filesystem::path& jsonFilePath, const std::string sceneName)
 	{
 		// Open the JSON file for reading
 		std::ifstream inputFile(jsonFilePath.string());
@@ -99,7 +83,7 @@ namespace Serialization {
 				//load scene data
 				SceneData sceneData;
 				LoadComponentreflect(&sceneData, entityData);
-				ecs::ECS::GetInstance()->AddScene(scenename, sceneData);
+				m_ecs.AddScene(scenename, sceneData);
 
 			}
 			else {
@@ -110,9 +94,8 @@ namespace Serialization {
 		LOGGING_INFO("Load Json Successful");
 	}
 
-	void SaveScene(const std::filesystem::path& scene, const std::filesystem::path& targetFilePath)
+	void Serialization::SaveScene(const std::filesystem::path& scene, const std::filesystem::path& targetFilePath)
 	{
-		auto* ecs = ecs::ECS::GetInstance();
 		std::string jsonFilePath = targetFilePath.empty() ? scene.string() : targetFilePath.string();
 		JsonFileValidation(jsonFilePath);
 
@@ -128,11 +111,11 @@ namespace Serialization {
 		//save scene data
 		auto sceneName = scene.filename().string();
 		{
-			
+
 			SceneData data;
-			if (ecs->sceneMap.find(sceneName) != ecs->sceneMap.end())
+			if (m_ecs.sceneMap.find(sceneName) != m_ecs.sceneMap.end())
 			{
-				data = ecs->sceneMap.at(sceneName);
+				data = m_ecs.sceneMap.at(sceneName);
 			}
 
 			rapidjson::Value sceneData(rapidjson::kObjectType);
@@ -143,13 +126,13 @@ namespace Serialization {
 
 
 		{
-			if (ecs->sceneMap.find(sceneName) != ecs->sceneMap.end())
+			if (m_ecs.sceneMap.find(sceneName) != m_ecs.sceneMap.end())
 			{
 				std::unordered_set<ecs::EntityID> savedEntities;  //track saved entities
 				//Start saving the entities
-				std::vector<ecs::EntityID> entities = ecs->sceneMap.find(sceneName)->second.sceneIDs;
+				std::vector<ecs::EntityID> entities = m_ecs.sceneMap.find(sceneName)->second.sceneIDs;
 				for (const auto& entityId : entities) {
-					if (!hierachy::GetParent(entityId).has_value()) {
+					if (!m_ecs.GetParent(entityId).has_value()) {
 						SaveEntity(entityId, doc, allocator, savedEntities);
 					}
 				}
@@ -178,9 +161,8 @@ namespace Serialization {
 		LOGGING_INFO("Save Json Successful");
 	}
 
-	void SaveEntity(ecs::EntityID entityId, rapidjson::Value& parentArray, rapidjson::Document::AllocatorType& allocator, std::unordered_set<ecs::EntityID>& savedEntities) {
-		auto* ecs = ComponentRegistry::GetECSInstance();
-		auto signature = ecs->GetEntitySignature(entityId);
+	void Serialization::SaveEntity(ecs::EntityID entityId, rapidjson::Value& parentArray, rapidjson::Document::AllocatorType& allocator, std::unordered_set<ecs::EntityID>& savedEntities) {
+		auto signature = m_ecs.GetEntitySignature(entityId);
 
 		if (savedEntities.find(entityId) != savedEntities.end()) {
 			return;
@@ -190,10 +172,10 @@ namespace Serialization {
 
 
 		{//Update entity without GUID
-			ecs::NameComponent* nameComp = ecs->GetComponent<ecs::NameComponent>(entityId);
+			ecs::NameComponent* nameComp = m_ecs.GetComponent<ecs::NameComponent>(entityId);
 			if (nameComp && nameComp->entityGUID.Empty()) {
 				nameComp->entityGUID = utility::GenerateGUID();
-				ecs->InsertGUID(nameComp->entityGUID, entityId);
+				m_ecs.InsertGUID(nameComp->entityGUID, entityId);
 			}
 			std::string GUIDString = nameComp->entityGUID.GetToString();
 			rapidjson::Value key("entityGUID", allocator); // key name
@@ -205,24 +187,24 @@ namespace Serialization {
 			entityData.AddMember(key, value, allocator);
 		}
 
-		
 
-		
-		const auto& componentKey = ecs->GetComponentKeyData();
+
+
+		const auto& componentKey = m_ecs.GetComponentKeyData();
 		for (const auto& [ComponentName, key] : componentKey) {
-			if (signature.test(ecs->GetComponentKey(ComponentName))) {
-				auto* component = ecs->GetIComponent<ecs::Component*>(ComponentName,entityId);
+			if (signature.test(m_ecs.GetComponentKey(ComponentName))) {
+				auto* component = m_ecs.GetIComponent<ecs::Component*>(ComponentName, entityId);
 				if (component) {
-					auto& actionInvoker = ecs->componentAction[ComponentName];
+					auto& actionInvoker = m_ecs.componentAction[ComponentName];
 					actionInvoker->Save(component, entityData, allocator);
-					
+
 				}
 			}
 		}
 
 
 		// Add children
-		std::optional<std::vector<ecs::EntityID>> childrenOptional = hierachy::m_GetChild(entityId);
+		std::optional<std::vector<ecs::EntityID>> childrenOptional = m_ecs.GetChild(entityId);
 		if (childrenOptional.has_value()) {
 			std::vector<ecs::EntityID> children = childrenOptional.value();
 			if (!children.empty()) {
@@ -238,27 +220,26 @@ namespace Serialization {
 		savedEntities.insert(entityId);
 	}
 
-	void LoadEntity(const rapidjson::Value& entityData, std::optional<ecs::EntityID> parentID, const std::string& sceneName)
+	void Serialization::LoadEntity(const rapidjson::Value& entityData, std::optional<ecs::EntityID> parentID, const std::string& sceneName)
 	{
-		ecs::ECS* ecs = ComponentRegistry::GetECSInstance();
-		ecs::EntityID newEntityId = ecs->CreateEntity(sceneName);
+		ecs::EntityID newEntityId = m_ecs.CreateEntity(sceneName);
 
 		{
 			//Set GUID
 			if (entityData.HasMember("entityGUID") && entityData["entityGUID"].IsString()) {
 				std::string guidStr = entityData["entityGUID"].GetString();
-				ecs::NameComponent* nameComp = ecs->GetComponent<ecs::NameComponent>(newEntityId);
+				ecs::NameComponent* nameComp = m_ecs.GetComponent<ecs::NameComponent>(newEntityId);
 				if (nameComp) {
 					nameComp->entityGUID.SetFromString(guidStr);
-					ecs->InsertGUID(nameComp->entityGUID, newEntityId);
+					m_ecs.InsertGUID(nameComp->entityGUID, newEntityId);
 				}
 			}
 		}
 
-		const auto& componentKey = ecs->GetComponentKeyData();
+		const auto& componentKey = m_ecs.GetComponentKeyData();
 		for (const auto& [ComponentName, key] : componentKey) {
 			if (entityData.HasMember(ComponentName.c_str()) && entityData[ComponentName.c_str()].IsObject()) {
-				auto& actionInvoker = ecs->componentAction[ComponentName];
+				auto& actionInvoker = m_ecs.componentAction[ComponentName];
 				actionInvoker->Load(newEntityId, entityData);
 			}
 
@@ -267,7 +248,7 @@ namespace Serialization {
 
 		//Attach entity to parent
 		if (parentID.has_value()) {
-			hierachy::m_SetParent(parentID.value(), newEntityId);
+			m_ecs.SetParent(parentID.value(), newEntityId);
 		}
 
 		// Load children 
@@ -280,4 +261,8 @@ namespace Serialization {
 	}
 
 }
+
+
+
+
 

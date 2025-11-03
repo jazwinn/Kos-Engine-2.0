@@ -27,7 +27,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "CanvasSpriteRenderSystem.h"
 #include "Resources/ResourceManager.h"
-#include "ECS/Hierachy.h"
+#include "ECS/ecs.h"
 #include "Graphics/GraphicsManager.h"
 
 namespace ecs {
@@ -39,33 +39,30 @@ namespace ecs {
 
     void CanvasSpriteRenderSystem::Update()
     {
-        ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
-            TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-            NameComponent* nameComp = ecs->GetComponent<NameComponent>(id);
-            CanvasRendererComponent* canvas = ecs->GetComponent<CanvasRendererComponent>(id);
+            TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+            NameComponent* nameComp = m_ecs.GetComponent<NameComponent>(id);
+            CanvasRendererComponent* canvas = m_ecs.GetComponent<CanvasRendererComponent>(id);
 
             // Skip entities not in this scene or hidden
-            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
+            if (nameComp->hide)
                 continue;
 
-            std::optional<std::vector<EntityID>> childEntities = hierachy::m_GetChild(id);
+            std::optional<std::vector<EntityID>> childEntities = m_ecs.GetChild(id);
             if (!childEntities.has_value()) continue;
 
             for (EntityID childID : childEntities.value())
             {
-                 ResourceManager* rm = ResourceManager::GetInstance();
-                std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-                if (ecs->HasComponent<SpriteComponent>(childID))
+                if (m_ecs.HasComponent<SpriteComponent>(childID))
                 {
-                    SpriteComponent* spriteComp = ecs->GetComponent<SpriteComponent>(childID);
-                    TransformComponent* childTransform = ecs->GetComponent<TransformComponent>(childID);
+                    SpriteComponent* spriteComp = m_ecs.GetComponent<SpriteComponent>(childID);
+                    TransformComponent* childTransform = m_ecs.GetComponent<TransformComponent>(childID);
                     if (!spriteComp->spriteGUID.Empty())
                     {
-                        std::shared_ptr<R_Texture> fontResource = rm->GetResource<R_Texture>(spriteComp->spriteGUID);
-                        gm->gm_PushScreenSpriteData(ScreenSpriteData{ childTransform->WorldTransformation.position,
+                        std::shared_ptr<R_Texture> fontResource = m_resourceManager.GetResource<R_Texture>(spriteComp->spriteGUID);
+                        m_graphicsManager.gm_PushScreenSpriteData(ScreenSpriteData{ childTransform->WorldTransformation.position,
                                                            glm::vec2{ childTransform->WorldTransformation.scale.x, 
                                                                       childTransform->WorldTransformation.scale.y},
                                                                       -childTransform->WorldTransformation.rotation.x, spriteComp->color,

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "RenderSystem.h"
 #include "TransformSystem.h"
 #include "CameraSystem.h"
 #include "AudioSystem.h"
@@ -19,5 +18,6 @@
 #include "ScriptingSystem.h"
 #include "PathfindingSystem.h"
 #include "CubeRenderSystem.h"
+#include "SphereRenderSystem.h"
 #include "PhysicsSystem.h"
 #include "ParticleSystem.h"

@@ -23,18 +23,16 @@ std::string GenerateRandomGUIDBaked() {
 void gui::ImGuiHandler::DrawBakedWindow() {
 
 	ImGui::Begin("Baked Lighting");
-	std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
 	if (ImGui::Button("Bake Lights"))
 	{
-		ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
 		LOGGING_INFO("It's a piece of cake to bake a pretty cake");
 		//Just bake first light first
 		PointLightData* pld;
 		int i = 0;
-		for (auto& lcComp: ecs->GetComponentsEnties("LightComponent"))
+		for (auto& lcComp: m_ecs.GetComponentsEnties("LightComponent"))
 		{
-			pld = &gm->lightRenderer.pointLightsToDraw[i];
+			pld = &m_graphicsManager.lightRenderer.pointLightsToDraw[i];
 			//Add shadow setting later as well
 			if (!pld->bakedCon)continue;;
 			std::cout << lcComp << "<- LIGHT ENTITY\n";
@@ -42,27 +40,27 @@ void gui::ImGuiHandler::DrawBakedWindow() {
 			//EVENTUALLY MAKE IT DO ITS OWN DEPTH BUFFER CREATION
 			//Get DCM, make a faux depth map renderer
 			//Get all objects
-			gm->gm_FillDepthCube(CameraData{}, i);
+			m_graphicsManager.gm_FillDepthCube(CameraData{}, i);
 			
 			//Asset creation
 			//Generate GUID
 			// Attach name
 			//KEEP THIS
-			std::string filepath = AssetManager::AssetManager::GetInstance()->GetAssetManagerDirectory() + "/DepthMap/" + std::to_string(lcComp) + ".dcm";
-			gm->lightRenderer.dcm[i].SaveDepthCubeMap(filepath);
+			std::string filepath = m_assetManager.GetAssetManagerDirectory() + "/DepthMap/" + std::to_string(lcComp) + ".dcm";
+			m_graphicsManager.lightRenderer.dcm[i].SaveDepthCubeMap(filepath);
 
 			
 			//Add and load asset and assign it to light component
 			//Need to change entity itself
-			ecs->GetComponent<ecs::LightComponent>(lcComp)->depthMapGUID=AssetManager::AssetManager::GetInstance()->RegisterAsset(filepath);
-			AssetManager::AssetManager::GetInstance()->Compilefile(filepath);
+			m_ecs.GetComponent<ecs::LightComponent>(lcComp)->depthMapGUID= m_assetManager.RegisterAsset(filepath);
+			m_assetManager.Compilefile(filepath);
 			//Retrieve GUID from file path
 			i++;
 		}
 	}
 	if (ImGui::Button("Test Lights")) {
-		gm->lightRenderer.dcm[0].LoadDepthCubeMap("D:/CJJJ2/kOS/Kos Editor/Assets/DepthMap/test.dcm");
-		gm->lightRenderer.dcm[1].LoadDepthCubeMap("D:/CJJJ2/kOS/Kos Editor/Assets/DepthMap/test.dcm");
+		m_graphicsManager.lightRenderer.dcm[0].LoadDepthCubeMap("D:/CJJJ2/kOS/Kos Editor/Assets/DepthMap/test.dcm");
+		m_graphicsManager.lightRenderer.dcm[1].LoadDepthCubeMap("D:/CJJJ2/kOS/Kos Editor/Assets/DepthMap/test.dcm");
 
 	}
 	ImGui::End();

@@ -16,15 +16,22 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #ifndef APP_H
 #define APP_H
 
-#include "Debugging/Logging.h"
-#include "ECS/ECS.h"
-#include "Inputs/Input.h"
 #include "Window.h"
-#include "../Editor/ImGui Panels/Editor.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "Reflection/Reflection.h"
+
+#include "Debugging/Logging.h"
+#include "Inputs/Input.h"
+#include "Graphics/GraphicsManager.h"
+#include "Resources/ResourceManager.h"
+#include "Scene/SceneManager.h"
+#include "Physics/PhysicsManager.h"
+#include "DeSerialization/json_handler.h"
+#include "Reflection/Field.h"
+#include "ECS/ecs.h"
+
+
+#include "../Editor/ImGui Panels/Editor.h"
+#include "AssetManager/AssetManager.h"
 /******************************************************************/
 /*!
 \class     Application
@@ -39,19 +46,50 @@ namespace Application {
 		
 
 	public:
-		Application() :lvWindow(), Editor(lvWindow) {}
+		Application()
+			: input()
+			, peformance()
+			, reflectionField()
+			, resourceManager()
+			, physicsManager()
+			, graphicsManager(resourceManager)
+			, ecs(peformance, graphicsManager, resourceManager, input, physicsManager, scriptManager)
+			, lvWindow(ecs, input)
+			, layersManager(ecs)
+			, serialization(ecs)
+			, sceneManager(ecs, serialization, resourceManager)
+			, scriptManager(ecs, sceneManager, input, physicsManager,resourceManager, reflectionField)
+			, assetManager()
+			, Editor(lvWindow, assetManager, graphicsManager, ecs, sceneManager, serialization, reflectionField, input, physicsManager, layersManager, resourceManager, scriptManager, peformance)
+		{
+		}
 		~Application() = default;
 
 		int Init();
 		int Run();
 		int m_Cleanup();
-
+		std::filesystem::path exePath;
 
 	private:
-
+		//all dependencies should be here
+		ecs::ECS ecs;
 		AppWindow lvWindow;
-		gui::ImGuiHandler Editor; //should only remain in Application
-		logging::Logger logs;
+		Peformance peformance;
+		Input::InputSystem input;
+		scenes::SceneManager sceneManager;
+		GraphicsManager graphicsManager;
+		ResourceManager resourceManager;
+		physics::PhysicsManager physicsManager;
+		serialization::Serialization serialization;
+		ScriptManager scriptManager;
+		Fields reflectionField;
+		layer::LayerStack layersManager;
+		AssetManager assetManager;
+
+		gui::ImGuiHandler Editor;
+
+		
+		
 	};
 
 }

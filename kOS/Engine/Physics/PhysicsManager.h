@@ -32,25 +32,21 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #ifndef PHYSICSMANAGER_H
 #define PHYSICSMANAGER_H
 
-#include "Physics/PhysicsEventCallback.h"
-#include "Physics/PhysxUtils.h"
+#include "PhysicsEventCallback.h"
+#include "PhysxUtils.h"
+#include "PhysicsLayer.h"
+#include "Events/Delegate.h"
 
-using namespace ecs;
 using namespace physx;
 
 namespace physics {
+
+
 
 	class PhysicsManager {
 	public:
 		PhysicsManager() = default;  
 		~PhysicsManager() = default;
-
-		static PhysicsManager* GetInstance() {
-			if (!m_instancePtr) {
-				m_instancePtr.reset(new PhysicsManager{});
-			}
-			return m_instancePtr.get();
-		}
 		
 		void Init();
 		void Update(float);
@@ -69,19 +65,15 @@ namespace physics {
 		//bool Raycast(const glm::vec3&, const glm::vec3&, float, RaycastHit&);
 		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit& outHit, void* actorToIgnore);
 
-		Delegate<const Collision&> OnCollisionEnter;
-		Delegate<const Collision&> OnCollisionStay;
-		Delegate<const Collision&> OnCollisionExit;
-		Delegate<const Collision&> OnTriggerEnter;
-		Delegate<const Collision&> OnTriggerStay;
-		Delegate<const Collision&> OnTriggerExit;
+		PhysicsEventCallback* GetEventCallback() const { return m_eventCallback; }
+
+		physicslayer::PhysicsLayer layers;
 
 	private:
 		PhysicsManager(const PhysicsManager&) = delete;
 		PhysicsManager& operator=(const PhysicsManager&) = delete;
 
-		static std::shared_ptr<PhysicsManager> m_instancePtr;
-
+		
 		PxFoundation* m_foundation = nullptr;
 		PxPhysics* m_physics = nullptr;
 		PxScene* m_scene = nullptr;

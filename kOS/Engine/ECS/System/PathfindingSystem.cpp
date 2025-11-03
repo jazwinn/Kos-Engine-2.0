@@ -25,6 +25,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace ecs {
 	Octrees::Graph waypoints;
 	Octrees::Octree octree;
+
+
 	bool testing = true;
 	bool testing2 = false;
 
@@ -38,36 +40,35 @@ namespace ecs {
 	float proximityCheck = 0.1f;
 
 	void PathfindingSystem::Init() {
-		
+		octree.InjectDependency(&m_ecs);
 	}
 
 	void PathfindingSystem::Update() {
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
 		if (currentTimer < maxTimer) {
-			currentTimer += ecs->m_GetDeltaTime();
+			currentTimer += m_ecs.m_GetDeltaTime();
 			//std::cout << "TIMER: " << currentTimer << std::endl;
 		}
 
 		for (EntityID id : entities) {
-			TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
-			NameComponent* name = ecs->GetComponent<NameComponent>(id);
-			//OctreeGeneratorComponent* oct = ecs->GetComponent<OctreeGeneratorComponent>(id);
+			TransformComponent* trans = m_ecs.GetComponent<TransformComponent>(id);
+			NameComponent* name = m_ecs.GetComponent<NameComponent>(id);
+			//OctreeGeneratorComponent* oct = m_ecs.GetComponent<OctreeGeneratorComponent>(id);
 
 			if (name->hide) { continue; }
 
 			// Move all pathfinders
 			const auto& otherEntities = m_entities.Data();
 			for (EntityID otherId : otherEntities) {
-				if (ecs->GetState() != GAMESTATE::RUNNING) {
+				if (m_ecs.GetState() != GAMESTATE::RUNNING) {
 					continue;
 				}
 
-				auto* pathfinderTarget = ecs->GetComponent<PathfinderTargetComponent>(otherId);
-				auto* pathfinderComp = ecs->GetComponent<PathfinderComponent>(id);
-				auto* pathfinderTrans = ecs->GetComponent<TransformComponent>(id);
-				auto* pathfinderTargetTrans = ecs->GetComponent<TransformComponent>(otherId);
+				auto* pathfinderTarget = m_ecs.GetComponent<PathfinderTargetComponent>(otherId);
+				auto* pathfinderComp = m_ecs.GetComponent<PathfinderComponent>(id);
+				auto* pathfinderTrans = m_ecs.GetComponent<TransformComponent>(id);
+				auto* pathfinderTargetTrans = m_ecs.GetComponent<TransformComponent>(otherId);
 
 				if (!pathfinderTarget || !pathfinderComp || !pathfinderTrans || !pathfinderTargetTrans || !pathfinderComp->chase) {
 					continue;
@@ -109,7 +110,7 @@ namespace ecs {
 					}
 
 
-					pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * ecs->m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
+					pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * m_ecs.m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
 
 					if (!octree.graph.pathList.size()) {
 						break;
@@ -125,15 +126,16 @@ namespace ecs {
 				break;
 			}
 
-			if (auto* oct = ecs->GetComponent<OctreeGeneratorComponent>(id)) {
-				if (testing) {
-					octree = Octrees::Octree(2.f, waypoints);
+			if (auto* oct = m_ecs.GetComponent<OctreeGeneratorComponent>(id)) {
+				if (testing) { // this wont work with DI
+					octree = Octrees::Octree(2.f, waypoints, &m_ecs);
+
 					testing = false;
 				}
 
 				if (oct->drawWireframe) {
-					octree.root.DrawNode();
-					octree.graph.DrawGraph();
+					octree.root.DrawNode(&m_graphicsManager);
+					octree.graph.DrawGraph(&m_graphicsManager);
 				}
 			}
 

@@ -24,39 +24,37 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define LAYERS_H
 
 #include "ECSList.h"
+#include "ECS/ECS.h"
+#include "LayerData.h"
+
 
 namespace layer{
 
-	enum LAYERS {
-		DEFAULT,
-		LAYER1,
-		LAYER2,
-		LAYER3,
-		LAYER4,
-		LAYER5,
-		LAYER6,
-		LAYER7,
-		LAYER8,
-
-		MAXLAYER
-	};
-
 	class LayerStack {
-	
+		ecs::ECS& m_ecs;
 	public:
+		LayerStack(ecs::ECS& ecs) :
+			m_ecs(ecs)
+		{
+		
+			m_layerBitSet.set();// assign all bits to true
+
+			//set max layers
+			m_layerMap[DEFAULT] = "Default";
+			m_layerMap[LAYER1] = "Layer 1";
+			m_layerMap[LAYER2] = "Layer 2";
+			m_layerMap[LAYER3] = "Layer 3";
+			m_layerMap[LAYER4] = "Layer 4";
+			m_layerMap[LAYER5] = "Layer 5";
+			m_layerMap[LAYER6] = "Layer 6";
+			m_layerMap[LAYER7] = "Layer 7";
+			m_layerMap[LAYER8] = "Layer 8";
+
+		}
 
 
-		using layermap = std::unordered_map<LAYERS, std::pair<std::string,std::vector<ecs::EntityID>>>;
+		using layermap = std::unordered_map<LAYERS, std::string>;
 
-		/******************************************************************/
-		/*!
-			\fn        LayerStack::LayerStack()
-			\brief     Constructs the `LayerStack` and initializes the default layers.
-			\details   Sets up predefined layers (DEFAULT through LAYER8) with default names,
-					   creating an organized starting point for layer management.
-		*/
-		/******************************************************************/
-		LayerStack();// set all bits to true
 
 		/******************************************************************/
 		/*!
@@ -110,17 +108,6 @@ namespace layer{
 		/******************************************************************/
 		bool m_IsLayerVisable(int layer);
 
-		/******************************************************************/
-		/*!
-			\fn        std::vector<ecs::EntityID> m_RetrieveEntityID(LAYERS layer)
-			\brief     Retrieves all entity IDs within a specified layer.
-			\param[in] layer The layer to retrieve entities from.
-			\return    A vector containing the entity IDs in the specified layer, or an empty
-					   vector if the layer does not exist.
-			\details   Allows access to all entities within a specific layer.
-		*/
-		/******************************************************************/
-		std::vector<ecs::EntityID> m_RetrieveEntityID(LAYERS layer);
 
 		/******************************************************************/
 		/*!

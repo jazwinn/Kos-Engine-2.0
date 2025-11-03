@@ -237,10 +237,10 @@ static std::string fmt_time(unsigned int ms) {
 	return buf;
 }
 
-void loadAudio()
+void loadAudio(AssetManager& am)
 {
-	auto assetManager = AssetManager::GetInstance();
-	assetManager->GetAssetWatcher()->Pause();
+
+	am.GetAssetWatcher()->Pause();
 
 	// Open file explorer
 	//std::filesystem::path path = filewindow::m_OpenfileDialog(
@@ -250,7 +250,7 @@ void loadAudio()
 	std::filesystem::path path;
 #if defined(_WIN32)
 	// Use WAV-only dialog on Windows
-	path = OpenWavDialogWin32(assetManager->GetAssetManagerDirectory().c_str());
+	path = OpenWavDialogWin32(am.GetAssetManagerDirectory().c_str());
 #else
 	path = filewindow::m_OpenfileDialog(assetManager->GetAssetManagerDirectory().c_str());
 #endif
@@ -269,7 +269,7 @@ void loadAudio()
 		}
 	}
 
-	assetManager->GetAssetWatcher()->Resume();
+	am.GetAssetWatcher()->Resume();
 }
 
 static bool WavExport(const char* inPath, const char* outPath, float linearGain)
@@ -390,7 +390,7 @@ void gui::ImGuiHandler::DrawAudioMixerWindow() {
 		ImGui::InputText("##audio_path", gPath, IM_ARRAYSIZE(gPath));
 		ImGui::SameLine();
 		if (ImGui::Button("Browse WAV")) {
-			loadAudio(); // opens file dialog here
+			loadAudio(m_assetManager); // opens file dialog here
 		}
 
 		ImGui::SameLine(); ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); ImGui::SameLine(0, 8);

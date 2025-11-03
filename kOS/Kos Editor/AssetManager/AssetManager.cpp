@@ -6,11 +6,10 @@
 #include "ECS/ECS.h"
 
 
-std::shared_ptr<AssetManager> AssetManager::m_instancePtr = nullptr;
 
 AssetManager::AssetManager()
 {
-    CompilerData Data = Serialization::ReadJsonFile<CompilerData>(configpath::configFilePath);
+    CompilerData Data = serialization::ReadJsonFile<CompilerData>(configpath::configFilePath);
 
     Data.ApplyFunction([&](auto& member) {
         for (const auto& inputExtension : member.inputExtensions)
@@ -48,7 +47,7 @@ void AssetManager::Init(const std::string& assetDirectory, const std::string& re
 
 
                 if (std::filesystem::exists(metaPath)) {
-                    AssetData data = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+                    AssetData data = serialization::ReadJsonFile<AssetData>(metaPath.string());
                     const auto& map = m_compilerMap.at(entry.path().filename().extension().string());
                     for (const auto& compilerData : map)
                     {
@@ -170,7 +169,7 @@ std::future<void> AssetManager::Compilefile(const std::filesystem::path& filePat
         }
 	}
     //get file type from meta
-    AssetData data = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+    AssetData data = serialization::ReadJsonFile<AssetData>(metaPath.string());
 
     const auto& map = m_compilerMap.at(inputExtension);
     for(const auto& compilerData : map)

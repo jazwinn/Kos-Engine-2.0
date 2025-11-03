@@ -22,13 +22,13 @@ public:
         if (sceneResource) {
             std::cout << entity << std::endl;
             std::string currentScene = ecsPtr->GetSceneByEntityID(entity);
-            sceneResource->DuplicatePrefabIntoScene(currentScene);
+            //sceneResource->DuplicatePrefabIntoScene(currentScene);
         }
 
 
         health = 1;
         shield = 50;
-        physicsPtr->OnCollisionEnter.Add([this](const physics::Collision& col) {
+        physicsPtr->GetEventCallback()->OnCollisionEnter.Add([this](const physics::Collision& col) {
             if (col.thisEntityID != this->entity) { return; }
             std::cout << "Collided with Entity: " << col.otherEntityID << std::endl;
             

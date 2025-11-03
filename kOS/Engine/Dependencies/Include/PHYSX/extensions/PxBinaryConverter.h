@@ -93,7 +93,7 @@ public:
 
 	\return True if success
 
-	\see PxSerialization::dumpBinaryMetaData
+	\see Pxserialization::dumpBinaryMetaData
 	*/
 	virtual		bool	setMetaData(PxInputStream& srcMetaData, PxInputStream& dstMetaData)					= 0;
 

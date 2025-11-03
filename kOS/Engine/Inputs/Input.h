@@ -40,19 +40,15 @@ namespace Input {
 	class InputSystem {
 
 	public:
-		static InputSystem* GetInstance() {
-			if (!m_InstancePtr) {
-				m_InstancePtr.reset(new InputSystem{});
-			}
-			return m_InstancePtr.get();
-		}
+		void OnCursorPos(double xpos, double ypos);
+		void OnDrop(int count, const char** paths);
 
 		glm::vec2 currentMousePos;
 		glm::vec2 prevMousePos;
 		std::vector<std::string> droppedFiles;
 		GLFWwindow* inputWindow;
 
-		void SetCallBack(GLFWwindow* window);
+		void SetCallback(GLFWwindow* window);
 		void HideCursor(bool check);
 		bool IsKeyTriggered(const keyCode key);
 		bool IsKeyPressed(const keyCode key);
@@ -65,8 +61,6 @@ namespace Input {
 		void InputExitFrame(float deltaTime);
 	private:
 		std::unordered_map<int, Key> keysRegistered;
-
-		static std::shared_ptr<InputSystem> m_InstancePtr;
 	};
 
 }

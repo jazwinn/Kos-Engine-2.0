@@ -4,7 +4,6 @@
 #define BOUNDSCHECK_H
 
 #include "Config/pch.h"
-#include "ECS/ECS.h"
 
 namespace Octrees {
 	struct Bounds {

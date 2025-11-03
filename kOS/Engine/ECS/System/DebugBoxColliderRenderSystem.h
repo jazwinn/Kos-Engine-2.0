@@ -28,7 +28,7 @@ namespace ecs {
     class  DebugBoxColliderRenderSystem : public ISystem {
 
     public:
-
+        using ISystem::ISystem;
         void Init() override;
         void Update() override;
 

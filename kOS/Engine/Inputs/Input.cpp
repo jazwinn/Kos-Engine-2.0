@@ -26,8 +26,6 @@ namespace Input {
 
 	// The number of frames needed for a button to be pressed before the state turns from triggered to pressed.
 	float secondsBeforePressed = 0.05f;
-
-	std::shared_ptr<InputSystem> InputSystem::m_InstancePtr = nullptr;
 	// Shared pointer
 	//std::shared_ptr<InputSystem> InputSystem::GetInstance(){ std::make_shared<InputSystem>(InputSystem{}) };
 	
@@ -41,29 +39,32 @@ namespace Input {
 	void MouseButtonCallback([[maybe_unused]] GLFWwindow* pwin, [[maybe_unused]] int button, [[maybe_unused]] int action, [[maybe_unused]] int mod) {
 	}
 	
-	void CursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+	void InputSystem::OnCursorPos(double xpos, double ypos) {
 		int width{}, height{};
-			
-		glfwGetWindowSize(window, &width, &height);
+		glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);
 		ypos = static_cast<double>(height - ypos);
 
-		InputSystem::GetInstance()->currentMousePos.x = static_cast<float>(xpos);
-		InputSystem::GetInstance()->currentMousePos.y = static_cast<float>(ypos);
-	}		
-	
-	void DropCallback([[maybe_unused]] GLFWwindow* window, int count, const char** paths) {
-		InputSystem::GetInstance()->droppedFiles.clear();
+		currentMousePos.x = static_cast<float>(xpos);
+		currentMousePos.y = static_cast<float>(ypos);
+	}
 
+	void InputSystem::OnDrop(int count, const char** paths) {
+		droppedFiles.clear();
 		for (int i = 0; i < count; ++i) {
-			InputSystem::GetInstance()->droppedFiles.emplace_back(paths[i]);
+			droppedFiles.emplace_back(paths[i]);
 		}
 	}
 	
-	void InputSystem::SetCallBack(GLFWwindow* window) {
-		glfwSetKeyCallback(window, KeyCallback);
-		glfwSetDropCallback(window, DropCallback);
-		glfwSetMouseButtonCallback(window, MouseButtonCallback);
-		glfwSetCursorPosCallback(window, CursorPosCallback);
+	void InputSystem::SetCallback(GLFWwindow* window) {
+		glfwSetWindowUserPointer(window, this);
+
+		glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) {
+			static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->OnCursorPos(x, y);
+			});
+
+		glfwSetDropCallback(window, [](GLFWwindow* w, int count, const char** paths) {
+			static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->OnDrop(count, paths);
+			});
 	}
 	
 	void InputSystem::HideCursor(bool check) {
@@ -77,7 +78,7 @@ namespace Input {
 	}
 	
 	void InputSystem::InputInit(GLFWwindow* window) {
-		InputSystem::GetInstance()->inputWindow = window;
+		inputWindow = window;
 	}
 
 	void InputSystem::InputUpdate(float deltaTime) {
@@ -86,10 +87,10 @@ namespace Input {
 			int state;
 
 			if (key.first == keys::LMB || key.first == keys::RMB || key.first == keys::MMB) {
-				state = glfwGetMouseButton(InputSystem::GetInstance()->inputWindow, key.first);
+				state = glfwGetMouseButton(inputWindow, key.first);
 			}
 			else {
-				state = glfwGetKey(InputSystem::GetInstance()->inputWindow, key.first);
+				state = glfwGetKey(inputWindow, key.first);
 			}
 
 			// Update all prev and curr key states first
@@ -123,7 +124,7 @@ namespace Input {
 	}
 
 	void InputSystem::InputExitFrame(float deltaTime) {
-		InputSystem::GetInstance()->prevMousePos = InputSystem::GetInstance()->currentMousePos;
+		prevMousePos = currentMousePos;
 	}
 
 	bool InputSystem::IsKeyTriggered(const keyCode key) {
@@ -151,7 +152,7 @@ namespace Input {
 	}
 	
 	glm::vec2 InputSystem::GetMousePos() {
-		return InputSystem::currentMousePos;
+		return currentMousePos;
 	}	
 
 	float InputSystem::GetAxisRaw(std::string axisType) {

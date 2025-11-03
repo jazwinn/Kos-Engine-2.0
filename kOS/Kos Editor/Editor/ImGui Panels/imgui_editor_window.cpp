@@ -45,14 +45,13 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Resources/ResourceManager.h"
 #include "AssetManager/Prefab.h"
 
-#include "ECS/Hierachy.h"
+#include "ECS/ecs.h"
 
 #include "Graphics/GraphicsManager.h"
 
 
 void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigned int windowHeight)
 {
-    ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
 
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_MenuBar;
@@ -103,7 +102,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
     //    (void*)(GLuint)GraphicsManager::GetInstance()->gm_GetEditorBuffer().texID,
     //    pos, pMax,
     //    ImVec2(0, 1), ImVec2(1, 0));
-    const FrameBuffer* fbAdd = &GraphicsManager::GetInstance()->gm_GetEditorBuffer();
+    const FrameBuffer* fbAdd = &m_graphicsManager.gm_GetEditorBuffer();
     ImGui::GetWindowDrawList()->AddImage(
         reinterpret_cast<void*>(static_cast<uintptr_t>(fbAdd->texID)),
         pos, pMax,
@@ -126,7 +125,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         glGenFramebuffers(1, &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         // Bind your texture to the FBO
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, GraphicsManager::GetInstance()->gm_GetFBM()->gBuffer.gMaterial, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_graphicsManager.gm_GetFBM()->gBuffer.gMaterial, 0);
         // Read just one pixel
         float pixelVal;
         glReadPixels(pixelX, pixelY, 1, 1, GL_ALPHA, GL_FLOAT, &pixelVal);
@@ -135,9 +134,9 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         --pixelVal;
         m_clickedEntityId =pixelVal>=0.f? static_cast<int>(pixelVal): m_clickedEntityId;
         std::cout << "PixelVal is " << pixelVal << '\n';
-        if (ecs->HasComponent<ecs::CanvasRendererComponent>(static_cast<EntityID>(pixelVal))
-            || (hierachy::GetParent(m_clickedEntityId).has_value() &&
-                ecs->HasComponent<ecs::CanvasRendererComponent>(hierachy::GetParent(m_clickedEntityId).value()))) {
+        if (m_ecs.HasComponent<ecs::CanvasRendererComponent>(static_cast<EntityID>(pixelVal))
+            || (m_ecs.GetParent(m_clickedEntityId).has_value() &&
+                m_ecs.HasComponent<ecs::CanvasRendererComponent>(m_ecs.GetParent(m_clickedEntityId).value()))) {
             std::cout << "IS UI\n";
             m_isUi = true;
         }
@@ -314,13 +313,13 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //auto transform = calculateworld();
         //ImVec2 WorldMouse = ImVec2{ transform.x, transform.y };
         ////calculate AABB of each object (active scenes)
-        //for (auto& sceneentity : ecs->sceneMap) {
+        //for (auto& sceneentity : m_ecs.sceneMap) {
 
         //    if (!sceneentity.second.isActive) continue;
 
         //    for (auto& entity : sceneentity.second.sceneIDs) {
         //        //calculate AABB
-        //        auto* tc = ecs->GetComponent<ecs::TransformComponent>(entity);
+        //        auto* tc = m_ecs.GetComponent<ecs::TransformComponent>(entity);
         //        const glm::mat3x3& transformation = tc->transformation;
 
         //       /* glm::vec2 min, max;
@@ -347,7 +346,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
     //delete entity
     if (ImGui::IsKeyPressed(ImGuiKey_Delete)) {
         if (m_clickedEntityId >= 0) {
-            ecs::ECS::GetInstance()->DeleteEntity(m_clickedEntityId);
+            m_ecs.DeleteEntity(m_clickedEntityId);
             m_clickedEntityId = -1;
         }
     }
@@ -365,50 +364,50 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //    glm::vec3 translate{};
 
         //    if (filename->filename().extension().string() == ".png" || filename->filename().extension().string() == ".jpg") {
-        //        ecs::EntityID id = ecs->CreateEntity(m_activeScene); //assign to active scene
-        //        ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
+        //        ecs::EntityID id = m_ecs.CreateEntity(m_activeScene); //assign to active scene
+        //        ecs::TransformComponent* transCom = m_ecs.GetComponent<ecs::TransformComponent>(id);
         //        transCom->WorldTransformation.position = translate;
         //        // Insert matrix
-        //        ecs::NameComponent* nameCom = ecs->GetComponent<ecs::NameComponent>(id);
+        //        ecs::NameComponent* nameCom = m_ecs.GetComponent<ecs::NameComponent>(id);
         //        nameCom->entityName = filename->filename().stem().string();
 
-        //        ecs::SpriteComponent* spriteCom = ecs->AddComponent<ecs::SpriteComponent>(id);
+        //        ecs::SpriteComponent* spriteCom = m_ecs.AddComponent<ecs::SpriteComponent>(id);
 
         //        if (m_prefabSceneMode) {
-        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(m_ecs.sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;
         //    }
         //    if (filename->filename().extension().string() == ".ttf") {
 
-        //        ecs::EntityID id = ecs->CreateEntity(m_activeScene); //assign to active scene
-        //        ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
+        //        ecs::EntityID id = m_ecs.CreateEntity(m_activeScene); //assign to active scene
+        //        ecs::TransformComponent* transCom = m_ecs.GetComponent<ecs::TransformComponent>(id);
         //        transCom->WorldTransformation.position = translate;
         //        // Insert matrix
-        //        ecs::NameComponent* nameCom = ecs->GetComponent<ecs::NameComponent>(id);
+        //        ecs::NameComponent* nameCom = m_ecs.GetComponent<ecs::NameComponent>(id);
         //        nameCom->entityName = filename->filename().stem().string();
 
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(m_ecs.sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
         //        m_clickedEntityId = id;
         //    }
 
         //    if (filename->filename().extension().string() == ".mpg" || filename->filename().extension().string() == ".mpeg") {
-        //        ecs::EntityID id = ecs->CreateEntity(m_activeScene); //assign to active scene
-        //        ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
+        //        ecs::EntityID id = m_ecs.CreateEntity(m_activeScene); //assign to active scene
+        //        ecs::TransformComponent* transCom = m_ecs.GetComponent<ecs::TransformComponent>(id);
         //        transCom->WorldTransformation.position = translate;
         //        // Insert matrix
-        //        ecs::NameComponent* nameCom = ecs->GetComponent<ecs::NameComponent>(id);
+        //        ecs::NameComponent* nameCom = m_ecs.GetComponent<ecs::NameComponent>(id);
         //        nameCom->entityName = filename->filename().stem().string();
 
         //        //ADD logic here
 
         //        if (m_prefabSceneMode) {
-        //            hierachy::m_SetParent(ecs->sceneMap.find(m_activeScene)->second.prefabID, id);
+        //            hierachy::m_SetParent(m_ecs.sceneMap.find(m_activeScene)->second.prefabID, id);
         //        }
 
         //        m_clickedEntityId = id;
@@ -417,9 +416,9 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         //    if (!m_prefabSceneMode && filename->filename().extension().string() == ".prefab") {//dont allow adding of prefab in prefab 
         //        try {
         //            //check to see if prefab is even loaded
-        //            if (ecs->sceneMap.find(filename->filename().string()) != ecs->sceneMap.end()) {
+        //            if (m_ecs.sceneMap.find(filename->filename().string()) != m_ecs.sceneMap.end()) {
         //                ecs::EntityID id = prefab::m_CreatePrefab(filename->filename().string(), m_activeScene);
-        //                ecs::TransformComponent* transCom = ecs->GetComponent<ecs::TransformComponent>(id);
+        //                ecs::TransformComponent* transCom = m_ecs.GetComponent<ecs::TransformComponent>(id);
         //                transCom->WorldTransformation.position = translate;
         //            }
         //            else {

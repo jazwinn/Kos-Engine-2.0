@@ -55,8 +55,8 @@ TEST(Scene, CreateScene) {
 
 TEST(Entity, SpawnMaxEntities) {
 	auto* ecs =ComponentRegistry::GetECSInstance();
-	ecs->RegisterComponent<TransformComponent>();
-	ecs->RegisterComponent<NameComponent>();
+	m_ecs.RegisterComponent<TransformComponent>();
+	m_ecs.RegisterComponent<NameComponent>();
 
 	auto* sm = scenes::SceneManager::m_GetInstance();
 	EXPECT_TRUE(sm->ImmediateLoadScene("Test Scene"));
@@ -66,16 +66,16 @@ TEST(Entity, SpawnMaxEntities) {
 	std::vector<ecs::EntityID> entityIDs;
 	entityIDs.reserve(numEntities);
 	for (int i = 0; i < numEntities; ++i) {
-		ecs::EntityID newEntity = ecs->CreateEntity("Test Scene");
+		ecs::EntityID newEntity = m_ecs.CreateEntity("Test Scene");
 		entityIDs.push_back(newEntity);
 	}
 	// Verify that all entities were created successfully
 	for (const auto& id : entityIDs) {
-		EXPECT_TRUE(ecs->IsValidEntity(id));
+		EXPECT_TRUE(m_ecs.IsValidEntity(id));
 	}
 	// Clean up by destroying the created entities
 	for (const auto& id : entityIDs) {
-		ecs->DeleteEntity(id);
+		m_ecs.DeleteEntity(id);
 	}
 
 	sm->ImmediateClearScene("Test Scene");

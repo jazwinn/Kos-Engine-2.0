@@ -24,11 +24,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Scene/SceneManager.h"
 #include "AssetManager/AssetManager.h"
 #include "Configs/ConfigPath.h"
-#include "AssetManager/ScriptHotReload.h"
-
 
 void gui::ImGuiHandler::DrawMainMenuBar() {
-    scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
    
 
     bool openNewFilepopup = false;
@@ -41,12 +38,12 @@ void gui::ImGuiHandler::DrawMainMenuBar() {
             }
            
             if (ImGui::MenuItem("Save Scene")) {
-                scenemanager->SaveAllActiveScenes(true);
+                m_sceneManager.SaveAllActiveScenes(true);
             }
 
 
 
-            if (m_ecs->sceneMap.size() < 0 || ImGui::MenuItem("Open Scene")) {
+            if (m_ecs.sceneMap.size() < 0 || ImGui::MenuItem("Open Scene")) {
 
                 openAndLoadSceneDialog();
             }
@@ -81,15 +78,14 @@ void gui::ImGuiHandler::DrawMainMenuBar() {
             ImGui::InputTextWithHint(".json", "Enter scene name here", str1, IM_ARRAYSIZE(str1));
 
             if (ImGui::Button("Save", ImVec2(120, 0))) { 
-				AssetManager* assetmanager = AssetManager::GetInstance();
-                std::string m_jsonFilePath{ assetmanager->GetAssetManagerDirectory() + "/Scene/" }; //TODO temp open window in future
+                std::string m_jsonFilePath{ m_assetManager.GetAssetManagerDirectory() + "/Scene/" }; //TODO temp open window in future
                 std::string scene = m_jsonFilePath + str1 + ".json";
                 m_activeScene = scene;
                 if (!scene.empty()) {
-                    if (scenemanager->CreateNewScene(scene)) {
+                    if (m_sceneManager.CreateNewScene(scene)) {
                         //remove all scenes
-                        scenemanager->ClearAllScene();
-                        scenemanager->LoadScene(scene);
+                        m_sceneManager.ClearAllScene();
+                        m_sceneManager.LoadScene(scene);
                         m_activeScene = std::string(str1) + ".json";
                         m_clickedEntityId = -1;
                     }
@@ -210,5 +206,46 @@ void gui::ImGuiHandler::DrawMainMenuBar() {
             ImGui::End();
         }
     }  
+}
+
+ void gui::ImGuiHandler::ScriptHotReload() {
+
+    m_sceneManager.SaveAllActiveScenes();
+
+    auto scenelist = m_sceneManager.GetAllScenesPath();
+
+    //CLEAR ALL SCENES BEFORE RELOADING DLL, ELSE CRASH
+    m_sceneManager.ClearAllSceneImmediate();
+
+
+
+    //Unload the DLL
+    m_scriptManager.UnloadDLL();
+
+
+    Sleep(1000);
+
+    std::filesystem::path source = std::filesystem::absolute(configpath::scriptWatherFilePath);
+
+    // Get parent directory of the current folder (up one level)
+    std::filesystem::path targetDir = source.parent_path().parent_path(); // moves up one directory
+    std::filesystem::path target = targetDir / "script.dll";
+
+    try {
+        std::filesystem::copy_file(source, target, std::filesystem::copy_options::overwrite_existing);
+        std::cout << "Copied to: " << target << std::endl;
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error copying file: " << e.what() << std::endl;
+    }
+
+
+    //load the DLL
+    m_scriptManager.RunDLL();
+
+    for (const auto& scenepath : scenelist) {
+        m_sceneManager.LoadScene(scenepath);
+    }
+
 }
 

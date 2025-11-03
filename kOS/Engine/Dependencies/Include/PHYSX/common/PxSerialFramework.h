@@ -151,7 +151,7 @@ public:
 
 	This function is assumed to be called within the implementation of PxSerializer::exportExtraData.
 
-	\see PxSerialization::serializeCollectionToBinary, PxDeserializationContext::readName
+	\see Pxserialization::serializeCollectionToBinary, PxDeserializationContext::readName
 	*/
 	virtual	void				writeName(const char* name)											= 0;
 
@@ -284,10 +284,10 @@ typedef PX_DEPRECATED void (*PxBinaryMetaDataCallback)(PxOutputStream& stream);
 
 In order to serialize and deserialize objects the application needs
 to maintain an instance of this class. It can be created with
-PxSerialization::createSerializationRegistry() and released with
+Pxserialization::createSerializationRegistry() and released with
 PxSerializationRegistry::release().
 
-\see PxSerialization::createSerializationRegistry
+\see Pxserialization::createSerializationRegistry
 */
 class PxSerializationRegistry
 {
@@ -323,11 +323,11 @@ public:
 
 	\deprecated Binary conversion and binary meta data are deprecated.
 
-	The callback is executed when calling PxSerialization::dumpBinaryMetaData.
+	The callback is executed when calling Pxserialization::dumpBinaryMetaData.
 
 	\param	callback PxBinaryMetaDataCallback to be registered.
 
-	\see PxBinaryMetaDataCallback, PxSerialization::dumpBinaryMetaData
+	\see PxBinaryMetaDataCallback, Pxserialization::dumpBinaryMetaData
 	*/
 	PX_DEPRECATED virtual void			registerBinaryMetaDataCallback(PxBinaryMetaDataCallback callback) = 0;
 	

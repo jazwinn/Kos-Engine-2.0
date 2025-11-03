@@ -61,7 +61,7 @@ namespace Application {
         ComponentRegistry::SetInputInstance(input);
 
 
-        WindowSettings windowData = Serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
+        WindowSettings windowData = serialization::ReadJsonFile<WindowSettings>(configpath::configFilePath);
 
         /*--------------------------------------------------------------
         INITIALIZE LOGGING SYSTEM
@@ -79,9 +79,9 @@ namespace Application {
         /*--------------------------------------------------------------
            INITIALIZE ECS
         --------------------------------------------------------------*/
-        ecs->Load();
-        ecs->Init();
-		ecs->SetState(ecs::START);
+        m_ecs.Load();
+        m_ecs.Init();
+		m_ecs.SetState(ecs::START);
         LOGGING_INFO("Load ECS Successful");
 
 
@@ -190,7 +190,7 @@ namespace Application {
                 /*--------------------------------------------------------------
                     UPDATE ECS
                 --------------------------------------------------------------*/
-                ecs->Update(static_cast<float>(fixedDeltaTime));
+                m_ecs.Update(static_cast<float>(fixedDeltaTime));
 
                 /*--------------------------------------------------------------
                     UPDATE INPUT FRAME EXIT
@@ -199,6 +199,11 @@ namespace Application {
                 input->InputExitFrame(deltaTime);
 
 
+               //Get window size
+                int width, height;
+                glfwGetWindowSize(lvWindow.window, &width, &height);
+                //std::cout << width << ' ' << height << '\n';
+                graphicsManager->gm_UpdateBuffers(width, height);
                 /*--------------------------------------------------------------
                     UPDATE Render Pipeline
                 --------------------------------------------------------------*/

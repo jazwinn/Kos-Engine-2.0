@@ -36,12 +36,11 @@ namespace {
 
 namespace ecs {
 	void ColliderSystem::Init() {
-        onDeregister.Add([](EntityID id) {
-            ECS* ecs = ECS::GetInstance();
-            auto* box = ecs->GetComponent<BoxColliderComponent>(id);
-            auto* sphere = ecs->GetComponent<SphereColliderComponent>(id);
-            auto* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
-            auto* rb = ecs->GetComponent<RigidbodyComponent>(id);
+        onDeregister.Add([&](EntityID id) {
+            auto* box = m_ecs.GetComponent<BoxColliderComponent>(id);
+            auto* sphere = m_ecs.GetComponent<SphereColliderComponent>(id);
+            auto* capsule = m_ecs.GetComponent<CapsuleColliderComponent>(id);
+            auto* rb = m_ecs.GetComponent<RigidbodyComponent>(id);
             if (rb) {
                 if (box) { box->shape = nullptr; }
                 if (sphere) { sphere->shape = nullptr; }
@@ -94,21 +93,18 @@ namespace ecs {
     }
 
 	void ColliderSystem::Update() {
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
-        auto pm = PhysicsManager::GetInstance();
-
         for (EntityID id : entities) {
-            TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
-            NameComponent* name = ecs->GetComponent<NameComponent>(id);
+            TransformComponent* trans = m_ecs.GetComponent<TransformComponent>(id);
+            NameComponent* name = m_ecs.GetComponent<NameComponent>(id);
 
             if (name->hide) { continue; }
             
-            RigidbodyComponent* rb = ecs->GetComponent<RigidbodyComponent>(id);
-            BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
-            CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
-            SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id);
+            RigidbodyComponent* rb = m_ecs.GetComponent<RigidbodyComponent>(id);
+            BoxColliderComponent* box = m_ecs.GetComponent<BoxColliderComponent>(id);
+            CapsuleColliderComponent* capsule = m_ecs.GetComponent<CapsuleColliderComponent>(id);
+            SphereColliderComponent* sphere = m_ecs.GetComponent<SphereColliderComponent>(id);
 
             PxFilterData filter;
             filter.word0 = name->Layer;
@@ -123,16 +119,16 @@ namespace ecs {
                 PxShape* shape = static_cast<PxShape*>(box->shape);
                 PxBoxGeometry geometry{ halfExtents.x, halfExtents.y, halfExtents.z };
                 if (!shape) {
-                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
+                    shape = m_physicsManager.GetPhysics()->createShape(geometry, *m_physicsManager.GetDefaultMaterial(), true);
                     box->shape = shape;
-                } else {
-                    shape->setGeometry(geometry);
-                }
-                shape->setLocalPose(PxTransform{ PxVec3{ box->box.center.x, box->box.center.y, box->box.center.z } });
+                } 
+                shape->setGeometry(geometry);
+                glm::vec3 scaledCenter = box->box.center * scale;
+                shape->setLocalPose(PxTransform{ PxVec3{ scaledCenter.x, scaledCenter.y, scaledCenter.z } });
                 ToPhysxIsTrigger(shape, box->isTrigger);
                 shape->setSimulationFilterData(filter);
                 shape->setQueryFilterData(filter);
-                box->box.bounds.center = trans->WorldTransformation.position + box->box.center * scale;
+                box->box.bounds.center = trans->WorldTransformation.position + scaledCenter;
                 box->box.bounds.extents = halfExtents;
                 box->box.bounds.size = box->box.size * scale;
                 box->box.bounds.min = box->box.bounds.center - box->box.bounds.extents;
@@ -144,12 +140,12 @@ namespace ecs {
                 PxShape* shape = static_cast<PxShape*>(sphere->shape);
                 PxSphereGeometry geometry{ radius };
                 if (!shape) {
-                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
+                    shape = m_physicsManager.GetPhysics()->createShape(geometry, *m_physicsManager.GetDefaultMaterial(), true);
                     sphere->shape = shape;
-                } else {
-                    shape->setGeometry(geometry);
-                }
-                shape->setLocalPose(PxTransform{ PxVec3{ sphere->sphere.center.x, sphere->sphere.center.y, sphere->sphere.center.z } });
+                } 
+                shape->setGeometry(geometry);
+                glm::vec3 scaledCenter = sphere->sphere.center * scale;
+                shape->setLocalPose(PxTransform{ PxVec3{ scaledCenter.x, scaledCenter.y, scaledCenter.z } });
                 ToPhysxIsTrigger(shape, sphere->isTrigger);
                 shape->setSimulationFilterData(filter);
                 shape->setQueryFilterData(filter);
@@ -161,11 +157,10 @@ namespace ecs {
                 PxShape* shape = static_cast<PxShape*>(capsule->shape);
                 PxCapsuleGeometry geometry{ radius, halfHeight };
                 if (!shape) {
-                    shape = pm->GetPhysics()->createShape(geometry, *pm->GetDefaultMaterial(), true);
+                    shape = m_physicsManager.GetPhysics()->createShape(geometry, *m_physicsManager.GetDefaultMaterial(), true);
                     capsule->shape = shape;
-                } else {
-                    shape->setGeometry(geometry);
-                }
+                } 
+                shape->setGeometry(geometry);
                 PxQuat rot{ PxIdentity };
                 switch (capsule->capsule.capsuleDirection) {
                     case CapsuleDirection::X:
@@ -177,7 +172,8 @@ namespace ecs {
                     default:
                         break;
                 }
-                shape->setLocalPose(PxTransform{ PxVec3{ capsule->capsule.center.x, capsule->capsule.center.y, capsule->capsule.center.z }, rot });
+                glm::vec3 scaledCenter = capsule->capsule.center * scale;
+                shape->setLocalPose(PxTransform{ PxVec3{ scaledCenter.x, scaledCenter.y, scaledCenter.z }, rot });
                 ToPhysxIsTrigger(shape, capsule->isTrigger);
                 shape->setSimulationFilterData(filter);
                 shape->setQueryFilterData(filter);
@@ -194,9 +190,9 @@ namespace ecs {
                 PxTransform pxTrans{ PxVec3{ pos.x, pos.y, pos.z }, PxQuat{ rot.x, rot.y, rot.z, rot.w } };
 
                 if (!actor) {
-                    actor = pm->GetPhysics()->createRigidStatic(pxTrans);
+                    actor = m_physicsManager.GetPhysics()->createRigidStatic(pxTrans);
                     actor->userData = reinterpret_cast<void*>(static_cast<uintptr_t>(id));
-                    pm->GetScene()->addActor(*actor);
+                    m_physicsManager.GetScene()->addActor(*actor);
 
                     if (box) { box->actor = actor; }
                     if (sphere) { sphere->actor = actor; }

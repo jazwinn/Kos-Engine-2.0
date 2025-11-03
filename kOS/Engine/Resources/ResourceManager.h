@@ -47,20 +47,9 @@ public:
 
 	~ResourceManager() = default;
 
-    static ResourceManager* GetInstance() {
-        if (!m_instancePtr)
-        {
-            m_instancePtr = std::make_shared<ResourceManager>();
-        }
-        return m_instancePtr.get();
-    }
-
 	void Init(const std::string& Directory) {
 		m_resourceDirectory = Directory;
 	}
-
-
-
 
 
 	template<typename T>
@@ -76,17 +65,8 @@ public:
 			}
 		}
 
-		std::string className = T::classname();
-
-		//check if resource is registered
-		if (m_resourceExtension.find(className) == m_resourceExtension.end()) {
-			LOGGING_ERROR(className + " : Not registered");
-		}
-
-		//Asset not loaded
-
-        //create file path
-        std::string path = m_resourceDirectory + "/" + GUID.GetToString() + m_resourceExtension.at(className);
+		
+		std::string path = GetResourcePath<T>(GUID);
 
 		//Check if file path exists
 
@@ -113,6 +93,24 @@ public:
 		}
 	}
 
+
+	template<typename T>
+	std::string GetResourcePath(const utility::GUID& GUID) const {
+		std::string className = T::classname();
+
+		//check if resource is registered
+		if (m_resourceExtension.find(className) == m_resourceExtension.end()) {
+			LOGGING_ERROR(className + " : Not registered");
+		}
+
+		//Asset not loaded
+
+		//create file path
+		std::string path = m_resourceDirectory + "/" + GUID.GetToString() + m_resourceExtension.at(className);
+
+		return path;
+	}
+
 	std::string GetResourceDirectory() const { return m_resourceDirectory; }
 
 private:
@@ -123,8 +121,6 @@ private:
 	}
 
 private:
-
-	static std::shared_ptr<ResourceManager> m_instancePtr;
 
 	std::unordered_map<std::string, std::string> m_resourceExtension;
 

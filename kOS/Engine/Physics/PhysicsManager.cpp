@@ -30,10 +30,8 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Config/pch.h"
 #include "PhysicsManager.h"
-#include "Inputs/Input.h"
 
 namespace physics {
-	std::shared_ptr<PhysicsManager> PhysicsManager::m_instancePtr = nullptr;
 
 	void PhysicsManager::Init() {
 		static PxDefaultAllocator g_Allocator;
@@ -50,8 +48,13 @@ namespace physics {
 		m_cpuDispatcher = PxDefaultCpuDispatcherCreate(2);
 		sceneDesc.cpuDispatcher = m_cpuDispatcher;
 		sceneDesc.filterShader = ToPhysxCustomFilter;
+
+		physicslayer::PhysicsFilterData physicsFilterData;
+		physicsFilterData.layerSystem = &layers;
+		sceneDesc.filterShaderData = &physicsFilterData;
+		sceneDesc.filterShaderDataSize = sizeof(physicslayer::PhysicsFilterData);
 		
-		m_eventCallback = new PhysicsEventCallback{};
+		m_eventCallback = new PhysicsEventCallback();
 		sceneDesc.simulationEventCallback = m_eventCallback;
 
 		m_scene = m_physics->createScene(sceneDesc);
@@ -63,7 +66,7 @@ namespace physics {
 		m_controllerManager = PxCreateControllerManager(*m_scene);
 		PX_ASSERT(m_controllerManager);
 
-		physicslayer::PhysicsLayer::m_GetInstance()->LoadCollisionLayer();
+		layers.LoadCollisionLayer();
 	}
 
 	void PhysicsManager::Shutdown() {

@@ -18,13 +18,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 class Peformance
 {
 public:
-    static std::shared_ptr<Peformance> GetInstance() {
-        if (!m_InstancePtr)
-        {
-            m_InstancePtr = std::make_shared<Peformance>();
-        }
-        return m_InstancePtr;
-    }
 
     const std::unordered_map<std::string, float>& GetSystemPerformance() const
     {
@@ -67,7 +60,6 @@ public:
     }
 
 private:
-	static std::shared_ptr<Peformance> m_InstancePtr;
     std::unordered_map<std::string, float> m_SystemPerformance;
     std::unordered_map<std::string, float> m_ScriptPerformance;
     float m_fps{};

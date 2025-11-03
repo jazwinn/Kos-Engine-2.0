@@ -21,14 +21,15 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define OCTREENODE_H
 
 #include "Config/pch.h"
-#include "ECS/ECS.h"
-
-#include "../../Graphics/GraphicsManager.h"
+#include "Graphics/GraphicsManager.h"
 
 #include "BoundsCheck.h"
 #include "OctreeObject.h"
 
 namespace Octrees {
+	struct OctreeObject;
+
+
 	struct OctreeNode {
 		std::vector<OctreeObject> objects;
 
@@ -44,10 +45,10 @@ namespace Octrees {
 
 		OctreeNode();
 		OctreeNode(Bounds bounds, float minNodeSize);
-		void Divide(ecs::EntityID id);
+		void Divide(const ecs::TransformComponent* tc, const ecs::BoxColliderComponent* bc);
 		void Divide(OctreeObject octreeObject);
 		void AddObject(OctreeObject octreeObject);
-		void DrawNode();
+		void DrawNode(GraphicsManager* gm);
 
 		//OctreeNode& operator=(const OctreeNode& other);
 		bool operator==(const OctreeNode& other) const;

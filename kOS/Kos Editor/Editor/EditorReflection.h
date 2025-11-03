@@ -338,7 +338,10 @@ public:
 
 template <typename T>
 class EditorActionInvoker : public IEditorActionInvoker {
+    ecs::ECS& m_ecs;
 public:
+	EditorActionInvoker(ecs::ECS& ecs) : m_ecs(ecs) {}
+
     void Draw(void* componentData) override {
         T* component = static_cast<T*>(componentData);
         ecs::EntityID ID = component->entity;
@@ -348,10 +351,10 @@ public:
         if (ImGui::BeginPopupContextItem()) {
             if (T::classname() != ecs::TransformComponent::classname() && ImGui::MenuItem("Delete Component")) {
                 
-                ecs::ECS::GetInstance()->RemoveComponent<T>(ID);
+                m_ecs.RemoveComponent<T>(ID);
             }
             if (ImGui::MenuItem("Reset Component")) {
-                ecs::ECS::GetInstance()->ResetComponent<T>(ID);
+                m_ecs.ResetComponent<T>(ID);
 
 
             }
@@ -367,6 +370,6 @@ public:
 
     void AddComponent(ecs::EntityID ID) override {
 
-        ecs::ECS::GetInstance()->AddComponent<T>(ID);
+        m_ecs.AddComponent<T>(ID);
     }
 };

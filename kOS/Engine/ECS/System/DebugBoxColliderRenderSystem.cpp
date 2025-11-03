@@ -35,14 +35,12 @@ namespace ecs {
 
     void DebugBoxColliderRenderSystem::Update()
     {
-        ECS* ecs = ECS::GetInstance();
-        std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-        ResourceManager* rm = ResourceManager::GetInstance();
+
         const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
-            TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-            BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
+            TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+            BoxColliderComponent* box = m_ecs.GetComponent<BoxColliderComponent>(id);
 
             if (!transform || !box) { continue; }
 
@@ -53,7 +51,7 @@ namespace ecs {
             glm::mat4 result{ 1.0f };
             result = glm::translate(result, center) * glm::mat4_cast(glm::quat(glm::radians(transform->WorldTransformation.rotation))) * glm::scale(result, size);
 
-            gm->gm_PushCubeDebugData(BasicDebugData{ result });
+            m_graphicsManager.gm_PushCubeDebugData(BasicDebugData{ result });
         }
     }
 
