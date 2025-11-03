@@ -4,7 +4,7 @@
 
 void R_Scene::Load()
 {
-	scenes::SceneManager::m_GetInstance()->LoadScene(m_filePath);
+
 }
 
 void R_Scene::Unload()
@@ -12,6 +12,11 @@ void R_Scene::Unload()
 
 	//scenes::SceneManager::m_GetInstance()->ClearScene(m_filePath.filename().string());
 
+}
+
+void R_Scene::LoadScene()
+{
+	scenes::SceneManager::m_GetInstance()->LoadScene(m_filePath);
 }
 
 int R_Scene::DuplicatePrefabIntoScene(const std::string& scene) {
@@ -24,7 +29,7 @@ int R_Scene::DuplicatePrefabIntoScene(const std::string& scene) {
 	sm->LoadSceneToCurrent(scene, m_filePath);
 	auto* ecs = ComponentRegistry::GetECSInstance();
 	const auto& sceneData = ecs->GetSceneData(scene);
-	ecs::EntityID newID;
+	//ecs::EntityID newID;
 
 	//retrieve the new id that just spawned (the one without parent) - TODO: improve this later
 	for (auto it = sceneData.sceneIDs.rbegin(); it != sceneData.sceneIDs.rend(); ++it) {

@@ -197,6 +197,7 @@ void R_Animation::Update(float currentTime, const glm::mat4& parentTransform, co
     const std::unordered_map<std::string, int>& boneMap,
     const std::vector<BoneInfo>& boneInfo)
 {
+    m_CurrentTime = currentTime;
     CalculateBoneTransform(GetRootNode(), parentTransform, globalInverse, boneMap, boneInfo);
 }
 

@@ -1,3 +1,4 @@
+#pragma once
 #include "ScriptAdapter/TemplateSC.h"
 
 class EnemyManagerScript : public TemplateSC {

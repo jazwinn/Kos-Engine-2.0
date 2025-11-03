@@ -47,7 +47,7 @@ namespace ecs {
             TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
             NameComponent* nameComp = ecs->GetComponent<NameComponent>(id);
             SkinnedMeshRendererComponent* skinnedMesh = ecs->GetComponent<SkinnedMeshRendererComponent>(id);
-
+            AnimatorComponent* anim = ecs->GetComponent<AnimatorComponent>(id);
             // Skip entities not in this scene or hidden
             if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
                 continue;
@@ -56,34 +56,39 @@ namespace ecs {
             R_Animation* skeleton{};
             //if (skinnedMesh->cachedSkinnedMeshGUID != skinnedMesh->skinnedMeshGUID)
             {
-                mesh = rm->GetResource<R_Model>(skinnedMesh->skinnedMeshGUID).get();
-                skeleton = rm->GetResource<R_Animation>(skinnedMesh->skeletonGUID).get();
+                
+                
                 skinnedMesh->cachedSkinnedMeshGUID = skinnedMesh->skinnedMeshGUID;
                 skinnedMesh->cachedSkinnedMeshResource = static_cast<void*>(mesh);
 
-                if (skeleton)
+
+                std::shared_ptr<R_Material> mat = rm->GetResource<R_Material>(skinnedMesh->materialGUID);
+                if (!mat)return;;
+                skeleton = rm->GetResource<R_Animation>(skinnedMesh->skeletonGUID).get();
+                mesh = rm->GetResource<R_Model>(skinnedMesh->skinnedMeshGUID).get();
+
+                if (skeleton && anim->m_IsPlaying)
                 {
-                    // fix this
-                    skeleton->m_CurrentTime += skeleton->GetTicksPerSecond() * ecs->m_GetDeltaTime();
-                    float wtf = skeleton->GetDuration();
-                    skeleton->m_CurrentTime = fmod(skeleton->m_CurrentTime, skeleton->GetDuration());
+                    anim->m_CurrentTime += skeleton->GetTicksPerSecond() * ecs->m_GetDeltaTime() * anim->m_PlaybackSpeed;
+                    anim->m_CurrentTime = fmod(anim->m_CurrentTime, skeleton->GetDuration());
                 }
+                std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(mat->md.diffuseMaterialGUID);
+                std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(mat->md.specularMaterialGUID);
+                std::shared_ptr<R_Texture> norm = rm->GetResource<R_Texture>(mat->md.normalMaterialGUID);
+                std::shared_ptr<R_Texture> ao = rm->GetResource<R_Texture>(mat->md.ambientOcclusionMaterialGUID);
+                std::shared_ptr<R_Texture> rough = rm->GetResource<R_Texture>(mat->md.roughnessMaterialGUID);
 
-
-                std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(skinnedMesh->diffuseMaterialGUID);
-                std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(skinnedMesh->specularMaterialGUID);
-                std::shared_ptr<R_Texture> norm = rm->GetResource<R_Texture>(skinnedMesh->normalMaterialGUID);
-                std::shared_ptr<R_Texture> ao = rm->GetResource<R_Texture>(skinnedMesh->ambientOcclusionMaterialGUID);
-                std::shared_ptr<R_Texture> rough = rm->GetResource<R_Texture>(skinnedMesh->roughnessMaterialGUID);
+                //std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(skinnedMesh->diffuseMaterialGUID);
+                //std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(skinnedMesh->specularMaterialGUID);
+               // std::shared_ptr<R_Texture> norm = rm->GetResource<R_Texture>(skinnedMesh->normalMaterialGUID);
+               // std::shared_ptr<R_Texture> ao = rm->GetResource<R_Texture>(skinnedMesh->ambientOcclusionMaterialGUID);
+               // std::shared_ptr<R_Texture> rough = rm->GetResource<R_Texture>(skinnedMesh->roughnessMaterialGUID);
 
                 if (mesh)
-                    gm->gm_PushSkinnedMeshData(SkinnedMeshData{ mesh, skeleton, PBRMaterial{diff,spec,rough,ao,norm}, transform->transformation, 0.f,id });
+                    gm->gm_PushSkinnedMeshData(SkinnedMeshData{ mesh, skeleton, PBRMaterial{diff,spec,rough,ao,norm}, transform->transformation, anim->m_CurrentTime,id });
             }
             //else
                // mesh = static_cast<R_Model*>(skinnedMesh->cachedSkinnedMeshResource);
-
-            // TODO: Update bone matrices via AnimatorSystem
-            // TODO: Submit skinned mesh (skinnedMesh->meshFile, skinnedMesh->materialFile) for rendering
         }
     }
 
