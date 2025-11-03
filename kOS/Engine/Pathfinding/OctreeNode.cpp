@@ -19,7 +19,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 namespace Octrees {
 	int OctreeNode::nextId = 0;
-
 	OctreeNode::OctreeNode()
 	{
 		//bounds.center;
@@ -46,7 +45,7 @@ namespace Octrees {
 
 		minNodeSize = _minNodeSize;
 		glm::vec3 newSize = bounds.size * 0.5f;
-		glm::vec3 centerOffset = bounds.size * 0.25f;
+		//glm::vec3 centerOffset = bounds.size * 0.25f;
 		//glm::vec3 newSize = bounds.size;
 		//glm::vec3 centerOffset = bounds.size * 0.5f;
 		glm::vec3 parentCenter = bounds.center;
@@ -68,7 +67,7 @@ namespace Octrees {
 		Divide(OctreeObject(tc, bc));
 	}
 
-	void OctreeNode::Divide(OctreeObject octreeObject) {
+	void OctreeNode::Divide(OctreeObject&& octreeObject) {
 		if (bounds.size.x <= minNodeSize) {
 			AddObject(octreeObject);
 			return;
@@ -87,7 +86,7 @@ namespace Octrees {
 			}
 
 			if (octreeObject.Intersects(childBounds[i])) {
-				children[i].Divide(octreeObject);
+				children[i].Divide(std::move(octreeObject));
 				intersectedChild = true;
 			}
 		}
@@ -105,7 +104,6 @@ namespace Octrees {
 		glm::mat4 model{ 1.f };
 		model = glm::translate(model, bounds.center) * glm::scale(model, bounds.size * 2.f);
 		BasicDebugData basicDebug;
-		//basicDebug.color = { 1.f, 0.f, 0.f };
 		basicDebug.worldTransform = model;
 		basicDebug.color = { 1.f, 0.f, 0.f };
 		gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug });

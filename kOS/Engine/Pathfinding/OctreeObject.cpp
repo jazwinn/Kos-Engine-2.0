@@ -32,9 +32,10 @@ namespace Octrees {
 
 
 
-		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * std::max(std::max(bc->box.bounds.max.x - bc->box.bounds.min.x,
-			bc->box.bounds.max.y - bc->box.bounds.min.y),
-			bc->box.bounds.max.z - bc->box.bounds.min.z) * 0.5f;
+		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * 
+			std::max(std::max(bc->box.bounds.max.x - bc->box.bounds.min.x,
+								bc->box.bounds.max.y - bc->box.bounds.min.y),
+								bc->box.bounds.max.z - bc->box.bounds.min.z) * 0.5f;
 
 		bounds.size.x = boundSize.x;
 		bounds.size.y = boundSize.y;

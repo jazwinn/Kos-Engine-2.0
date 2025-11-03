@@ -107,6 +107,7 @@ void gui::ImGuiHandler::DrawRenderScreenWindow(unsigned int windowWidth, unsigne
         reinterpret_cast<void*>(static_cast<uintptr_t>(fbAdd->texID)),
         pos, pMax,
         ImVec2(0, 1), ImVec2(1, 0));
+
     //Get mouse position
     ImVec2 mousePos = ImGui::GetIO().MousePos;
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver()) {

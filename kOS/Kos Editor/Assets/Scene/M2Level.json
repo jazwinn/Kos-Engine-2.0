@@ -234,7 +234,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 18",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -296,7 +296,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 15",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -358,7 +358,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 15",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -420,7 +420,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 16",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -482,7 +482,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 17",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -544,7 +544,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 19",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -606,7 +606,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 20",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -668,7 +668,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 21",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -730,7 +730,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 22",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -792,7 +792,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 23",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -854,7 +854,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 23",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -916,7 +916,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 24",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -978,7 +978,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 24",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1040,7 +1040,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 25",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1102,7 +1102,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 26",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1164,7 +1164,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 26",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1226,7 +1226,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 26",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1288,7 +1288,7 @@
         "NameComponent": {
             "entityName": "Wall Collider 27",
             "Layer": 0,
-            "entityTag": "Default",
+            "entityTag": "Obstacle",
             "isPrefab": false,
             "prefabName": "",
             "hide": false
@@ -1403,7 +1403,9 @@
             "hide": false
         },
         "OctreeGeneratorComponent": {
-            "drawWireframe": false
+            "drawWireframe": true,
+            "drawNodes": true,
+            "drawBound": false
         },
         "TransformComponent": {
             "WorldTransformation": {

@@ -46,7 +46,7 @@ namespace Octrees {
 		OctreeNode();
 		OctreeNode(Bounds bounds, float minNodeSize);
 		void Divide(const ecs::TransformComponent* tc, const ecs::BoxColliderComponent* bc);
-		void Divide(OctreeObject octreeObject);
+		void Divide(OctreeObject&& octreeObject);
 		void AddObject(OctreeObject octreeObject);
 		void DrawNode(GraphicsManager* gm);
 

@@ -7,7 +7,9 @@ namespace ecs {
 	class OctreeGeneratorComponent : public Component {
 	public:
 		bool drawWireframe = true;
-		REFLECTABLE(OctreeGeneratorComponent, drawWireframe)
+		bool drawNodes = true;
+		bool drawBound = true;
+		REFLECTABLE(OctreeGeneratorComponent, drawWireframe, drawNodes, drawBound)
 	};
 }
 

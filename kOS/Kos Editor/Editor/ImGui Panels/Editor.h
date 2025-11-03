@@ -181,7 +181,7 @@ namespace gui {
         void DrawGizmo(float renderPosX, float renderPosY, float renderWidth, float renderHeight);
         void DrawLayerWindow();
         void DrawSceneSettingsWindow();
-        void DrawGameSceneWindow();
+        void DrawGameSceneWindow(unsigned int windowWidth, unsigned int windowHeight);
         void DrawContentBrowser();
         void DrawAssetInspector();
 		void DrawMaterialWindow();

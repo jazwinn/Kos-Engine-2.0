@@ -322,6 +322,13 @@ namespace scenes {
             if (iter != m_ecs.sceneMap.end()) {
                 if (iter->second.isPrefab) continue;
                 std::string newPath = path.parent_path().string() + '\\' + path.stem().string() + "[Cached]" + path.extension().string();
+                if (std::filesystem::exists(newPath)) {
+                    std::filesystem::remove(newPath);
+                    std::string metaPath = newPath + ".meta";
+                    if (std::filesystem::exists(metaPath)) {
+                        std::filesystem::remove(metaPath);
+                    }
+                }
                 cacheScenePath.push_back(newPath);
                 m_serialization.SaveScene(fileName, newPath);
 

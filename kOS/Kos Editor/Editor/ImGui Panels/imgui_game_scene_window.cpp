@@ -47,22 +47,55 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 namespace gui
 {
-	void ImGuiHandler::DrawGameSceneWindow()
+	void ImGuiHandler::DrawGameSceneWindow(unsigned int windowWidth, unsigned int windowHeight)
 	{
         ImGui::Begin("Game Preview");
 
 
         ImVec2 pos = ImGui::GetCursorScreenPos();
         ImVec2 renderWindowSize = ImGui::GetContentRegionAvail();
+        float renderWindowAspectRatio = renderWindowSize.x / renderWindowSize.y;
+        float textureAspectRatio = (float)windowWidth / (float)windowHeight;
 
-        ImVec2 testSize(960, 540);
+
+        ImVec2 imageSize;
+        imageSize.x = windowWidth / 2.f;
+        imageSize.y = windowHeight / 2.f;
+
+        //Dynamic Window Resizing
+        if (renderWindowAspectRatio > textureAspectRatio)
+        {
+            imageSize.y = renderWindowSize.y;
+            imageSize.x = imageSize.y * textureAspectRatio;
+        }
+        else
+        {
+            imageSize.x = renderWindowSize.x;
+            imageSize.y = imageSize.x / textureAspectRatio;
+        }
+
+        if (imageSize.x <= renderWindowSize.x)
+        {
+            pos.x += (renderWindowSize.x - imageSize.x) / 2;
+        }
+
+        if (imageSize.y <= renderWindowSize.y)
+        {
+            pos.y += (renderWindowSize.y - imageSize.y) / 2;
+        }
+
+        //ImVec2 testSize(960, 540);
+
+        //pipe->m_renderFinalPassWithDebug();
+        ImVec2 pMax(pos.x + imageSize.x, pos.y + imageSize.y);
+
         //ImGui::GetWindowDrawList()->AddImage(
                 //    (void*)(GLuint)GraphicsManager::GetInstance()->gm_GetGameBuffer().texID, pos,
                 //    ImVec2(pos.x + testSize.x, pos.y + testSize.y),
                 //    ImVec2(0, 1), ImVec2(1, 0));
         ImGui::GetWindowDrawList()->AddImage(
             reinterpret_cast<void*>(static_cast<uintptr_t>(m_graphicsManager.gm_GetGameBuffer().texID)),
-            pos, ImVec2(pos.x + testSize.x, pos.y + testSize.y),
+            pos, pMax,
             ImVec2(0, 1), ImVec2(1, 0));
 
         gameWindowPos = ImGui::GetCursorScreenPos();

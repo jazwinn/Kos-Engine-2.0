@@ -91,8 +91,6 @@ namespace ecs {
 					currentTimer = 0.f;
 				}
 				
-
-
 				if (octree.graph.pathList.size() > 0 && currentPathCount >= octree.graph.pathList.size()) {
 					break;
 				}
@@ -108,7 +106,6 @@ namespace ecs {
 					else {
 						directionToMove = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->LocalTransformation.position;
 					}
-
 
 					pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * m_ecs.m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
 
@@ -129,13 +126,12 @@ namespace ecs {
 			if (auto* oct = m_ecs.GetComponent<OctreeGeneratorComponent>(id)) {
 				if (testing) { // this wont work with DI
 					octree = Octrees::Octree(2.f, waypoints, &m_ecs);
-
 					testing = false;
 				}
 
 				if (oct->drawWireframe) {
-					octree.root.DrawNode(&m_graphicsManager);
-					octree.graph.DrawGraph(&m_graphicsManager);
+					if (oct->drawBound) octree.root.DrawNode(&m_graphicsManager);
+					if (oct->drawNodes) octree.graph.DrawGraph(&m_graphicsManager);
 				}
 			}
 
