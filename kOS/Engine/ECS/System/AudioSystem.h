@@ -7,7 +7,7 @@
 \brief     This file contains the declaration of the AudioSystem
            class. It handles the logic behind the Audio played in
            the engine and works with the Audio Manager interface.
-            
+
 
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -22,8 +22,12 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "System.h"
 
 
-namespace FMOD { 
-    class System; 
+namespace FMOD {
+    namespace Studio {
+        class System;   //for FMOD studio
+    }
+
+    class System;       //for FMOD Core
 }
 
 namespace ecs {
@@ -34,16 +38,45 @@ namespace ecs {
         void Update() override;
 
         static void SetPaused(bool paused);
-        static void StopAll(); 
+        static void StopAll();
+
+        void SetListenerFromCamera(const glm::vec3& pos,
+            const glm::vec3& fwd,
+            const glm::vec3& up);
+
+        //DEBUG
+        glm::vec3 GetCachedCamPos() { return s_camPos; }
+        glm::vec3 GetCachedCamFwd() { return s_camFwd; }
+        glm::vec3 GetCachedCamUp() { return s_camUp; }
+
+        // Fmod Studio Stuff
+        FMOD::Studio::System* GetStudioSystem() { return s_studio; }
+        FMOD::System* GetCoreSystem() { return s_fmod; }
+        bool IsStudioReady() { return s_studioReady; }
 
         REFLECTABLE(AudioSystem)
 
     private:
-        static FMOD::System* s_fmod;
-        static bool s_paused;
+        // Core
+        FMOD::System* s_fmod;
+        bool          s_paused;
+
+        // Studio
+        FMOD::Studio::System* s_studio;
+        bool s_studioReady;   // true when Studio and bank initializaed 
+
+        void InitCore_();
+        void InitStudioIfBanksExist_();
+        void UpdateListener_(); // single owner of listener - camer
+
+        static inline glm::vec3 s_camPos{ 0,0,0 };
+        static inline glm::vec3 s_camFwd{ 0,0,-1 };
+        static inline glm::vec3 s_camUp{ 0,1,0 };
+        static inline bool      s_camValid{ false };
+
+        static FMOD::System* s_coreForControls;
 
     };
 }
 
 #endif // AUDIOSYS_H
-
