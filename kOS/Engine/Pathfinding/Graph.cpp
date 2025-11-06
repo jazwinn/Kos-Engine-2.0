@@ -402,12 +402,12 @@ namespace Octrees {
 		return nullptr;
 	}
 
-	void Graph::DrawGraph() {
+	void Graph::DrawGraph(GraphicsManager* gm) {
 		for (Node node : nodes) {
-			std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
 			glm::mat4 model{ 1.f };
 			model = glm::translate(model, node.octreeNode.bounds.center) * glm::scale(model, { 0.3f, 0.3f, 0.3f });
 			BasicDebugData basicDebug;
+			basicDebug.color = glm::vec3(1, 1, 0);
 			basicDebug.worldTransform = model;
 			gm->gm_PushCubeDebugData(BasicDebugData{ basicDebug });
 		}

@@ -16,6 +16,16 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Config/pch.h"
 #include "Script.h"
 
+#include "ECS/ECS.h"
+#include "Inputs/Input.h"
+#include "Physics/PhysicsManager.h"
+#include "Resources/ResourceManager.h"
+#include "Reflection/Field.h"
+#include "Scene/SceneManager.h"
+
+namespace scenes {
+	class SceneManager;
+}
 
 struct StaticVariableManager {
 	void* ECSSystem;
@@ -28,14 +38,34 @@ struct StaticVariableManager {
 };
 
 class ScriptManager {
-public: 
+	ecs::ECS& m_ecs;
+	Input::InputSystem& m_input;
+	scenes::SceneManager& m_sceneManager;
+	physics::PhysicsManager& m_physics;
+	ResourceManager& m_resourceManager;
+	Fields& m_field;
 
-	static ScriptManager* m_GetInstance() {
-		if (!m_ScriptManagerPtr) {
-			m_ScriptManagerPtr.reset(new ScriptManager{});
-		}
-		return m_ScriptManagerPtr.get();
+public: 
+	ScriptManager(
+		ecs::ECS& ecs,
+		scenes::SceneManager& sm,
+		Input::InputSystem& slm,
+		physics::PhysicsManager& pm,
+		ResourceManager& rm,
+		Fields& field
+	)
+		: m_ecs(ecs)
+		, m_input(slm)
+		, m_sceneManager(sm)
+		, m_physics(pm)
+		, m_resourceManager(rm)
+		, m_field(field)
+	{
+		hInstDLL = nullptr;
+	
 	}
+
+
 	void Init(const std::string& scriptdllPath);
 
 
@@ -52,7 +82,6 @@ public:
 	const std::vector<std::string>& GetScriptList() const { return scriptList; }
 	//List of script pointers
 private:
-	static std::shared_ptr<ScriptManager> m_ScriptManagerPtr;
 	
 	std::vector<std::string> scriptList;
 	std::string m_dllPath;

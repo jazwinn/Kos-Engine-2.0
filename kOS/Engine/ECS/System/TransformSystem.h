@@ -22,16 +22,21 @@ namespace ecs {
 
     class TransformSystem : public ISystem {
     public:
+        using ISystem::ISystem;
         void Init() override;
         void Update() override;
-        static void CalculateAllTransform(TransformComponent* transComp, const glm::mat4& parentWorldMtx = glm::mat4(1.0f));
-        static void CalculateLocalTransformMtx(TransformComponent* transformComp);
-        static void SetImmediateWorldPosition(TransformComponent* transformComp, glm::vec3&& pos);
-        static void SetImmediateWorldRotation(TransformComponent* transformComp, glm::vec3&& rot);
-        static void SetImmediateWorldScale(TransformComponent* transformComp, glm::vec3&& scale);
-        static void SetImmediateLocalPosition(TransformComponent* transformComp, glm::vec3&& pos);
-        static void SetImmediateLocalRotation(TransformComponent* transformComp, glm::vec3&& rot);
-        static void SetImmediateLocalScale(TransformComponent* transformComp, glm::vec3&& scale);
+
+
+
+		//TODO,find a better way of impelementing this
+        static void CalculateAllTransform(ECS& ecs, TransformComponent* transComp, const glm::mat4& parentWorldMtx = glm::mat4(1.0f));
+        static void CalculateLocalTransformMtx(ECS& ecs, TransformComponent* transformComp);
+        static void SetImmediateWorldPosition(ECS& ecs, TransformComponent* transformComp, glm::vec3&& pos);
+        static void SetImmediateWorldRotation(ECS& ecs, TransformComponent* transformComp, glm::vec3&& rot);
+        static void SetImmediateWorldScale(ECS& ecs, TransformComponent* transformComp, glm::vec3&& scale);
+        static void SetImmediateLocalPosition(ECS& ecs, TransformComponent* transformComp, glm::vec3&& pos);
+        static void SetImmediateLocalRotation(ECS& ecs, TransformComponent* transformComp, glm::vec3&& rot);
+        static void SetImmediateLocalScale(ECS& ecs, TransformComponent* transformComp, glm::vec3&& scale);
         REFLECTABLE(TransformSystem)
     };
 

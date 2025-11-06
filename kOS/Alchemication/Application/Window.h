@@ -31,6 +31,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Inputs/Input.h"
+#include "ECS/ECS.h"
 
 namespace Application {
 
@@ -43,27 +44,40 @@ namespace Application {
     class AppWindow {
 
     public:
+        ecs::ECS& m_ecs;
+        Input::InputSystem& m_inputSystem;
+
+        AppWindow(ecs::ECS& ecs, Input::InputSystem& inputSystem) :
+            m_ecs(ecs),
+            m_inputSystem(inputSystem)
+        {
+        }
+        AppWindow() = delete;
 
 
         int init(int windowWidth, int windowHeight);
-        int Draw();
+        int Update();
         int CleanUp();
 
-		static float windowHeight;
-		static float windowWidth;
+
+		float windowHeight;
+		float windowWidth;
 
 
         GLFWwindow* window;
 
-        static GLFWmonitor* monitor;
-        static const GLFWvidmode* mode;
+        GLFWmonitor* monitor;
+        const GLFWvidmode* mode;
 
-        static bool fullScreen;
+        bool fullScreen;
         bool enabledFullScreen{ false };//use this to set launch application fullscreen or not
 
 		
 		void setCursorImage(const std::string& image, bool centered);
-        static GLFWcursor* currCursor;
+        GLFWcursor* currCursor;
+
+
+		void CheckFullscreen();
     };
 }
 

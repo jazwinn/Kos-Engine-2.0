@@ -13,15 +13,14 @@ namespace ecs {
 
     void AnimatorSystem::Update()
     {
-        ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
-            AnimatorComponent* animator = ecs->GetComponent<AnimatorComponent>(id);
-            NameComponent* nameComp = ecs->GetComponent<NameComponent>(id);
+            AnimatorComponent* animator = m_ecs.GetComponent<AnimatorComponent>(id);
+            NameComponent* nameComp = m_ecs.GetComponent<NameComponent>(id);
 
             // Skip entities not in this scene or hidden
-            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide)
+            if ( nameComp->hide)
                 continue;
 
             // TODO: Advance playback time

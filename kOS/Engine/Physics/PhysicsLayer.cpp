@@ -4,7 +4,6 @@
 
 
 namespace physicslayer {
-    std::unique_ptr<PhysicsLayer> PhysicsLayer::instance = nullptr;
 
 	constexpr const char* configpath = "Engine/Physics/Layer.json";
 
@@ -17,7 +16,7 @@ namespace physicslayer {
             std::filesystem::create_directories(path.parent_path());
 
             // add the "[]"
-            Serialization::JsonFileValidation(configpath);
+            serialization::JsonFileValidation(configpath);
         }
         else {
             for (int i = 0; i < size; ++i) {
@@ -80,7 +79,7 @@ namespace physicslayer {
     void PhysicsLayer::LoadCollisionLayer() {
         try {
             // Use the template function to read JSON
-			auto collisionlayer = Serialization::ReadJsonFile<LayerData>(configpath);
+			auto collisionlayer = serialization::ReadJsonFile<LayerData>(configpath);
 
             // Split the concatenated string back into individual bitsets
             std::string remaining = collisionlayer.collisionData;
@@ -123,7 +122,7 @@ namespace physicslayer {
     void PhysicsLayer::SaveCollisionLayer() {
 		physicslayer::LayerData collisionlayer;
 		collisionlayer.collisionData = ConvertLayerToString();
-		Serialization::WriteJsonFile<LayerData>(configpath, &collisionlayer);
+		serialization::WriteJsonFile<LayerData>(configpath, &collisionlayer);
 		LOGGING_INFO("Successfully saved collision matrix");
 
     }

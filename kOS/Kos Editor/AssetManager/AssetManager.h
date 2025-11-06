@@ -8,14 +8,6 @@ class AssetManager {
 
 public:
 
-    static AssetManager* GetInstance() {
-        if (!m_instancePtr)
-        {
-            m_instancePtr = std::make_shared<AssetManager>();
-        }
-        return m_instancePtr.get();
-    }
-
     AssetManager();
 
     ~AssetManager();
@@ -52,7 +44,6 @@ public:
 	std::string GetAssetManagerDirectory() const { return m_assetDirectory; }
 
 
-
     Watcher* GetAssetWatcher() {
         return m_assetWatcher.get();
     }
@@ -71,8 +62,6 @@ private:
 
 
 private:
-
-    static std::shared_ptr<AssetManager> m_instancePtr;
 
     //Key - GUID
     std::unordered_map <utility::GUID, std::filesystem::path> m_GUIDtoFilePath;

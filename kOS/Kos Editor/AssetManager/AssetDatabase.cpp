@@ -14,7 +14,7 @@ utility::GUID AssetDatabase::ImportAsset(std::filesystem::path filePath, const s
 	
 	utility::GUID returnGUID;
 	if (std::filesystem::exists(metaPath)) {
-		AssetData data = Serialization::ReadJsonFile<AssetData>(metaPath.string());
+		AssetData data = serialization::ReadJsonFile<AssetData>(metaPath.string());
 		returnGUID = data.GUID;
 	}
 	else {
@@ -27,7 +27,7 @@ utility::GUID AssetDatabase::ImportAsset(std::filesystem::path filePath, const s
 		data.GUID = newGUID;
 		data.Type = type;
 
-		Serialization::WriteJsonFile(metaPath.string(), &data);
+		serialization::WriteJsonFile(metaPath.string(), &data);
 
 
 		returnGUID = newGUID;

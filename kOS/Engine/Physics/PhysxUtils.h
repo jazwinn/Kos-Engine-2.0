@@ -159,7 +159,11 @@ inline PxFilterFlags ToPhysxCustomFilter(PxFilterObjectAttributes a0, PxFilterDa
 	}
 	PxU32 layer0 = d0.word0;
 	PxU32 layer1 = d1.word0;
-	bool shouldCollide = physicslayer::PhysicsLayer::m_GetInstance()->m_GetCollide(layer0, layer1);
+
+	auto* data = static_cast<const physicslayer::PhysicsFilterData*>(block);
+	auto* physicsLayer = data->layerSystem;
+
+	bool shouldCollide = physicsLayer->m_GetCollide(layer0, layer1);
 	if (!shouldCollide) { return PxFilterFlag::eSUPPRESS; }
 	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 	pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;

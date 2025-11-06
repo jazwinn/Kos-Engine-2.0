@@ -15,7 +15,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /********************************************************************/
 
 #include "Application.h"
-
+#include <filesystem>
 
     int main()
     {
@@ -25,8 +25,13 @@ prior written consent of DigiPen Institute of Technology is prohibited.
                 _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
         #endif
 
+        std::filesystem::path exePath = std::filesystem::current_path();
+        std::filesystem::path root = exePath.parent_path().parent_path(); // up two levels
+        std::filesystem::current_path(root);
 
-        Application::Application app{};        
+        Application::Application app{};
+
+		app.exePath = exePath;
        
         app.Init();
        

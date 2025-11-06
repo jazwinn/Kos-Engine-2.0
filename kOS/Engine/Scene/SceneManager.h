@@ -30,6 +30,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define SCENE_H
 
 #include "Config/pch.h"
+#include "Resources/ResourceManager.h"
 #include "DeSerialization/json_handler.h"
 #include "Events/Delegate.h"
 #include "SceneData.h"
@@ -37,16 +38,24 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 namespace scenes {
 
+	struct PathActive {
+		std::filesystem::path path;
+		bool isActive;
+	};
+
 	class SceneManager {
+		ecs::ECS& m_ecs;
+		serialization::Serialization& m_serialization;
+		ResourceManager& m_resourceManager;
+
 	public:
-		SceneManager();
-		static SceneManager* m_GetInstance() {
-			if (!m_InstancePtr) {
-				m_InstancePtr.reset(new SceneManager{});
-			}
-			return m_InstancePtr.get();
-		}
-		void Update();
+		SceneManager(ecs::ECS& ecs, serialization::Serialization& slm, ResourceManager& rm):
+			m_ecs(ecs),
+			m_serialization(slm),
+			m_resourceManager(rm)
+		{};
+
+		void EndFrame();
 		bool CreateNewScene(const std::filesystem::path& scenepath);
 
 		void LoadScene(const std::filesystem::path& scenepath);
@@ -56,7 +65,9 @@ namespace scenes {
 		void ClearScene(const std::string& scene);
 		void SaveScene(const std::string& scene);
 
-		std::vector<std::filesystem::path> GetAllScenesPath();
+		// first is path, second is isActive
+		std::vector<PathActive> GetAllScenesPath();
+
 		void ClearAllSceneImmediate();
 
 		//Do not call this in the script
@@ -93,17 +104,10 @@ namespace scenes {
 
 		std::unordered_map<std::string, std::filesystem::path> unloadScenePath;
 		std::unordered_map<std::string, std::filesystem::path> loadScenePath;
-		std::vector<std::filesystem::path> m_recentFiles;
 		std::vector<std::filesystem::path> cacheScenePath;
-		/******************************************************************/
-		/*!
-		\var     static std::unique_ptr<SceneManager> m_InstancePtr
-		\brief   Unique pointer to the singleton instance of SceneManager.
-		*/
-		/******************************************************************/
-		static std::shared_ptr<SceneManager> m_InstancePtr;
 
-		ecs::ECS* m_ecs;
+
+
 
 	};
 }

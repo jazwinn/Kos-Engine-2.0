@@ -21,9 +21,9 @@ TEST(DeSerializeTest, ComponentType##Test) { \
     ComponentType comp; \
     comp.ApplyFunction(RandomizeComponents<decltype(comp.Names())>{comp.Names()}); \
     const std::string file = #ComponentType ".json"; \
-    Serialization::JsonFileValidation(file); \
-    Serialization::WriteJsonFile(file, &comp, false); \
-    ComponentType comp2 = Serialization::ReadJsonFile<ComponentType>(file); \
+    serialization::JsonFileValidation(file); \
+    serialization::WriteJsonFile(file, &comp, false); \
+    ComponentType comp2 = serialization::ReadJsonFile<ComponentType>(file); \
     CompareComponents<ComponentType> comparer; \
     EXPECT_NO_THROW(comp.ApplyFunctionPairwise(comparer, comp2)); \
 }

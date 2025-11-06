@@ -16,20 +16,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "ScriptManager.h"
 
 
-//Systems to be shared with DLL
-#include "Debugging/Logging.h"
-#include "Config/ComponentRegistry.h"
-#include "ECS/ECS.h"
-#include "Inputs/Input.h"
-#include "Resources/ResourceManager.h"
-
-std::shared_ptr<ScriptManager> ScriptManager::m_ScriptManagerPtr{ new ScriptManager{} };
-
-//LoadDLL
-
-std::string scriptPath = "../ScriptingDLL/";
-std::string resourcePath = "../Resource/R_Scripts/R_Script.txt";
-
 typedef void (*DLLUpdateStatic)(StaticVariableManager*);
 
 void ScriptManager::Init(const std::string& scriptdllPath)
@@ -51,40 +37,6 @@ void ScriptManager::LoadDLL() {
 	DLLUpdateStatic updateFunc = (DLLUpdateStatic)GetProcAddress(hInstDLL, "UpdateStatic");
 	updateFunc(&svm);
 
-	//Create a file
-	std::ofstream outfile(resourcePath);
-	if (!outfile.is_open()) {
-		LOGGING_ERROR("Failed to create R_Script at file path"); return;
-	}
-	//Find scripts inr esourfces and load them
-	for (std::filesystem::directory_entry const& filePath : std::filesystem::directory_iterator(scriptPath)) {
-		if (filePath.path().extension() == ".h") {
-			std::string fileName{ filePath.path().string() };
-			fileName = fileName.substr(scriptPath.size());
-			fileName = fileName.substr(0, fileName.size() - filePath.path().extension().string().size());
-			
-			//Add editable variables
-			LOGGING_INFO("Reading file {}", fileName);
-			
-			//Create function name
-			std::string functionName{ cPrefix + fileName };
-			//Add create function to the map
-			LOGGING_INFO("Adding function {}", functionName);
-			
-			//Add file name to the script txt
-			//For debug purposes
-			GenerateScriptClass procAddress =(GenerateScriptClass)GetProcAddress(hInstDLL, functionName.c_str());
-			if (procAddress) {
-				outfile << fileName << '\n';
-				//	ScriptClass::ScriptClassGenerator[fileName] = procAddress;
-			//	ScriptWrapper sw;
-			//	//sw.scriptName = fileName;
-			//	//sw.GenereateSC();
-			//	//sw.script->Awake();
-			}
-		}
-	}
-	outfile.close();
 	FreeLibrary(hInstDLL);
 
 }
@@ -97,17 +49,16 @@ void ScriptManager::ReloadDLL() {
 }
 
 
-//To be called before you press play in the scenee
 void ScriptManager::RunDLL() {
 	if (!hInstDLL) {
 		hInstDLL = LoadLibraryA(m_dllPath.c_str());
 		if (!hInstDLL) { LOGGING_ERROR("Failed to load DLL library"); return; }
-		svm.ECSSystem = ecs::ECS::GetInstance();
-		svm.field = FieldSingleton::GetInstance();
-		svm.input = Input::InputSystem::GetInstance();
-		svm.scene = scenes::SceneManager::m_GetInstance();
-		svm.physics = physics::PhysicsManager::GetInstance();
-		svm.resource = ResourceManager::GetInstance();
+		svm.ECSSystem = &m_ecs;
+		svm.field = &m_field;
+		svm.input = &m_input;
+		svm.scene = &m_sceneManager;
+		svm.physics = &m_physics;
+		svm.resource = &m_resourceManager;
 		svm.scriptNames = &scriptList;
 		DLLUpdateStatic updateFunc = (DLLUpdateStatic)GetProcAddress(hInstDLL, "UpdateStatic");
 		updateFunc(&svm);
@@ -122,15 +73,6 @@ void ScriptManager::PeformHotReload()
 	}
 
 	//
-
-
-
-
-
-
-
-
-
 
 
 	RunDLL();
@@ -149,13 +91,12 @@ void ScriptManager::UnloadDLL() {
 		
 		
 		ScriptClass::ScriptClassGenerator.clear();
-		FieldSingleton::GetInstance()->GetAction().clear();
-		auto ecs = ecs::ECS::GetInstance();
+		m_field.GetAction().clear();
 		//clear ecs componentpool
 		for (const auto& scripts : scriptList) {
-			ecs->FreeComponentPool(scripts);
-			ecs->componentAction.erase(scripts);
-			ecs->GetComponentsString().erase(scripts);
+			m_ecs.FreeComponentPool(scripts);
+			m_ecs.componentAction.erase(scripts);
+			m_ecs.GetComponentsString().erase(scripts);
 		}
 		scriptList.clear();
 

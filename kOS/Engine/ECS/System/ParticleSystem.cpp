@@ -8,9 +8,8 @@ namespace ecs {
 
     void ParticleSystem::Init() {
 
-        onRegister.Add([](EntityID id) {
-            ECS* ecs = ECS::GetInstance();
-            ParticleComponent* particle = ecs->GetComponent<ParticleComponent>(id);
+        onRegister.Add([&](EntityID id) {
+            ParticleComponent* particle = m_ecs.GetComponent<ParticleComponent>(id);
 
             // ---------- FleX Initialization ----------
             NvFlexInitDesc desc = {};
@@ -144,9 +143,8 @@ namespace ecs {
             LOGGING_INFO("  - Free slots: %zu\n", particle->freeIndices.size());
             });
 
-        onDeregister.Add([](EntityID id) {
-            ECS* ecs = ECS::GetInstance();
-            auto* particle = ecs->GetComponent<ParticleComponent>(id);
+        onDeregister.Add([&](EntityID id) {
+            auto* particle = m_ecs.GetComponent<ParticleComponent>(id);
 
             if (particle->pointers[0]) {
                 NvFlexFreeBuffer((NvFlexBuffer*)particle->pointers[0]);
@@ -189,14 +187,12 @@ namespace ecs {
     }
 
     void ParticleSystem::Update() {
-        ECS* ecs = ECS::GetInstance();
-        std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
         const auto& entities = m_entities.Data();
-        float dt = ecs->m_GetDeltaTime();
+        float dt = m_ecs.m_GetDeltaTime();
        
         for (EntityID id : entities) {
-            ParticleComponent* particle = ecs->GetComponent<ParticleComponent>(id);
-            TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
+            ParticleComponent* particle = m_ecs.GetComponent<ParticleComponent>(id);
+            TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
             if (!particle || !particle->solver || !transform) {
                 continue;
             }
@@ -275,7 +271,7 @@ namespace ecs {
             NvFlexUnmap((NvFlexBuffer*)particle->pointers[0]);
 
             
-            gm->gm_PushBasicParticleData(BasicParticleData{ sending.positions_Particle, sending.color, {sending.scale.x, sending.scale.y}, sending.rotate });
+            m_graphicsManager.gm_PushBasicParticleData(BasicParticleData{ sending.positions_Particle, sending.color, {sending.scale.x, sending.scale.y}, sending.rotate });
         }
     }
 
@@ -330,7 +326,6 @@ namespace ecs {
 
     //LOGIC ERROR IN THE EMITTER
     void ParticleSystem::UpdateEmitters(float dt,EntityID id, ParticleComponent*& particleComp,  TransformComponent* transform) {
-        ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 
 

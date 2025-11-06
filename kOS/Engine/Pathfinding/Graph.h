@@ -20,16 +20,12 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #define GRAPH_H
 
 #include "Config/pch.h"
-#include "ECS/ECS.h"
-
-#include "../../Graphics/GraphicsManager.h"
-#include <functional>
+#include "Graphics/GraphicsManager.h"
 
 #include "OctreeNode.h"
 
 namespace Octrees {
-	struct OctreeNode;
-	struct Edge;
+	struct Edge; 
 
 	struct Node {
 		static int nextNodeId;
@@ -79,7 +75,7 @@ namespace Octrees {
 		//Node* FindNode(OctreeNode _octreeNode);
 		Node* FindNode(OctreeNode* _octreeNode);
 
-		void DrawGraph();
+		void DrawGraph(GraphicsManager* gm);
 
 		//struct CompareNode {
 		//	bool operator()(Node* a, Node* b) const {

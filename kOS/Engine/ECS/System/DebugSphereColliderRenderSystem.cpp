@@ -7,15 +7,11 @@ namespace ecs {
 	void DebugSphereColliderRenderSystem::Init() {}
 
 	void DebugSphereColliderRenderSystem::Update() {
-        std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
-        ResourceManager* rm = ResourceManager::GetInstance();
-
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
         for (const EntityID id : entities) {
-            TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-            SphereColliderComponent* sphere = ecs->GetComponent<SphereColliderComponent>(id);
+            TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+            SphereColliderComponent* sphere = m_ecs.GetComponent<SphereColliderComponent>(id);
 
             if (!transform || !sphere) { continue; }
 
@@ -29,7 +25,7 @@ namespace ecs {
             result = glm::translate(glm::mat4{ 1.0f }, center) * glm::scale(glm::mat4{ 1.0f }, glm::vec3{ radius });
 
 
-            gm->gm_PushSphereDebugData(BasicDebugData{ result });
+            m_graphicsManager.gm_PushSphereDebugData(BasicDebugData{ result });
         }
 	}
 }

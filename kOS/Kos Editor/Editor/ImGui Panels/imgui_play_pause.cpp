@@ -38,60 +38,47 @@ namespace gui {
     }
 	
     void ImGuiHandler::DrawPlayPauseBar() {
-  //      static bool pause = true;
-        ecs::ECS* ecs =ComponentRegistry::GetECSInstance();
-
-
-  //      if(ecs->GetState() == ecs::STOP) {
-  //          pause = true;
-  //      }
-		//else
-
-
-  //      if (ecs->GetState() == ecs::WAIT) {
-  //          pause = true;
-  //      }
 
         
         if (ImGui::BeginMenuBar()) {
 
 
-            if (ecs->GetState() == ecs::STOP || ecs->GetState() == ecs::WAIT) {
+            if (m_ecs.GetState() == ecs::STOP || m_ecs.GetState() == ecs::WAIT) {
 
                 if(ImGui::Button("Play")) {
-                    if (ecs->GetState() == ecs::STOP) {
-                        scenes::SceneManager::m_GetInstance()->CacheCurrentScene();
+                    if (m_ecs.GetState() == ecs::STOP) {
+                        m_sceneManager.CacheCurrentScene();
                     }
-                    ecs->SetState(ecs::START);
+                    m_ecs.SetState(ecs::START);
                     ecs::AudioSystem::SetPaused(false);
 				}
 
             }
 
-            if (ecs->GetState() == ecs::RUNNING){
+            if (m_ecs.GetState() == ecs::RUNNING){
                 if (ImGui::Button("Pause")) {
-                    ecs->SetState(ecs::WAIT);
+                    m_ecs.SetState(ecs::WAIT);
                     ecs::AudioSystem::SetPaused(true);
                 }
 
             }
 
-            if (ecs->GetState() == ecs::WAIT || ecs->GetState() == ecs::RUNNING) {
+            if (m_ecs.GetState() == ecs::WAIT || m_ecs.GetState() == ecs::RUNNING) {
                 if (ImGui::Button("Stop")) {
-                    ecs->SetState(ecs::STOP);
+                    m_ecs.SetState(ecs::STOP);
                     ecs::AudioSystem::StopAll();
                     ecs::AudioSystem::SetPaused(false);
                     //stop all scene states
                     std::unordered_map<std::string, bool> saveStateScene;
-                    for (const auto& scene : ecs->sceneMap) {
+                    for (const auto& scene : m_ecs.sceneMap) {
                         saveStateScene[scene.first] = scene.second.isActive;
                     }
                     //TODO load back scene
-                    scenes::SceneManager* scenemanager = scenes::SceneManager::m_GetInstance();
-                    scenemanager->ReloadScene();
+
+                    m_sceneManager.ReloadScene();
                     m_clickedEntityId = -1;
                     //set back all scene to its active/inactive state
-                    for (auto& scene : ecs->sceneMap) {
+                    for (auto& scene : m_ecs.sceneMap) {
                         const auto& saveState = saveStateScene.find(scene.first);
                         if (saveState == saveStateScene.end())continue;
                         scene.second.isActive = saveState->second;

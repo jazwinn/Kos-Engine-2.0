@@ -151,7 +151,7 @@ public:
 
 	\return	Whether the class is subordinate
 	
-	\see PxSerialization::isSerializable
+	\see Pxserialization::isSerializable
 	*/
 	virtual		bool				isReleasable() const							{ return mBaseFlags & PxBaseFlag::eIS_RELEASABLE; }
 

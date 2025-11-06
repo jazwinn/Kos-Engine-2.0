@@ -6,20 +6,19 @@ using namespace physics;
 
 namespace ecs {
     void PhysicsSystem::Init() {
-        auto pm = PhysicsManager::GetInstance();
-        pm->Init();
+
+        m_physicsManager.Init();
     }
 
     void PhysicsSystem::Update() {
-        auto pm = PhysicsManager::GetInstance();
-        ECS* ecs = ECS::GetInstance();
+
 
         const auto& entities = m_entities.Data();
 
         for (EntityID id : entities) {
-            auto* rb = ecs->GetComponent<RigidbodyComponent>(id);
-            auto* trans = ecs->GetComponent<TransformComponent>(id);
-            auto* name = ecs->GetComponent<NameComponent>(id);
+            auto* rb = m_ecs.GetComponent<RigidbodyComponent>(id);
+            auto* trans = m_ecs.GetComponent<TransformComponent>(id);
+            auto* name = m_ecs.GetComponent<NameComponent>(id);
 
             if (name->hide || !rb->actor) { continue; }
 
@@ -33,12 +32,12 @@ namespace ecs {
             else { actor->setGlobalPose(pxTrans); }
         }
 
-        pm->Update(ecs->m_GetDeltaTime());
+        m_physicsManager.Update(m_ecs.m_GetDeltaTime());
 
         for (EntityID id : entities) {
-            auto* rb = ecs->GetComponent<RigidbodyComponent>(id);
-            auto* trans = ecs->GetComponent<TransformComponent>(id);
-            auto* name = ecs->GetComponent<NameComponent>(id);
+            auto* rb = m_ecs.GetComponent<RigidbodyComponent>(id);
+            auto* trans = m_ecs.GetComponent<TransformComponent>(id);
+            auto* name = m_ecs.GetComponent<NameComponent>(id);
 
             if (name->hide || !rb->actor) { continue; }
 
@@ -46,9 +45,9 @@ namespace ecs {
 
             if (!rb->isKinematic) {
                 PxTransform pxTrans = actor->getGlobalPose();
-                TransformSystem::SetImmediateWorldPosition(trans, glm::vec3{ pxTrans.p.x, pxTrans.p.y, pxTrans.p.z });
+                TransformSystem::SetImmediateWorldPosition(m_ecs, trans, glm::vec3{ pxTrans.p.x, pxTrans.p.y, pxTrans.p.z });
                 glm::quat q{ pxTrans.q.w, pxTrans.q.x, pxTrans.q.y, pxTrans.q.z };
-                TransformSystem::SetImmediateWorldRotation(trans, glm::degrees(glm::eulerAngles(q)));
+                TransformSystem::SetImmediateWorldRotation(m_ecs, trans, glm::degrees(glm::eulerAngles(q)));
             }
         }
     }

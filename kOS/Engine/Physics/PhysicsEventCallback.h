@@ -57,7 +57,15 @@ namespace physics {
 
     class PhysicsEventCallback : public PxSimulationEventCallback {
     public:
-        PhysicsEventCallback() = default;
+        PhysicsEventCallback() : PxSimulationEventCallback() {}
+
+        Delegate<const Collision&> OnCollisionEnter;
+        Delegate<const Collision&> OnCollisionStay;
+        Delegate<const Collision&> OnCollisionExit;
+        Delegate<const Collision&> OnTriggerEnter;
+        Delegate<const Collision&> OnTriggerStay;
+        Delegate<const Collision&> OnTriggerExit;
+
         virtual ~PhysicsEventCallback() = default;
         
         void onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs) override;

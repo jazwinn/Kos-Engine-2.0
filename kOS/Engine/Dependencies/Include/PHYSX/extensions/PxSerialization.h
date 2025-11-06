@@ -67,7 +67,7 @@ public:
 	The PxXmlMiscParameter parameter can be serialized and deserialized along with PxCollection instances (XML only).
 	This is for application use only and has no impact on how objects are serialized or deserialized. 
 
-	\see PxSerialization::createCollectionFromXml, PxSerialization::serializeCollectionToXml
+	\see Pxserialization::createCollectionFromXml, Pxserialization::serializeCollectionToXml
 	*/
 	struct PX_DEPRECATED PxXmlMiscParameter
 	{
@@ -90,7 +90,7 @@ public:
 
 	Some definitions to explain whether a collection can be serialized or not:
 
-	For definitions of <b>requires</b> and <b>complete</b> see #PxSerialization::complete
+	For definitions of <b>requires</b> and <b>complete</b> see #Pxserialization::complete
 
 	A serializable object is <b>subordinate</b> if it cannot be serialized on its own
 	The following objects are subordinate:
@@ -107,7 +107,7 @@ public:
 	\param[in] sr PxSerializationRegistry instance with information about registered classes.
 	\param[in] externalReferences the external References collection
 	\return  Whether the collection is serializable
-	\see PxSerialization::complete, PxSerialization::serializeCollectionToBinary, PxSerialization::serializeCollectionToXml, PxSerializationRegistry
+	\see Pxserialization::complete, Pxserialization::serializeCollectionToBinary, Pxserialization::serializeCollectionToXml, PxSerializationRegistry
 	*/
 	static	bool			isSerializable(PxCollection& collection, PxSerializationRegistry& sr, const PxCollection* externalReferences = NULL);
 
@@ -116,8 +116,8 @@ public:
 	
 	A collection C is complete relative to an other collection D if every object required by C is either in C or D.
 	This function adds objects to a collection, such that it becomes complete with respect to the exceptFor collection.
-	Completeness is needed for serialization. See #PxSerialization::serializeCollectionToBinary, 
-	#PxSerialization::serializeCollectionToXml.
+	Completeness is needed for serialization. See #Pxserialization::serializeCollectionToBinary, 
+	#Pxserialization::serializeCollectionToXml.
 
 	Sdk objects require other sdk object according to the following rules: 
 	 - joints require their actors and constraint
@@ -136,7 +136,7 @@ public:
 	\param[in] sr PxSerializationRegistry instance with information about registered classes.
 	\param[in] exceptFor Optional exemption collection
 	\param[in] followJoints Specifies whether joints should be added for jointed actors
-	\see PxCollection, PxSerialization::serializeCollectionToBinary, PxSerialization::serializeCollectionToXml, PxSerializationRegistry
+	\see PxCollection, Pxserialization::serializeCollectionToBinary, Pxserialization::serializeCollectionToXml, PxSerializationRegistry
 	*/
 	static	void			complete(PxCollection& collection, PxSerializationRegistry& sr, const PxCollection* exceptFor = NULL, bool followJoints = false);
 	
@@ -162,10 +162,10 @@ public:
 	\param sr PxSerializationRegistry instance with information about registered classes.
 	\param externalRefs PxCollection used to resolve external references.
 	\param stringTable PxStringTable instance used for storing object names.
-	\param outArgs Optional parameters of physics and scene deserialized from XML. See #PxSerialization::PxXmlMiscParameter
+	\param outArgs Optional parameters of physics and scene deserialized from XML. See #Pxserialization::PxXmlMiscParameter
 	\return a pointer to a PxCollection if successful or NULL if it failed.
 
-	\see PxCollection, PxSerializationRegistry, PxInputData, PxStringTable, PxCooking, PxSerialization::PxXmlMiscParameter
+	\see PxCollection, PxSerializationRegistry, PxInputData, PxStringTable, PxCooking, Pxserialization::PxXmlMiscParameter
 	*/
 	PX_DEPRECATED static PxCollection* createCollectionFromXml(PxInputData& inputData, const PxCookingParams& params, PxSerializationRegistry& sr, const PxCollection* externalRefs = NULL, PxStringTable* stringTable = NULL, PxXmlMiscParameter* outArgs = NULL);
 	
@@ -176,7 +176,7 @@ public:
 	can be provided to resolve these.
 
 	The memory block provided has to be 128 bytes aligned and contain a contiguous serialized collection as written
-	by PxSerialization::serializeCollectionToBinary. The contained binary data needs to be compatible with the current binary format version
+	by Pxserialization::serializeCollectionToBinary. The contained binary data needs to be compatible with the current binary format version
 	which is defined by "PX_PHYSICS_VERSION_MAJOR.PX_PHYSICS_VERSION_MINOR.PX_PHYSICS_VERSION_BUGFIX-PX_BINARY_SERIAL_VERSION".
 	For a list of compatible sdk releases refer to the documentation of PX_BINARY_SERIAL_VERSION.
 
@@ -184,7 +184,7 @@ public:
 	\param[in] sr PxSerializationRegistry instance with information about registered classes.
 	\param[in] externalRefs Collection to resolve external dependencies
 
-	\see PxCollection, PxSerialization::complete, PxSerialization::serializeCollectionToBinary, PxSerializationRegistry, PX_BINARY_SERIAL_VERSION
+	\see PxCollection, Pxserialization::complete, Pxserialization::serializeCollectionToBinary, PxSerializationRegistry, PX_BINARY_SERIAL_VERSION
 	*/
 	static	PxCollection*	createCollectionFromBinary(void* memBlock, PxSerializationRegistry& sr, const PxCollection* externalRefs = NULL);
 
@@ -203,10 +203,10 @@ public:
 	\param sr PxSerializationRegistry instance with information about registered classes.
 	\param params Optional pointer to cooking params. If provided, cooked mesh data is cached for fast loading.
 	\param externalRefs Collection containing external references.
-	\param inArgs Optional parameters of physics and scene serialized to XML along with the collection. See #PxSerialization::PxXmlMiscParameter
+	\param inArgs Optional parameters of physics and scene serialized to XML along with the collection. See #Pxserialization::PxXmlMiscParameter
 	\return true if the collection is successfully serialized.
 
-	\see PxCollection, PxOutputStream, PxSerializationRegistry, PxCooking, PxSerialization::PxXmlMiscParameter
+	\see PxCollection, PxOutputStream, PxSerializationRegistry, PxCooking, Pxserialization::PxXmlMiscParameter
 	*/
 	PX_DEPRECATED static bool serializeCollectionToXml(PxOutputStream& outputStream, PxCollection& collection, PxSerializationRegistry& sr, const PxCookingParams* params = NULL, const PxCollection* externalRefs = NULL, PxXmlMiscParameter* inArgs = NULL);
 	
@@ -219,7 +219,7 @@ public:
 	The collection can be successfully serialized if isSerializable(collection) returns true. See #isSerializable.
 
 	The implementation of the output stream needs to fulfill the requirements on the memory block input taken by
-	PxSerialization::createCollectionFromBinary.
+	Pxserialization::createCollectionFromBinary.
 
 	\note Serialization of objects in a scene that is simultaneously being simulated is not supported and leads to undefined behavior. 
 
@@ -230,24 +230,24 @@ public:
 	\param[in] exportNames Specifies whether object names are serialized
 	\return Whether serialization was successful
 
-	\see PxCollection, PxOutputStream, PxSerialization::complete, PxSerialization::createCollectionFromBinary, PxSerializationRegistry
+	\see PxCollection, PxOutputStream, Pxserialization::complete, Pxserialization::createCollectionFromBinary, PxSerializationRegistry
 	*/
 	static	bool			serializeCollectionToBinary(PxOutputStream& outputStream, PxCollection& collection, PxSerializationRegistry& sr, const PxCollection* externalRefs = NULL, bool exportNames = false );
 
 	/**
 	\brief Serializes a collection to a binary stream.
 
-	\deprecated Deterministic binary serialization is deprecated. PxSerialization::serializeCollectionToBinary might become deterministic in the future.
+	\deprecated Deterministic binary serialization is deprecated. Pxserialization::serializeCollectionToBinary might become deterministic in the future.
 
 	Convenience function that serializes a collection to a stream while rebasing memory addresses and handles
 	to achieve a deterministic output, independent of the PhysX runtime environment the objects have been created in. 
 
 	The same functionality can be achieved by manually
-	- creating a binary data stream with PxSerialization::serializeCollectionToBinary
-	- producing the binary meta data of the current runtime platform with PxSerialization::dumpBinaryMetaData
+	- creating a binary data stream with Pxserialization::serializeCollectionToBinary
+	- producing the binary meta data of the current runtime platform with Pxserialization::dumpBinaryMetaData
 	- converting the binary data stream with the PxBinaryConverter, using the binary meta for both source and destination
 
-	\see PxSerialization::serializeCollectionToBinary, PxSerialization::dumpBinaryMetaData, PxBinaryConverter
+	\see Pxserialization::serializeCollectionToBinary, Pxserialization::dumpBinaryMetaData, PxBinaryConverter
 	*/
 	PX_DEPRECATED static bool serializeCollectionToBinaryDeterministic(PxOutputStream& outputStream, PxCollection& collection, PxSerializationRegistry& sr, const PxCollection* externalRefs = NULL, bool exportNames = false);
 

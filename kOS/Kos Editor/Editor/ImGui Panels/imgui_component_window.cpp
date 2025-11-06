@@ -29,8 +29,6 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Reflection/Field.h"
 
 
-void DrawFieldComponent(ecs::Component* component, const std::string& ComponentName, ecs::EntityID entityID);
-
 void gui::ImGuiHandler::DrawComponentWindow()
 {
     bool windowOpen = true;
@@ -39,12 +37,12 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
     //Add Component Window
 
-    if (m_ecs->GetEntitySignatureData().size() > 0 && m_clickedEntityId >= 0) {
+    if (m_ecs.GetEntitySignatureData().size() > 0 && m_clickedEntityId >= 0) {
 
         ecs::EntityID entityID = m_clickedEntityId;
-        ecs::ComponentSignature EntitySignature = m_ecs->GetEntitySignature(entityID);
+        ecs::ComponentSignature EntitySignature = m_ecs.GetEntitySignature(entityID);
 
-        const auto& componentsString = m_ecs->GetComponentsString();
+        const auto& componentsString = m_ecs.GetComponentsString();
         static std::vector<const char*>componentNames = {"add Components"};
         static bool initComponentName = false;
 
@@ -61,17 +59,17 @@ void gui::ImGuiHandler::DrawComponentWindow()
         int ComponentTypeIndex = 0;
         if (ImGui::Combo("##ADDCOMPONENT", &ComponentTypeIndex, componentNames.data(), static_cast<int>(componentNames.size()))) {
             std::string componentName = componentNames[ComponentTypeIndex];
-            if (!m_ecs->GetEntitySignature(entityID).test(m_ecs->GetComponentKey(componentName))) {
-                auto& action = m_ecs->componentAction.at(componentName);
+            if (!m_ecs.GetEntitySignature(entityID).test(m_ecs.GetComponentKey(componentName))) {
+                auto& action = m_ecs.componentAction.at(componentName);
                 action->AddComponent(entityID);
             }
         }
 
         ImGui::SeparatorText("Components");
 
-        if (EntitySignature.test(m_ecs->GetComponentKey(ecs::NameComponent::classname()))) {
+        if (EntitySignature.test(m_ecs.GetComponentKey(ecs::NameComponent::classname()))) {
             // Retrieve the TransformComponent
-            ecs::NameComponent* nc = m_ecs->GetComponent<ecs::NameComponent>(entityID);
+            ecs::NameComponent* nc = m_ecs.GetComponent<ecs::NameComponent>(entityID);
             //Display Position
             ImGui::AlignTextToFramePadding();  // Aligns text to the same baseline as the slider
             ImGui::Text("Object Name: ");
@@ -82,7 +80,7 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
             bool hidden = nc->hide;
             if (ImGui::Checkbox("Hide", &hidden)) {
-                nc->hide ? m_ecs->layersStack.m_unhideEntitywithChild(entityID) : m_ecs->layersStack.m_hideEntitywithChild(entityID);
+                nc->hide ? m_layerManager.m_unhideEntitywithChild(entityID) : m_layerManager.m_hideEntitywithChild(entityID);
             }
 
             ImGui::TextDisabled(std::string("Entity ID: " + std::to_string(entityID)).c_str());
@@ -111,7 +109,7 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
                 int layer_current = nc->Layer;
                 if (ImGui::Combo("Layers", &layer_current, items.data(), static_cast<int>(items.size()))) {
-                    m_ecs->layersStack.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);
+                    m_layerManager.m_SwapEntityLayer((layer::LAYERS)layer_current, nc->Layer, entityID);
                 }
             }
 
@@ -139,8 +137,8 @@ void gui::ImGuiHandler::DrawComponentWindow()
             {
                 // Prefab Overwriting
                 if (nc->isPrefab && !m_prefabSceneMode) {
-                    auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(entityID);
-                    if (!tc->m_haveParent || !m_ecs->GetComponent<ecs::NameComponent>(tc->m_parentID)->isPrefab) {
+                    auto* tc = m_ecs.GetComponent<ecs::TransformComponent>(entityID);
+                    if (!tc->m_haveParent || !m_ecs.GetComponent<ecs::NameComponent>(tc->m_parentID)->isPrefab) {
                         static bool isHeaderOpen = false;
                         static std::vector<std::string> diffComp;
                         //static std::map<ecs::EntityID, std::vector<std::string>> diffComp;
@@ -158,14 +156,14 @@ void gui::ImGuiHandler::DrawComponentWindow()
                                 ImGui::SetCursorPosX(pos);
                                 if (ImGui::Button("Revert back")) {
                                     // Look for component of prefab and set data into me
-                                    prefab::RevertToPrefab_Component(entityID, compName, nc->prefabName);
-                                    prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                    m_prefabManager.RevertToPrefab_Component(entityID, compName, nc->prefabName);
+                                    m_prefabManager.RefreshComponentDifferenceList(diffComp, entityID);
                                 }
                                 ImGui::SameLine();
                                 if (ImGui::Button("Overwrite Prefab")) {
                                     // Look for component of prefab and set data from me
-                                    prefab::OverwritePrefab_Component(entityID, compName, nc->prefabName);
-                                    prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                    m_prefabManager.OverwritePrefab_Component(entityID, compName, nc->prefabName);
+                                    m_prefabManager.RefreshComponentDifferenceList(diffComp, entityID);
                                 }
                                 ImGui::PopID();
                             }
@@ -173,8 +171,8 @@ void gui::ImGuiHandler::DrawComponentWindow()
                             // Overwrite All
                             if (ImGui::Button("Overwrite All Components", { ImGui::GetContentRegionAvail().x, 0 })) {
                                 try {
-                                    prefab::OverwriteScenePrefab(m_clickedEntityId);
-                                    prefab::UpdateAllPrefab(nc->prefabName);
+                                    m_prefabManager.OverwriteScenePrefab(m_clickedEntityId);
+                                    m_prefabManager.UpdateAllPrefab(nc->prefabName);
                                 }
                                 catch (...) {
                                     LOGGING_ERROR("Prefab overwrite, failed");
@@ -188,7 +186,7 @@ void gui::ImGuiHandler::DrawComponentWindow()
 
                         if (isHeaderOpen != open) { // Needed to show change in state
                             if (open) {
-                                prefab::RefreshComponentDifferenceList(diffComp, entityID);
+                                m_prefabManager.RefreshComponentDifferenceList(diffComp, entityID);
                             }
                             else {
                                 diffComp.clear();
@@ -200,14 +198,14 @@ void gui::ImGuiHandler::DrawComponentWindow()
             }
         }
 
-        const auto& componentKey = m_ecs->GetComponentKeyData();
+        const auto& componentKey = m_ecs.GetComponentKeyData();
         int ImguiID = 0;
         for (auto it = componentKey.rbegin(); it != componentKey.rend(); ++it) {
             const auto& ComponentName = it->first;
             auto key = it->second;
 
             if (EntitySignature.test(key) && ComponentName != ecs::NameComponent::classname()) {
-                auto* component = m_ecs->GetIComponent<ecs::Component*>(ComponentName, entityID);
+                auto* component = m_ecs.GetIComponent<ecs::Component*>(ComponentName, entityID);
 
                 ImGui::PushID(ImguiID++);
                 if (componentDrawers.find(ComponentName) != componentDrawers.end()) {
@@ -242,8 +240,8 @@ void gui::ImGuiHandler::DrawComponentWindow()
 }   
 
 
-void DrawFieldComponent(ecs::Component* component, const std::string& ComponentName, ecs::EntityID entityID) {
-    auto fields = FieldSingleton::GetInstance()->GetAction();
+void gui::ImGuiHandler::DrawFieldComponent(ecs::Component* component, const std::string& ComponentName, ecs::EntityID entityID) {
+    auto fields = m_reflectionField.GetAction();
 
     if (fields.find(ComponentName) == fields.end()) return;
 
@@ -251,7 +249,7 @@ void DrawFieldComponent(ecs::Component* component, const std::string& ComponentN
     bool open = ImGui::CollapsingHeader(ComponentName.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
 
     if (ImGui::BeginPopupContextItem()) {
-        auto action = ecs::ECS::GetInstance()->componentAction.at(ComponentName);
+        auto action = m_ecs.componentAction.at(ComponentName);
         if (ComponentName != ecs::TransformComponent::classname() && ImGui::MenuItem("Delete Component")) {
             action->RemoveComponent(entityID);
         }

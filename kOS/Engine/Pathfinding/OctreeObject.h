@@ -21,15 +21,17 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 
 #include "Config/pch.h"
 #include "ECS/ECS.h"
-
+#include "ECS/Component/TransformComponent.h"
+#include "ECS/Component/BoxColliderComponent.h"
 #include "BoundsCheck.h"
+
 
 namespace Octrees {
 	struct OctreeObject {
 		Bounds bounds;
 
 		//OctreeObject();
-		OctreeObject(ecs::EntityID id);
+		OctreeObject(const ecs::TransformComponent* tc, const ecs::BoxColliderComponent* bc);
 		bool Intersects(Bounds boundsToCheck);
 	};
 }

@@ -64,10 +64,10 @@ For example the code may look like this:
 	PxScene* scene;		// The physics scene
 	SerialStream s;		// The user-defined stream doing the actual write to disk
 	
-	PxSerializationRegistry* registry = PxSerialization::createSerializationRegistry(*physics);	// step 1)
-	PxCollection* collection = PxSerialization::createCollection(*scene);						// step 2)
-	PxSerialization::complete(*collection, *registry);											// step 3)
-	PxSerialization::serializeCollectionToBinary(s, *collection, *registry);					// step 4)
+	PxSerializationRegistry* registry = Pxserialization::createSerializationRegistry(*physics);	// step 1)
+	PxCollection* collection = Pxserialization::createCollection(*scene);						// step 2)
+	Pxserialization::complete(*collection, *registry);											// step 3)
+	Pxserialization::serializeCollectionToBinary(s, *collection, *registry);					// step 4)
 	collection->release();																		// step 5)
 	registry->release();																		// step 6)
 \endcode
@@ -88,8 +88,8 @@ For example the code may look like this:
 	PxScene* scene;		// The physics scene
 	void* memory128;	// a 128-byte aligned buffer previously loaded from disk by the user	- step 1)
 	
-	PxSerializationRegistry* registry = PxSerialization::createSerializationRegistry(*physics);		// step 2)
-	PxCollection* collection = PxSerialization::createCollectionFromBinary(memory128, *registry);	// step 3)
+	PxSerializationRegistry* registry = Pxserialization::createSerializationRegistry(*physics);		// step 2)
+	PxCollection* collection = Pxserialization::createCollectionFromBinary(memory128, *registry);	// step 3)
 	scene->addCollection(*collection);																// step 4)
 	collection->release();																			// step 5)
 	registry->release();																			// step 6)

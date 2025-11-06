@@ -24,7 +24,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #ifndef PHYSICSLAYER_H
 #define PHYSICSLAYER_H
 
-#include "ECS/Layers.h"
+#include "ECS/LayerData.h"
 #include "Reflection/Reflection.h"
 #include <string>
 #include <vector>
@@ -32,7 +32,7 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace physicslayer {
 
 
-    constexpr int size = layer::LAYERS::MAXLAYER;
+	constexpr int size = layer::LAYERS::MAXLAYER;
 
     struct LayerData {
         std::string collisionData = "111111111|100000000|100000000|100000000|100000000|100000000|100000000|100000000|100000000|";
@@ -43,21 +43,13 @@ namespace physicslayer {
    
     class PhysicsLayer {
     public:
-        static PhysicsLayer* m_GetInstance() {
-            if (!instance) {
-                instance = std::make_unique<PhysicsLayer>();
-            }
-            return instance.get();
-        }
-
-
         PhysicsLayer();
         PhysicsLayer(const PhysicsLayer&) = delete;
         PhysicsLayer& operator=(const PhysicsLayer&) = delete;
 
 
         void m_SetCollision(int layer1, int layer2, bool value);
-        bool m_GetCollide(int layer1, int layer2);
+        bool m_GetCollide(int layer1, int layer2) ;
 
         void m_PrintCollisionMatrix() const;
 
@@ -73,8 +65,11 @@ namespace physicslayer {
 
 
     private:
-        static std::unique_ptr<PhysicsLayer> instance;
         std::bitset<size> layerCollisions[size];
+    };
+
+    struct PhysicsFilterData {
+        physicslayer::PhysicsLayer* layerSystem;
     };
 }
 

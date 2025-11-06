@@ -61,9 +61,9 @@
                     "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
                 }
             },
             "LocalTransformation": {
@@ -74,13 +74,13 @@
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": -0.0,
+                    "y": 0.0,
                     "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
                 }
             }
         },
@@ -131,31 +131,31 @@
                 "TransformComponent": {
                     "WorldTransformation": {
                         "position": {
-                            "x": -1.2000000476837158,
-                            "y": 1.2000000476837158,
+                            "x": 0.0,
+                            "y": 0.6000000238418579,
                             "z": 0.0
                         },
                         "rotation": {
                             "x": 0.0,
                             "y": -0.0,
-                            "z": 19.999988555908203
+                            "z": 0.0
                         },
                         "scale": {
-                            "x": 0.9999998807907104,
-                            "y": 0.9999998807907104,
-                            "z": 1.0
+                            "x": 0.4999999403953552,
+                            "y": 0.4999999403953552,
+                            "z": 0.5
                         }
                     },
                     "LocalTransformation": {
                         "position": {
-                            "x": -1.2000000476837158,
+                            "x": 0.0,
                             "y": 1.2000000476837158,
                             "z": 0.0
                         },
                         "rotation": {
                             "x": 0.0,
                             "y": -0.0,
-                            "z": 19.999988555908203
+                            "z": 0.0
                         },
                         "scale": {
                             "x": 0.9999998807907104,
@@ -211,31 +211,31 @@
                         "TransformComponent": {
                             "WorldTransformation": {
                                 "position": {
-                                    "x": -1.7983624935150146,
-                                    "y": 2.2592272758483887,
-                                    "z": 0.0
-                                },
-                                "rotation": {
                                     "x": 0.0,
-                                    "y": -0.0,
-                                    "z": 39.9999885559082
-                                },
-                                "scale": {
-                                    "x": 0.9999998211860657,
-                                    "y": 0.9999998211860657,
-                                    "z": 1.0
-                                }
-                            },
-                            "LocalTransformation": {
-                                "position": {
-                                    "x": -0.20000000298023224,
                                     "y": 1.2000000476837158,
                                     "z": 0.0
                                 },
                                 "rotation": {
                                     "x": 0.0,
                                     "y": -0.0,
-                                    "z": 20.0
+                                    "z": 0.0
+                                },
+                                "scale": {
+                                    "x": 0.4999999403953552,
+                                    "y": 0.4999999403953552,
+                                    "z": 0.5
+                                }
+                            },
+                            "LocalTransformation": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 1.2000000476837158,
+                                    "z": 0.0
+                                },
+                                "rotation": {
+                                    "x": 0.0,
+                                    "y": -0.0,
+                                    "z": 0.0
                                 },
                                 "scale": {
                                     "x": 1.0,
@@ -293,35 +293,35 @@
                 "TransformComponent": {
                     "WorldTransformation": {
                         "position": {
-                            "x": 1.2000000476837158,
-                            "y": 1.2000000476837158,
+                            "x": 0.6000000238418579,
+                            "y": 0.0019684433937072754,
                             "z": 0.0
                         },
                         "rotation": {
-                            "x": 179.99989318847656,
-                            "y": -0.0,
-                            "z": 159.99993896484375
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": -89.99998474121094
                         },
                         "scale": {
-                            "x": 0.9999904036521912,
-                            "y": 0.9999985098838806,
-                            "z": 0.999986469745636
+                            "x": 0.49997860193252563,
+                            "y": 0.4999815821647644,
+                            "z": 0.499993234872818
                         }
                     },
                     "LocalTransformation": {
                         "position": {
                             "x": 1.2000000476837158,
-                            "y": 1.2000000476837158,
+                            "y": 0.003936886787414551,
                             "z": 0.0
                         },
                         "rotation": {
-                            "x": 179.99989318847656,
-                            "y": -0.0,
-                            "z": 159.99993896484375
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": -89.99998474121094
                         },
                         "scale": {
-                            "x": 0.9999904036521912,
-                            "y": 0.9999985098838806,
+                            "x": 0.999957263469696,
+                            "y": 0.9999632239341736,
                             "z": 0.999986469745636
                         }
                     }
@@ -373,31 +373,193 @@
                         "TransformComponent": {
                             "WorldTransformation": {
                                 "position": {
-                                    "x": 1.7983614206314087,
-                                    "y": 2.259225606918335,
-                                    "z": 0.000002183907781727612
+                                    "x": 1.1999778747558594,
+                                    "y": 0.0019686580635607243,
+                                    "z": 0.0
                                 },
                                 "rotation": {
-                                    "x": 179.99989318847656,
-                                    "y": -0.000035663979360833764,
-                                    "z": 139.99993896484375
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": -89.99998474121094
                                 },
                                 "scale": {
-                                    "x": 0.9999913573265076,
-                                    "y": 0.9999975562095642,
-                                    "z": 0.999986469745636
+                                    "x": 0.49997860193252563,
+                                    "y": 0.4999815821647644,
+                                    "z": 0.499993234872818
                                 }
                             },
                             "LocalTransformation": {
                                 "position": {
-                                    "x": -0.20000000298023224,
+                                    "x": 0.0,
                                     "y": 1.2000000476837158,
                                     "z": 0.0
                                 },
                                 "rotation": {
                                     "x": 0.0,
                                     "y": -0.0,
-                                    "z": 20.0
+                                    "z": 0.0
+                                },
+                                "scale": {
+                                    "x": 1.0,
+                                    "y": 1.0,
+                                    "z": 1.0
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "entityGUID": "d85bc9e3-2e0e-db58-e5b1-1c449bc5972a",
+                "BoxColliderComponent": {
+                    "isTrigger": false,
+                    "box": {
+                        "center": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "size": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                },
+                "CubeRendererComponent": {},
+                "MeshRendererComponent": {
+                    "diffuseMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                    "specularMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                    "normalMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                    "ambientOcclusionMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                    "roughnessMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53"
+                },
+                "NameComponent": {
+                    "entityName": "box",
+                    "Layer": 0,
+                    "entityTag": "Default",
+                    "isPrefab": false,
+                    "prefabName": "",
+                    "hide": false
+                },
+                "RigidbodyComponent": {
+                    "mass": 1.0,
+                    "drag": 0.0,
+                    "angularDrag": 0.05000000074505806,
+                    "useGravity": true,
+                    "isKinematic": false,
+                    "interpolation": 0,
+                    "collisionDetection": 0,
+                    "constraints": 0
+                },
+                "TransformComponent": {
+                    "WorldTransformation": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0019686450250446796,
+                            "z": -0.6000000238418579
+                        },
+                        "rotation": {
+                            "x": -89.99998474121094,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 0.499978631734848,
+                            "y": 0.49997425079345703,
+                            "z": 0.49998587369918823
+                        }
+                    },
+                    "LocalTransformation": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.003937290050089359,
+                            "z": -1.2000000476837158
+                        },
+                        "rotation": {
+                            "x": -89.99998474121094,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 0.999957263469696,
+                            "y": 0.9999485611915588,
+                            "z": 0.9999718070030212
+                        }
+                    }
+                },
+                "children": [
+                    {
+                        "entityGUID": "19cae361-fe78-33f6-f254-024559070ec5",
+                        "BoxColliderComponent": {
+                            "isTrigger": false,
+                            "box": {
+                                "center": {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                },
+                                "size": {
+                                    "x": 1.0,
+                                    "y": 1.0,
+                                    "z": 1.0
+                                }
+                            }
+                        },
+                        "CubeRendererComponent": {},
+                        "MeshRendererComponent": {
+                            "diffuseMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                            "specularMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                            "normalMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                            "ambientOcclusionMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53",
+                            "roughnessMaterialGUID": "4d8deac8-5e30-9e34-6f12-37721db6eb53"
+                        },
+                        "NameComponent": {
+                            "entityName": "box",
+                            "Layer": 0,
+                            "entityTag": "Default",
+                            "isPrefab": false,
+                            "prefabName": "",
+                            "hide": false
+                        },
+                        "RigidbodyComponent": {
+                            "mass": 1.0,
+                            "drag": 0.0,
+                            "angularDrag": 0.05000000074505806,
+                            "useGravity": true,
+                            "isKinematic": false,
+                            "interpolation": 0,
+                            "collisionDetection": 0,
+                            "constraints": 0
+                        },
+                        "TransformComponent": {
+                            "WorldTransformation": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0019688596948981285,
+                                    "z": -1.1999691724777222
+                                },
+                                "rotation": {
+                                    "x": -89.99998474121094,
+                                    "y": 0.0,
+                                    "z": 0.0
+                                },
+                                "scale": {
+                                    "x": 0.499978631734848,
+                                    "y": 0.49997425079345703,
+                                    "z": 0.49998587369918823
+                                }
+                            },
+                            "LocalTransformation": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 1.2000000476837158,
+                                    "z": 0.0
+                                },
+                                "rotation": {
+                                    "x": 0.0,
+                                    "y": -0.0,
+                                    "z": 0.0
                                 },
                                 "scale": {
                                     "x": 1.0,

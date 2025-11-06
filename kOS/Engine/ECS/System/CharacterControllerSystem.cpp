@@ -33,10 +33,9 @@ using namespace physics;
 namespace ecs {
 	void CharacterControllerSystem::Init() {
         onDeregister.Add([this](EntityID id) {
-            ECS* ecs = ECS::GetInstance();
-            if (CharacterControllerComponent* charctrl = ecs->GetComponent<CharacterControllerComponent>(id)) {
+            if (CharacterControllerComponent* charctrl = m_ecs.GetComponent<CharacterControllerComponent>(id)) {
                 if (PxController* ctrl = static_cast<PxController*>(charctrl->controller)) {
-                    PxControllerManager* mgr = PhysicsManager::GetInstance()->GetControllerManager();
+                    PxControllerManager* mgr = m_physicsManager.GetControllerManager();
                     if (mgr) { mgr->purgeControllers(); }
                     charctrl->controller = nullptr;
                 }
@@ -45,21 +44,20 @@ namespace ecs {
     }
 
 	void CharacterControllerSystem::Update() {
-        ECS* ecs = ECS::GetInstance();
         const auto& entities = m_entities.Data();
 
         for (EntityID id : entities) {
-            TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
-            NameComponent* name = ecs->GetComponent<NameComponent>(id);
-            CharacterControllerComponent* charctrl = ecs->GetComponent<CharacterControllerComponent>(id);
+            TransformComponent* trans = m_ecs.GetComponent<TransformComponent>(id);
+            NameComponent* name = m_ecs.GetComponent<NameComponent>(id);
+            CharacterControllerComponent* charctrl = m_ecs.GetComponent<CharacterControllerComponent>(id);
 
             if (name->hide) { continue; }
 
             PxController* ctrl = static_cast<PxController*>(charctrl->controller);
 
             if (!ctrl) {
-                if (ecs->HasComponent<CapsuleColliderComponent>(id)) {
-                    CapsuleColliderComponent* capsule = ecs->GetComponent<CapsuleColliderComponent>(id);
+                if (m_ecs.HasComponent<CapsuleColliderComponent>(id)) {
+                    CapsuleColliderComponent* capsule = m_ecs.GetComponent<CapsuleColliderComponent>(id);
                     PxCapsuleControllerDesc desc;
                     desc.height = capsule->capsule.height;
                     desc.radius = capsule->capsule.radius;
@@ -67,12 +65,12 @@ namespace ecs {
                     desc.slopeLimit = cosf(glm::radians(charctrl->slopeLimit));
                     desc.stepOffset = charctrl->stepOffset;
                     desc.contactOffset = charctrl->skinWidth;
-                    desc.material = PhysicsManager::GetInstance()->GetDefaultMaterial();
+                    desc.material = m_physicsManager.GetDefaultMaterial();
                     desc.density = 10.0f;
-                    ctrl = PhysicsManager::GetInstance()->GetControllerManager()->createController(desc);
+                    ctrl = m_physicsManager.GetControllerManager()->createController(desc);
                 }
-                else if (ecs->HasComponent<BoxColliderComponent>(id)) {
-                    BoxColliderComponent* box = ecs->GetComponent<BoxColliderComponent>(id);
+                else if (m_ecs.HasComponent<BoxColliderComponent>(id)) {
+                    BoxColliderComponent* box = m_ecs.GetComponent<BoxColliderComponent>(id);
                     PxBoxControllerDesc desc;
                     desc.halfHeight = box->box.size.y * 0.5f;
                     desc.halfSideExtent = box->box.size.x * 0.5f;
@@ -81,9 +79,9 @@ namespace ecs {
                     desc.slopeLimit = cosf(glm::radians(charctrl->slopeLimit));
                     desc.stepOffset = charctrl->stepOffset;
                     desc.contactOffset = charctrl->skinWidth;
-                    desc.material = PhysicsManager::GetInstance()->GetDefaultMaterial();
+                    desc.material = m_physicsManager.GetDefaultMaterial();
                     desc.density = 10.0f;
-                    ctrl = PhysicsManager::GetInstance()->GetControllerManager()->createController(desc);
+                    ctrl = m_physicsManager.GetControllerManager()->createController(desc);
                 }
 
                 if (!ctrl) { continue; }
@@ -109,29 +107,29 @@ namespace ecs {
             }
 
             glm::vec3 moveVec{ 0.0f };
-            if (Input::InputSystem::GetInstance()->IsKeyPressed(keys::W)) { moveVec.z -= 1.0f; }
-            if (Input::InputSystem::GetInstance()->IsKeyPressed(keys::S)) { moveVec.z += 1.0f; }
-            if (Input::InputSystem::GetInstance()->IsKeyPressed(keys::A)) { moveVec.x -= 1.0f; }
-            if (Input::InputSystem::GetInstance()->IsKeyPressed(keys::D)) { moveVec.x += 1.0f; }
+            if (m_inputSystem.IsKeyPressed(keys::W)) { moveVec.z -= 1.0f; }
+            if (m_inputSystem.IsKeyPressed(keys::S)) { moveVec.z += 1.0f; }
+            if (m_inputSystem.IsKeyPressed(keys::A)) { moveVec.x -= 1.0f; }
+            if (m_inputSystem.IsKeyPressed(keys::D)) { moveVec.x += 1.0f; }
 
             if (glm::length(moveVec) > 0.0f) { moveVec = glm::normalize(moveVec); }
 
             const float speed = 5.0f;
-            PxVec3 displacement{ moveVec.x * speed * ecs->m_GetDeltaTime(), 0.0f, moveVec.z * speed * ecs->m_GetDeltaTime()};
+            PxVec3 displacement{ moveVec.x * speed * m_ecs.m_GetDeltaTime(), 0.0f, moveVec.z * speed * m_ecs.m_GetDeltaTime()};
 
             const float gravity = -9.81f;
             const float jumpStrength = 10.0f;
 
-            charctrl->yVelocity += gravity * ecs->m_GetDeltaTime();
+            charctrl->yVelocity += gravity * m_ecs.m_GetDeltaTime();
 
-            if (Input::InputSystem::GetInstance()->IsKeyTriggered(keys::SPACE) && charctrl->isGrounded) {
+            if (m_inputSystem.IsKeyTriggered(keys::SPACE) && charctrl->isGrounded) {
                 charctrl->yVelocity = jumpStrength;
                 charctrl->isGrounded = false;
             }
 
-            displacement.y = charctrl->yVelocity * ecs->m_GetDeltaTime();
+            displacement.y = charctrl->yVelocity * m_ecs.m_GetDeltaTime();
 
-            PxControllerCollisionFlags flags = ctrl->move(displacement, charctrl->minMoveDistance, ecs->m_GetDeltaTime(), PxControllerFilters());
+            PxControllerCollisionFlags flags = ctrl->move(displacement, charctrl->minMoveDistance, m_ecs.m_GetDeltaTime(), PxControllerFilters());
 
             if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
                 charctrl->isGrounded = true;

@@ -31,20 +31,18 @@ namespace ecs {
 
 	void CameraSystem::Update() {
 
-		ECS* ecs = ECS::GetInstance();
-
 		const auto& entities = m_entities.Data();
 
 
 		for (const EntityID id : entities) {
-			TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-			NameComponent* NameComp = ecs->GetComponent<NameComponent>(id);
-			CameraComponent* camera = ecs->GetComponent<CameraComponent>(id);
+			TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+			NameComponent* NameComp = m_ecs.GetComponent<NameComponent>(id);
+			CameraComponent* camera = m_ecs.GetComponent<CameraComponent>(id);
 
 			//skip component not of the scene
-			if (!ecs->layersStack.m_layerBitSet.test(NameComp->Layer) || NameComp->hide) continue;
+			if (NameComp->hide) continue;
 			
-			GraphicsManager::GetInstance()->gm_PushGameCameraData(CameraData{ camera->fov, camera->nearPlane, camera->farPlane,
+			m_graphicsManager.gm_PushGameCameraData(CameraData{ camera->fov, camera->nearPlane, camera->farPlane,
 																			camera->size, transform->WorldTransformation.position,transform->LocalTransformation.rotation,
 																			camera->target, camera->active });
 

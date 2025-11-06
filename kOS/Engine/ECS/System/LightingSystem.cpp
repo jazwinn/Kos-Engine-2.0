@@ -38,30 +38,28 @@ namespace ecs {
 
 	void LightingSystem::Update()
 	{
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
-		std::shared_ptr<GraphicsManager> gm = GraphicsManager::GetInstance();
 
 		for (const EntityID id : entities) {
-			TransformComponent* transform = ecs->GetComponent<TransformComponent>(id);
-			NameComponent* nameComp = ecs->GetComponent<NameComponent>(id);
-			LightComponent* light = ecs->GetComponent<LightComponent>(id);
+			TransformComponent* transform = m_ecs.GetComponent<TransformComponent>(id);
+			NameComponent* nameComp = m_ecs.GetComponent<NameComponent>(id);
+			LightComponent* light = m_ecs.GetComponent<LightComponent>(id);
 
 			//skip component not of the scene
-			if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer) || nameComp->hide) continue;
+			if (nameComp->hide) continue;
 
 			switch (light->lightType)
 			{
 			case LightComponent::LightType::POINTLIGHT:
-				gm->gm_PushPointLightData(PointLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
+				m_graphicsManager.gm_PushPointLightData(PointLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
 														light->specularStrength,light->linear,light->quadratic,light->intesnity,light->shadowCast,light->bakedLighting,light->depthMapGUID});
 				break;
 			case LightComponent::LightType::DIRECTIONAL:
-				gm->gm_PushDirectionalLightData(DirectionalLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
+				m_graphicsManager.gm_PushDirectionalLightData(DirectionalLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
 														light->specularStrength,light->linear,light->quadratic, light->intesnity,light->direction });
 				break;
 			case LightComponent::LightType::SPOTLIGHT:
-				gm->gm_PushSpotLightData(SpotLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
+				m_graphicsManager.gm_PushSpotLightData(SpotLightData{ transform->LocalTransformation.position, light->color, light->diffuseStrength,
 														light->specularStrength,light->linear,light->quadratic,light->intesnity,light->direction, light->cutOff,
 														light->outerCutOff});
 				break;

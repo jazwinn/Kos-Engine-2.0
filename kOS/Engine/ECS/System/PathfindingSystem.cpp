@@ -25,12 +25,14 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 namespace ecs {
 	Octrees::Graph waypoints;
 	Octrees::Octree octree;
+
+
 	bool testing = true;
 	bool testing2 = false;
 
 	bool test = true;
 
-	float maxTimer = 5.f;
+	float maxTimer = 3.f;
 	float currentTimer = 0.f;
 
 	// REMOVE THIS AFTER M2
@@ -38,36 +40,38 @@ namespace ecs {
 	float proximityCheck = 0.1f;
 
 	void PathfindingSystem::Init() {
-		
+		octree.InjectDependency(&m_ecs);
 	}
 
 	void PathfindingSystem::Update() {
-		ECS* ecs = ECS::GetInstance();
 		const auto& entities = m_entities.Data();
 
 		if (currentTimer < maxTimer) {
-			currentTimer += ecs->m_GetDeltaTime();
+			currentTimer += m_ecs.m_GetDeltaTime();
 			//std::cout << "TIMER: " << currentTimer << std::endl;
 		}
 
 		for (EntityID id : entities) {
-			TransformComponent* trans = ecs->GetComponent<TransformComponent>(id);
-			NameComponent* name = ecs->GetComponent<NameComponent>(id);
-			//OctreeGeneratorComponent* oct = ecs->GetComponent<OctreeGeneratorComponent>(id);
+			TransformComponent* trans = m_ecs.GetComponent<TransformComponent>(id);
+			NameComponent* name = m_ecs.GetComponent<NameComponent>(id);
+			//OctreeGeneratorComponent* oct = m_ecs.GetComponent<OctreeGeneratorComponent>(id);
 
 			if (name->hide) { continue; }
 
 			// Move all pathfinders
 			const auto& otherEntities = m_entities.Data();
 			for (EntityID otherId : otherEntities) {
-				if (ecs->GetState() != GAMESTATE::RUNNING) {
+				if (m_ecs.GetState() != GAMESTATE::RUNNING) {
 					continue;
 				}
 
-				auto* pathfinderTarget = ecs->GetComponent<PathfinderTargetComponent>(otherId);
-				auto* pathfinderComp = ecs->GetComponent<PathfinderComponent>(id);
-				auto* pathfinderTrans = ecs->GetComponent<TransformComponent>(id);
-				auto* pathfinderTargetTrans = ecs->GetComponent<TransformComponent>(otherId);
+				auto* pathfinderTarget = m_ecs.GetComponent<PathfinderTargetComponent>(otherId);
+				auto* pathfinderComp = m_ecs.GetComponent<PathfinderComponent>(id);
+				auto* pathfinderTrans = m_ecs.GetComponent<TransformComponent>(id);
+				auto* pathfinderTargetTrans = m_ecs.GetComponent<TransformComponent>(otherId);
+
+				Octrees::OctreeNode closestNodeFrom;
+				Octrees::OctreeNode closestNodeTarget;
 
 				if (!pathfinderTarget || !pathfinderComp || !pathfinderTrans || !pathfinderTargetTrans || !pathfinderComp->chase) {
 					continue;
@@ -76,64 +80,79 @@ namespace ecs {
 				if (currentTimer >= maxTimer) {
 					//octree = Octrees::Octree(1.f, waypoints);
 
-					Octrees::OctreeNode closestNodeFrom = octree.FindClosestNode(pathfinderTrans->LocalTransformation.position);
-					Octrees::OctreeNode closestNodeTarget = octree.FindClosestNode(pathfinderTargetTrans->LocalTransformation.position);
+					closestNodeFrom = octree.FindClosestNode(pathfinderTrans->LocalTransformation.position);
+					closestNodeTarget = octree.FindClosestNode(pathfinderTargetTrans->LocalTransformation.position);
 					octree.graph.AStar(&closestNodeFrom, &closestNodeTarget);
 					currentPathCount = 0;
 
-					for (int i = 0; i < octree.graph.pathList.size(); ++i) {
-						std::cout << "PATH " << i << ": " << octree.graph.pathList[i].octreeNode.bounds.center.x << ", " <<
-							octree.graph.pathList[i].octreeNode.bounds.center.y << ", " <<
-							octree.graph.pathList[i].octreeNode.bounds.center.z << std::endl;
-					}
+					//for (int i = 0; i < octree.graph.pathList.size(); ++i) {
+					//	std::cout << "PATH " << i << ": " << octree.graph.pathList[i].octreeNode.bounds.center.x << ", " <<
+					//		octree.graph.pathList[i].octreeNode.bounds.center.y << ", " <<
+					//		octree.graph.pathList[i].octreeNode.bounds.center.z << std::endl;
+					//}
 
 					currentTimer = 0.f;
+				}
+
+				if (octree.graph.pathList.size() && currentPathCount < octree.graph.pathList.size()) {
+					glm::vec3 direction = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->WorldTransformation.position;
+					direction = glm::normalize(direction);
+
+					pathfinderTrans->LocalTransformation.position += direction * pathfinderComp->pathfinderMovementSpeed * m_ecs.m_GetDeltaTime();
+					if (glm::distance(pathfinderTrans->WorldTransformation.position, octree.graph.pathList[currentPathCount].octreeNode.bounds.center) <= proximityCheck) {
+						++currentPathCount;
+					}
+				}
+				else {
+					if (closestNodeFrom == closestNodeTarget) {
+
+					}
 				}
 				
 
 
-				if (octree.graph.pathList.size() > 0 && currentPathCount >= octree.graph.pathList.size()) {
-					break;
-				}
+				//if (octree.graph.pathList.size() > 0 && currentPathCount >= octree.graph.pathList.size()) {
+				//	break;
+				//}
 
-				if (std::abs(pathfinderTrans->LocalTransformation.position.x - pathfinderTargetTrans->LocalTransformation.position.x) >= proximityCheck ||
-					std::abs(pathfinderTrans->LocalTransformation.position.y - pathfinderTargetTrans->LocalTransformation.position.y) >= proximityCheck ||
-					std::abs(pathfinderTrans->LocalTransformation.position.z - pathfinderTargetTrans->LocalTransformation.position.z) >= proximityCheck) {
-					glm::vec3 directionToMove;
+				//if (std::abs(pathfinderTrans->LocalTransformation.position.x - pathfinderTargetTrans->LocalTransformation.position.x) >= proximityCheck ||
+				//	std::abs(pathfinderTrans->LocalTransformation.position.y - pathfinderTargetTrans->LocalTransformation.position.y) >= proximityCheck ||
+				//	std::abs(pathfinderTrans->LocalTransformation.position.z - pathfinderTargetTrans->LocalTransformation.position.z) >= proximityCheck) {
+				//	glm::vec3 directionToMove;
 
-					if (!octree.graph.pathList.size() || currentPathCount == octree.graph.pathList.size() - 1) {
-						directionToMove = pathfinderTargetTrans->LocalTransformation.position - pathfinderTrans->LocalTransformation.position;
-					}
-					else {
-						directionToMove = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->LocalTransformation.position;
-					}
+				//	//if ((!octree.graph.pathList.size() && closestNodeFrom == closestNodeTarget) || currentPathCount == octree.graph.pathList.size() - 1) {
+				//	//	directionToMove = pathfinderTargetTrans->LocalTransformation.position - pathfinderTrans->LocalTransformation.position;
+				//	//}
+				//	//else {
+				//	//	directionToMove = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->LocalTransformation.position;
+				//	//}
+				//	directionToMove = octree.graph.pathList[currentPathCount].octreeNode.bounds.center - pathfinderTrans->LocalTransformation.position;
 
+				//	pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * m_ecs.m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
 
-					pathfinderTrans->LocalTransformation.position += glm::normalize(directionToMove) * ecs->m_GetDeltaTime() * pathfinderComp->pathfinderMovementSpeed;
+				//	if (!octree.graph.pathList.size()) {
+				//		break;
+				//	}
 
-					if (!octree.graph.pathList.size()) {
-						break;
-					}
-
-					if (std::abs(pathfinderTrans->LocalTransformation.position.x - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.x) < proximityCheck &&
-						std::abs(pathfinderTrans->LocalTransformation.position.y - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.y) < proximityCheck &&
-						std::abs(pathfinderTrans->LocalTransformation.position.z - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.z) < proximityCheck) {
-						++currentPathCount;
-					}
-				}
+				//	if (std::abs(pathfinderTrans->LocalTransformation.position.x - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.x) < proximityCheck &&
+				//		std::abs(pathfinderTrans->LocalTransformation.position.y - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.y) < proximityCheck &&
+				//		std::abs(pathfinderTrans->LocalTransformation.position.z - octree.graph.pathList[currentPathCount].octreeNode.bounds.center.z) < proximityCheck) {
+				//		++currentPathCount;
+				//	}
+				//}
 
 				break;
 			}
 
-			if (auto* oct = ecs->GetComponent<OctreeGeneratorComponent>(id)) {
-				if (testing) {
-					octree = Octrees::Octree(2.f, waypoints);
+			if (auto* oct = m_ecs.GetComponent<OctreeGeneratorComponent>(id)) {
+				if (testing) { // this wont work with DI
+					octree = Octrees::Octree(2.f, waypoints, &m_ecs);
 					testing = false;
 				}
 
 				if (oct->drawWireframe) {
-					octree.root.DrawNode();
-					octree.graph.DrawGraph();
+					if (oct->drawBound) octree.root.DrawNode(&m_graphicsManager);
+					if (oct->drawNodes) octree.graph.DrawGraph(&m_graphicsManager);
 				}
 			}
 

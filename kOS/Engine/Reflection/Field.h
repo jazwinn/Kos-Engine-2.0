@@ -101,15 +101,9 @@ public:
     }
 };
 
-class FieldSingleton {
+class Fields {
 public:
-    //singleton
-    static FieldSingleton* GetInstance() {
-        if (!m_InstancePtr) {
-            m_InstancePtr.reset(new FieldSingleton{});
-        }
-        return m_InstancePtr.get();
-    }
+    Fields() = default;
 
     std::unordered_map<std::string, std::shared_ptr<IFieldInvoker>>& GetAction() {
         return componentAction;
@@ -118,8 +112,6 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<IFieldInvoker>> componentAction;
 
-    FieldSingleton() = default;
-
-    static std::shared_ptr<FieldSingleton> m_InstancePtr;
+    
 
 };

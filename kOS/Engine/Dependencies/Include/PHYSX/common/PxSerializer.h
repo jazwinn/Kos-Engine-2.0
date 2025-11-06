@@ -78,7 +78,7 @@ public:
 	 
 	This method does not add the required objects recursively, e.g. objects required by required objects.
 	 
-	\see PxCollection, PxSerialization::complete
+	\see PxCollection, Pxserialization::complete
 	*/
 	virtual			void			requiresObjects(PxBase&, PxProcessPxBaseCallback&) const									= 0;
 	
@@ -89,7 +89,7 @@ public:
 
 	\return	Whether the class is subordinate
 	
-	\see PxSerialization::isSerializable
+	\see Pxserialization::isSerializable
 	*/
 	virtual			bool			isSubordinate() const																= 0;
 

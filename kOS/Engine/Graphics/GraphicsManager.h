@@ -31,26 +31,18 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include "Renderer.h"
 #include "ShaderManager.h"
 #include "FramebufferManager.h"
+#include "Resources/ResourceManager.h"
 
 class GraphicsManager
 {
 public:
 	//Singleton class, remove all copy and assignment operations
 	GraphicsManager() = default;
+
 	GraphicsManager(const GraphicsManager&) = delete;
 	GraphicsManager& operator=(const GraphicsManager&) = delete;
 	GraphicsManager(GraphicsManager&&) = delete;
 	GraphicsManager& operator=(GraphicsManager&&) = delete;
-
-	//Accessor to instance
-	static std::shared_ptr<GraphicsManager> GetInstance()
-	{
-		if (!gm)
-		{
-			gm = std::make_shared<GraphicsManager>();
-		}
-		return gm;
-	}
 
 	//Main Functions
 	void gm_Initialize(float width, float height);
@@ -89,13 +81,12 @@ public:
 	inline const FrameBuffer& gm_GetEditorBuffer() const { return framebufferManager.editorBuffer; };
 	inline const FrameBuffer& gm_GetGameBuffer() const { return framebufferManager.gameBuffer; };
 	void gm_FillDepthCube(const CameraData&, int);
+	void gm_UpdateBuffers(int width, int height);
 	void gm_RenderGameBuffer();
 	//I want my DCMs
 	LightRenderer lightRenderer;
 
 private:
-	//One and only active GraphicsManager object
-	static std::shared_ptr<GraphicsManager> gm;
 
 	//Initialize functions
 	void gm_InitializeMeshes();
@@ -104,6 +95,7 @@ private:
 	void gm_RenderToEditorFrameBuffer();
 	void gm_RenderToGameFrameBuffer();
 	void gm_FillDataBuffers(const CameraData& camera);
+	void gm_FillDataBuffersGame(const CameraData& camera);
 	void gm_FillGBuffer(const CameraData& camera);
 	void gm_FillDepthBuffer(const CameraData& camera);
 	void gm_FillDepthCube(const CameraData& camera);
@@ -111,6 +103,8 @@ private:
 	void gm_RenderDebugObjects(const CameraData& camera);
 	void gm_RenderParticles(const CameraData& camera);
 	void gm_RenderUIObjects(const CameraData& camera);
+
+	void gm_FillGBufferGame(const CameraData& camera);
 	//Cameras
 	CameraData editorCamera{};
 	std::vector<CameraData> gameCameras{};

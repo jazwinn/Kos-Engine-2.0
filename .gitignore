@@ -12,6 +12,7 @@
 *.iobj
 *.ipdb
 *.ini
+/Resource
 .vs
 .tmp
 .github
@@ -23,3 +24,4 @@ Debug
 Release
 !imgui.ini
 imguiStyle.json
+kOS/Resource/

@@ -54,11 +54,11 @@ void gui::ImGuiHandler::DrawAssetInspector() {
         ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f); // Center horizontally
         if (ImGui::Button("Save", ImVec2(buttonWidth, 0))) {
             // Button clicked
-            Serialization::WriteJsonFile(AssetPath.string(), &selectedAsset);
+            serialization::WriteJsonFile(AssetPath.string(), &selectedAsset);
 
             //TODO automate this function for other asset types
             if (selectedAsset.Type == R_Texture::classname()) {
-                Serialization::WriteJsonFile(AssetPath.string(), &textureCompilerData, true);
+                serialization::WriteJsonFile(AssetPath.string(), &textureCompilerData, true);
             }
         }
 

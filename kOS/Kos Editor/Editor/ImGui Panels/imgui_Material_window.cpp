@@ -27,15 +27,15 @@ void gui::ImGuiHandler::DrawMaterialWindow() {
     ImGui::Begin("Material");
     float windowWidth = ImGui::GetContentRegionAvail().x; // Available width inside window
 
-     ResourceManager* rm = ResourceManager::GetInstance();
-    std::shared_ptr<R_Texture> diff = rm->GetResource<R_Texture>(materialData.data.diffuseMaterialGUID);
-    std::shared_ptr<R_Texture> spec = rm->GetResource<R_Texture>(materialData.data.specularMaterialGUID);
-    std::shared_ptr<R_Texture> norm = rm->GetResource<R_Texture>(materialData.data.normalMaterialGUID);
-    std::shared_ptr<R_Texture> ao = rm->GetResource<R_Texture>(materialData.data.ambientOcclusionMaterialGUID);
-    std::shared_ptr<R_Texture> rough = rm->GetResource<R_Texture>(materialData.data.roughnessMaterialGUID);
+     
+    std::shared_ptr<R_Texture> diff = m_resourceManager.GetResource<R_Texture>(materialData.data.diffuseMaterialGUID);
+    std::shared_ptr<R_Texture> spec = m_resourceManager.GetResource<R_Texture>(materialData.data.specularMaterialGUID);
+    std::shared_ptr<R_Texture> norm = m_resourceManager.GetResource<R_Texture>(materialData.data.normalMaterialGUID);
+    std::shared_ptr<R_Texture> ao = m_resourceManager.GetResource<R_Texture>(materialData.data.ambientOcclusionMaterialGUID);
+    std::shared_ptr<R_Texture> rough = m_resourceManager.GetResource<R_Texture>(materialData.data.roughnessMaterialGUID);
     PBRMaterial pbrMat{ diff,spec,rough,ao,norm };
     Camera cam;
-    GraphicsManager::GetInstance()->gm_DrawMaterial(pbrMat, mfb.fb);
+   m_graphicsManager.gm_DrawMaterial(pbrMat, mfb.fb);
 
     ImGui::Image(
         reinterpret_cast<void*>(static_cast<uintptr_t>(mfb.fb.texID)),
@@ -55,9 +55,9 @@ void gui::ImGuiHandler::DrawMaterialWindow() {
     if(ImGui::Button("Create", ImVec2(buttonWidth, 0))){
         if (!materialData.materialName.empty()) {
             std::string fileName = materialData.materialName + ".mat";
-            std::string filepath = AssetManager::AssetManager::GetInstance()->GetAssetManagerDirectory() + "/Material/" + fileName;
+            std::string filepath = m_assetManager.GetAssetManagerDirectory() + "/Material/" + fileName;
 
-            Serialization::WriteJsonFile(filepath, &materialData.data);
+            serialization::WriteJsonFile(filepath, &materialData.data);
            // std::cout << "TEST CREATION\n";
             LOGGING_POPUP("Material Successfully Added");
         }

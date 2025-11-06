@@ -55,19 +55,14 @@ namespace ecs {
 
     }
     void AudioSystem::Update() {
-        auto rm = ResourceManager::GetInstance();
-        ECS* ecs = ECS::GetInstance();
        
         const auto& entities = m_entities.Data();
         for (const EntityID id : entities) {
-            auto* transform = ecs->GetComponent<TransformComponent>(id);
-            auto* nameComp = ecs->GetComponent<NameComponent>(id);
-            auto* audioComp = ecs->GetComponent<AudioComponent>(id);
-           
-            if (!transform || !nameComp || !audioComp) continue;
+            auto* transform = m_ecs.GetComponent<TransformComponent>(id);
+            auto* nameComp = m_ecs.GetComponent<NameComponent>(id);
+            auto* audioComp = m_ecs.GetComponent<AudioComponent>(id);
+          
 
-            //Scene layer visbility filter
-            if (!ecs->layersStack.m_layerBitSet.test(nameComp->Layer)) continue;
             if (nameComp->hide) continue;
 
             //Loop through all audio files
@@ -76,7 +71,7 @@ namespace ecs {
                 if (af.audioGUID.Empty()) continue;
 
                 //Get GUID
-                auto res = rm->GetResource<R_Audio>(af.audioGUID);
+                auto res = m_resourceManager.GetResource<R_Audio>(af.audioGUID);
                 if (!res) continue;
 
                 //LOad sound

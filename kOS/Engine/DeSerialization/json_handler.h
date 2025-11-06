@@ -19,107 +19,134 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 #include <RAPIDJSON/writer.h>
 #include <RAPIDJSON/stringbuffer.h>
 
-#include "ECS/ECSList.h"
+namespace ecs { class ECS; }
 #include "SerializationReflection.h"
+#include "ECS/ECSList.h"
 
-namespace Serialization {
+
+
+namespace serialization {
+
+
+	class Serialization {
+		ecs::ECS& m_ecs;
+	public:
+		Serialization(ecs::ECS& ecs) : m_ecs(ecs) {}
+
 		void LoadScene(const std::filesystem::path& jsonFilePath, const std::string sceneName = "");
 		void SaveScene(const std::filesystem::path& filePath, const std::filesystem::path& targetFilePath = "");
 
 		void SaveEntity(ecs::EntityID entityId, rapidjson::Value& parentArray, rapidjson::Document::AllocatorType& allocator, std::unordered_set<ecs::EntityID>& savedEntities);
 		void LoadEntity(const rapidjson::Value& entityData, std::optional<ecs::EntityID> parentID, const std::string& sceneName);
 
-		void JsonFileValidation(const std::string& filePath);
+			
 
 
-		template <typename T>
-		T ReadJsonFile(const std::string& filepath)
-		{
+	};
+
+	inline void JsonFileValidation(const std::string& filePath) {
+
+		std::ifstream checkFile(filePath);
+
+		if (!checkFile) {
+			std::ofstream createFile(filePath);
+			createFile << "[]";  // Initialize empty JSON array
+			createFile.close();
+		}
+
+		checkFile.close();
+	}
+
+	template <typename T>
+	T ReadJsonFile(const std::string& filepath)
+	{
+		std::ifstream inputFile(filepath);
+
+		if (!inputFile) {
+			LOGGING_WARN("Failed to open JSON file for reading: {}", filepath.c_str());
+			throw std::runtime_error("Failed to open JSON file: " + filepath);
+		}
+
+		std::string fileContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
+		inputFile.close();
+
+		// Parse the JSON content
+		rapidjson::Document doc;
+		doc.Parse(fileContent.c_str());
+
+		T data;
+
+		for (rapidjson::SizeType i = 0; i < doc.Size(); i++) {
+			const rapidjson::Value& entry = doc[i];
+
+			if (entry.HasMember(T::classname())) {
+				LoadComponentreflect(&data, entry);
+			}
+
+
+		}
+
+		return data;
+	}
+
+	template <typename T>
+	bool WriteJsonFile(const std::string& filepath, T* object, bool update = false) {
+		serialization::JsonFileValidation(filepath);
+
+		rapidjson::Document doc;
+
+
+		if (update) {
 			std::ifstream inputFile(filepath);
 
 			if (!inputFile) {
-				LOGGING_WARN("Failed to open JSON file for reading: {}", filepath.c_str());
-				throw std::runtime_error("Failed to open JSON file: " + filepath);
+				LOGGING_ERROR("Failed to open JSON file for reading: {}", filepath.c_str());
+				return false;
 			}
 
 			std::string fileContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
 			inputFile.close();
 
-			// Parse the JSON content
-			rapidjson::Document doc;
 			doc.Parse(fileContent.c_str());
 
-			T data;
-
-			for (rapidjson::SizeType i = 0; i < doc.Size(); i++) {
-				const rapidjson::Value& entry = doc[i];
-
-				if (entry.HasMember(T::classname())) {
-					LoadComponentreflect(&data, entry);
+			// Remove existing entries with the same component name
+			for (rapidjson::SizeType i = doc.Size(); i > 0; --i) {
+				auto& obj = doc[i - 1];
+				if (obj.HasMember(T::classname())) {
+					doc.Erase(doc.Begin() + (i - 1));
 				}
-				
-
 			}
-
-			return data;
 		}
 
-		template <typename T>
-		bool WriteJsonFile(const std::string& filepath, T* object, bool update = false) {
-			Serialization::JsonFileValidation(filepath);
 
-			rapidjson::Document doc;
-
-
-			if (update) {
-				std::ifstream inputFile(filepath);
-
-				if (!inputFile) {
-					LOGGING_ERROR("Failed to open JSON file for reading: {}", filepath.c_str());
-					return false;
-				}
-
-				std::string fileContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
-				inputFile.close();
-
-				doc.Parse(fileContent.c_str());
-
-				// Remove existing entries with the same component name
-				for (rapidjson::SizeType i = doc.Size(); i > 0; --i) {
-					auto& obj = doc[i - 1];
-					if (obj.HasMember(T::classname())) {
-						doc.Erase(doc.Begin() + (i - 1));
-					}
-				}
-			}
-
-
-			if (!doc.IsArray()) {
-				doc.SetArray();  // Initialize as an empty array
-			}
-
-
-
-			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-			rapidjson::Value entityData(rapidjson::kObjectType);
-
-
-
-			saveComponentreflect(object, entityData, allocator);
-
-			doc.PushBack(entityData, allocator);
-
-			// Write to file
-			rapidjson::StringBuffer buffer;
-			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-			doc.Accept(writer);
-
-			std::ofstream ofs(filepath);
-			ofs << buffer.GetString();
-
-			return true;
+		if (!doc.IsArray()) {
+			doc.SetArray();  // Initialize as an empty array
 		}
+
+
+
+		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+		rapidjson::Value entityData(rapidjson::kObjectType);
+
+
+
+		saveComponentreflect(object, entityData, allocator);
+
+		doc.PushBack(entityData, allocator);
+
+		// Write to file
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		doc.Accept(writer);
+
+		std::ofstream ofs(filepath);
+		ofs << buffer.GetString();
+
+		return true;
+	}
+
 }
+
 
 
 #endif JSONHANDLER_H

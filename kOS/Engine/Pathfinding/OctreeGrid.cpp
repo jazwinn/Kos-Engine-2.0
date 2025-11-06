@@ -16,13 +16,15 @@ prior written consent of DigiPen Institute of Technology is prohibited.
 /********************************************************************/
 
 #include "OctreeGrid.h"
+#include "ECS/ECS.h"
 
 namespace Octrees {
 	Octree::Octree() {
 
 	}
 
-	Octree::Octree(float minNodeSize, Graph _graph) {
+	Octree::Octree(float minNodeSize, Graph _graph, ecs::ECS* ecs) {
+		m_ecs = ecs;
 		graph = _graph;
 
 		graph.nodes.reserve(1000);
@@ -61,58 +63,61 @@ namespace Octrees {
 	}
 
 	void Octree::CreateTree(float minNodeSize) {
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
 		root = OctreeNode(bounds, minNodeSize);
-		for (const auto& id : ecs->GetEntitySignatureData()) {
-			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
+		for (const auto& id : m_ecs->GetEntitySignatureData()) {
+			ecs::BoxColliderComponent* boxCollider = m_ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
 
 			if (!boxCollider)
 				continue;
 
-			if (ecs->GetComponent<ecs::PathfinderComponent>(id.first) || ecs->GetComponent<ecs::PathfinderTargetComponent>(id.first))
+			if (m_ecs->GetComponent<ecs::PathfinderComponent>(id.first) || m_ecs->GetComponent<ecs::PathfinderTargetComponent>(id.first))
 				continue;
 
-			root.Divide(id.first);
+			auto* tc = m_ecs->GetComponent<ecs::TransformComponent>(id.first);
+
+			root.Divide(tc, boxCollider);
 		}
 	}
 
 	void Octree::CalculateBounds() {
-		ecs::ECS* ecs = ecs::ECS::GetInstance();
 		glm::vec3 minBound(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()),
 			maxBound(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
 
 		glm::vec3 boundCenter(0.f, 0.f, 0.f);
 
-		for (const auto& id : ecs->GetEntitySignatureData()) {
-			ecs::BoxColliderComponent* boxCollider = ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
-			ecs::TransformComponent* transform = ecs->GetComponent<ecs::TransformComponent>(id.first);
-			ecs::NameComponent* name = ecs->GetComponent<ecs::NameComponent>(id.first);
+		for (const auto& id : m_ecs->GetEntitySignatureData()) {
+			ecs::BoxColliderComponent* boxCollider = m_ecs->GetComponent<ecs::BoxColliderComponent>(id.first);
+			ecs::TransformComponent* transform = m_ecs->GetComponent<ecs::TransformComponent>(id.first);
+			ecs::NameComponent* name = m_ecs->GetComponent<ecs::NameComponent>(id.first);
 
 			if (!boxCollider || !transform || !name || name->entityTag != "Obstacle")
 				continue;
 
-			if (boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x < minBound.x) {
-				minBound.x = boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x;
-			}
-			if (boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y < minBound.y) {
-				minBound.y = boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y;
-			}
-			if (boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z < minBound.z) {
-				minBound.z = boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z;
-			}
-			if (boxCollider->box.bounds.max.x + transform->WorldTransformation.position.x > maxBound.x) {
-				maxBound.x = boxCollider->box.bounds.max.x + transform->WorldTransformation.position.x;
-			}
-			if (boxCollider->box.bounds.max.y + transform->WorldTransformation.position.y > maxBound.y) {
-				maxBound.y = boxCollider->box.bounds.max.y + transform->WorldTransformation.position.y;
-			}
-			if (boxCollider->box.bounds.max.z + transform->WorldTransformation.position.z > maxBound.z) {
-				maxBound.z = boxCollider->box.bounds.max.z + transform->WorldTransformation.position.z;
-			}
+			minBound = glm::min(minBound, boxCollider->box.bounds.min);
+			maxBound = glm::max(maxBound, boxCollider->box.bounds.max);
+
+			//if (boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x < minBound.x) {
+			//	minBound.x = boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x;
+			//}
+			//if (boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y < minBound.y) {
+			//	minBound.y = boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y;
+			//}
+			//if (boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z < minBound.z) {
+			//	minBound.z = boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z;
+			//}
+			//if (boxCollider->box.bounds.max.x + transform->WorldTransformation.position.x > maxBound.x) {
+			//	maxBound.x = boxCollider->box.bounds.max.x + transform->WorldTransformation.position.x;
+			//}
+			//if (boxCollider->box.bounds.max.y + transform->WorldTransformation.position.y > maxBound.y) {
+			//	maxBound.y = boxCollider->box.bounds.max.y + transform->WorldTransformation.position.y;
+			//}
+			//if (boxCollider->box.bounds.max.z + transform->WorldTransformation.position.z > maxBound.z) {
+			//	maxBound.z = boxCollider->box.bounds.max.z + transform->WorldTransformation.position.z;
+			//}
 
 			//std::cout << "MIN BOUND: " << boxCollider->box.bounds.min.x + transform->WorldTransformation.position.x << ", "
-			//	<< boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y << ", "
-			//	<< boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z << std::endl;
+			//							<< boxCollider->box.bounds.min.y + transform->WorldTransformation.position.y << ", "
+			//							<< boxCollider->box.bounds.min.z + transform->WorldTransformation.position.z << std::endl;
 
 			//std::cout << "MAX Bound: " << boxCollider->box.bounds.max.x + transform->WorldTransformation.position.x << ", "
 			//	<< boxCollider->box.bounds.max.y + transform->WorldTransformation.position.y << ", "
@@ -122,7 +127,7 @@ namespace Octrees {
 		boundCenter.x = (minBound.x + maxBound.x) / 2.f;
 		boundCenter.y = (minBound.y + maxBound.y) / 2.f;
 		boundCenter.z = (minBound.z + maxBound.z) / 2.f;
-		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * std::max(std::max(maxBound.x - minBound.x, maxBound.y - minBound.y), maxBound.z - minBound.z) * 0.6f;
+		glm::vec3 boundSize = glm::vec3(1.f, 1.f, 1.f) * std::max(std::max(maxBound.x - minBound.x, maxBound.y - minBound.y), maxBound.z - minBound.z) * 0.5f;
 		glm::vec3 boundMin = boundCenter - boundSize, boundMax = boundCenter + boundSize;
 
 		bounds.center = boundCenter;

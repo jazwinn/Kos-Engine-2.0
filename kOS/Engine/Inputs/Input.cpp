@@ -28,8 +28,6 @@ namespace Input {
 
 	// The number of frames needed for a button to be pressed before the state turns from triggered to pressed.
 	float secondsBeforePressed = 0.05f;
-
-	std::shared_ptr<InputSystem> InputSystem::m_InstancePtr = nullptr;
 	// Shared pointer
 	//std::shared_ptr<InputSystem> InputSystem::GetInstance(){ std::make_shared<InputSystem>(InputSystem{}) };
 	
@@ -69,65 +67,23 @@ namespace Input {
 			);
 		}
 	}
-
-	void CursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+	
+	void InputSystem::OnCursorPos(double xpos, double ypos) {
 		int width{}, height{};
-
-		glfwGetWindowSize(window, &width, &height);
+		glfwGetWindowSize(glfwGetCurrentContext(), &width, &height);
 		ypos = static_cast<double>(height - ypos);
 
-		// Get old position before updating
-		glm::vec2 oldPos = InputSystem::GetInstance()->currentMousePos;
-
-		// Update current position
-		InputSystem::GetInstance()->currentMousePos.x = static_cast<float>(xpos);
-		InputSystem::GetInstance()->currentMousePos.y = static_cast<float>(ypos);
-
-		// Calculate delta
-		float deltaX = static_cast<float>(xpos) - oldPos.x;
-		float deltaY = static_cast<float>(ypos) - oldPos.y;
-
-		// Emit mouse moved event
-		auto* eventHandler = Event::EventHandler::GetInstance();
-		eventHandler->GetBus().Emit(
-			ecs::MouseMovedEvent(
-				static_cast<float>(xpos),
-				static_cast<float>(ypos),
-				deltaX,
-				deltaY
-			)
-		);
+		currentMousePos.x = static_cast<float>(xpos);
+		currentMousePos.y = static_cast<float>(ypos);
 	}
 
-	void WindowResizeCallback(GLFWwindow* window, int width, int height) {
-		auto* eventHandler = Event::EventHandler::GetInstance();
-		eventHandler->GetBus().Emit(ecs::WindowResizedEvent(width, height));
-	}
-
-	void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-		auto* eventHandler = Event::EventHandler::GetInstance();
-		eventHandler->GetBus().Emit(
-			ecs::MouseScrolledEvent(static_cast<float>(xoffset), static_cast<float>(yoffset))
-		);
-	}
-
-	void DropCallback([[maybe_unused]] GLFWwindow* window, int count, const char** paths) {
-		InputSystem::GetInstance()->droppedFiles.clear();
-
+	void InputSystem::OnDrop(int count, const char** paths) {
+		droppedFiles.clear();
 		for (int i = 0; i < count; ++i) {
-			InputSystem::GetInstance()->droppedFiles.emplace_back(paths[i]);
+			droppedFiles.emplace_back(paths[i]);
 		}
 	}
-
-	void InputSystem::SetCallBack(GLFWwindow* window) {
-		glfwSetKeyCallback(window, KeyCallback);
-		glfwSetDropCallback(window, DropCallback);
-		glfwSetMouseButtonCallback(window, MouseButtonCallback);
-		glfwSetCursorPosCallback(window, CursorPosCallback);
-		glfwSetWindowSizeCallback(window, WindowResizeCallback);  
-		glfwSetScrollCallback(window, ScrollCallback);          
-	}
-
+	
 	void InputSystem::HideCursor(bool check) {
 		if (check) {
 			glfwSetInputMode(inputWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -139,7 +95,7 @@ namespace Input {
 	}
 
 	void InputSystem::InputInit(GLFWwindow* window) {
-		InputSystem::GetInstance()->inputWindow = window;
+		inputWindow = window;
 	}
 
 	void InputSystem::InputUpdate(float deltaTime) {
@@ -149,10 +105,10 @@ namespace Input {
 			int state;
 
 			if (key.first == keys::LMB || key.first == keys::RMB || key.first == keys::MMB) {
-				state = glfwGetMouseButton(InputSystem::GetInstance()->inputWindow, key.first);
+				state = glfwGetMouseButton(inputWindow, key.first);
 			}
 			else {
-				state = glfwGetKey(InputSystem::GetInstance()->inputWindow, key.first);
+				state = glfwGetKey(inputWindow, key.first);
 			}
 
 			// Update all prev and curr key states first
@@ -191,7 +147,7 @@ namespace Input {
 	}
 
 	void InputSystem::InputExitFrame(float deltaTime) {
-		InputSystem::GetInstance()->prevMousePos = InputSystem::GetInstance()->currentMousePos;
+		prevMousePos = currentMousePos;
 	}
 
 	bool InputSystem::IsKeyTriggered(const keyCode key) {
@@ -219,8 +175,8 @@ namespace Input {
 	}
 
 	glm::vec2 InputSystem::GetMousePos() {
-		return InputSystem::currentMousePos;
-	}
+		return currentMousePos;
+	}	
 
 	float InputSystem::GetAxisRaw(std::string axisType) {
 		if (axisType == "Mouse X") {
