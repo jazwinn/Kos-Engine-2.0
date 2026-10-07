@@ -24,5 +24,8 @@ build
 out
 Debug
 Release
+# Per-config runtime DLLs (see kOS/Engine/CMakeLists.txt) must be committed
+!kOS/Engine/Dependencies/dll/Debug/
+!kOS/Engine/Dependencies/dll/Release/
 imguiStyle.json
 kOS/Resource

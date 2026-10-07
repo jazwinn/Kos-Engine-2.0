@@ -57,16 +57,23 @@ if(MSVC)
     target_compile_options(Kos_Engine PRIVATE /Zc:preprocessor)
 endif()
 
-file(GLOB ENGINE_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/dll/*.dll")
-foreach(dll ${ENGINE_DLLS})
-    get_filename_component(dll_name "${dll}" NAME)
-    add_custom_command(TARGET Kos_Engine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${dll}"
-            "$<TARGET_FILE_DIR:Kos_Engine>/"
-        COMMENT "Copying ${dll_name} to output directory"
-    )
-endforeach()
+# Runtime DLLs: dll/ is shared by every config, dll/Debug and dll/Release hold
+# builds tied to the debug or release CRT. Never put debug-CRT DLLs in dll/ or
+# dll/Release - they need VCRUNTIME140D.dll, which only exists where Visual
+# Studio is installed, so the game won't launch on other PCs.
+file(GLOB ENGINE_DLLS_COMMON "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/dll/*.dll")
+file(GLOB ENGINE_DLLS_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/dll/Debug/*.dll")
+file(GLOB ENGINE_DLLS_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/dll/Release/*.dll")
+
+add_custom_command(TARGET Kos_Engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${ENGINE_DLLS_COMMON}
+        "$<$<CONFIG:Debug>:${ENGINE_DLLS_DEBUG}>"
+        "$<$<CONFIG:Release>:${ENGINE_DLLS_RELEASE}>"
+        "$<TARGET_FILE_DIR:Kos_Engine>/"
+    COMMENT "Copying $<CONFIG> runtime DLLs to output directory"
+    COMMAND_EXPAND_LISTS
+)
 
 # # Print debug info (optional)
 # message(STATUS "Found ${ENGINE_HEADER} header files")
