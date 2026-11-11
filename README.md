@@ -202,16 +202,6 @@ kOS\bin\Release\Kos_test.exe
 
 ---
 
-## Roadmap
-
-- [ ] Serialisation round-trip tests driven by reflection (every component, automatically)
-- [ ] Physics and rendering integration tests in CI
-- [ ] A Vulkan or DirectX 12 backend behind the existing `GraphicsManager` interface
-- [ ] Linux build — the renderer is OpenGL + GLFW; the blockers are the PhysX/FMOD binaries and the `.bat` scripts
-- [ ] Richer profiling in the editor's performance panel, beyond frame time
-
----
-
 ## Credits
 
 Built on the first [Kos-Engine](https://github.com/jazwinn/Kos-Engine). Developed at DigiPen Institute of Technology (Singapore).
